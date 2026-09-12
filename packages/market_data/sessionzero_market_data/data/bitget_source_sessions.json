@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "retrieved_at": "2026-09-12T22:55:23Z",
+  "capabilities": [
+    {
+      "symbol": "*",
+      "effective_from": "2026-06-23T07:39:00Z",
+      "effective_to": null,
+      "session_mode": "24_5",
+      "source": "Bitget Support Center",
+      "evidence_url": "https://www.bitget.com/support/articles/12560603887176",
+      "verified_at": "2026-09-12T22:55:23Z",
+      "notes": "Publication states rToken spot currently supports 24/5 extended trading and that weekend and U.S. holiday access may be limited. The publication timestamp is used conservatively; it is not projected backward."
+    },
+    {
+      "symbol": "RMRNAUSDT",
+      "effective_from": "2026-06-23T07:39:00Z",
+      "effective_to": "2026-07-17T03:40:00Z",
+      "session_mode": "24_5",
+      "source": "Bitget Support Center",
+      "evidence_url": "https://www.bitget.com/support/articles/12560603889487",
+      "verified_at": "2026-09-12T22:55:23Z",
+      "notes": "The dated announcement adds rMRNA to 24/7 at effective_to, establishing that the symbol-specific pre-rollout period was not weekend-enabled. The general 24/5 publication supplies the baseline start."
+    },
+    {
+      "symbol": "RMRNAUSDT",
+      "effective_from": "2026-07-17T03:40:00Z",
+      "effective_to": null,
+      "session_mode": "24_7",
+      "source": "Bitget Support Center",
+      "evidence_url": "https://www.bitget.com/support/articles/12560603889487",
+      "verified_at": "2026-09-12T22:55:23Z",
+      "notes": "Dated announcement explicitly adds rMRNA to weekend and 24/7 trading. No pre-announcement 24/7 eligibility is inferred."
+    }
+  ]
+}

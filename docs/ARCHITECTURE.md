@@ -18,6 +18,7 @@ Bounded one-shot history ingestion
         +-- bounded backward page traversal
         +-- raw provider rows
         +-- existing MarketCandle normalization
+        +-- SourceSessionProvider (Bitget, point-in-time evidence)
         +-- deterministic quality gate
         |       +-- FAIL: report, no data commit
         |       +-- PASS/WARN
@@ -25,6 +26,12 @@ Bounded one-shot history ingestion
                                                    ingestion_runs
                                                    raw_market_observations
                                                    normalized_market_candles
+
+Temporal classification
+        |
+        +-- TradingCalendarProvider --> XNYS cash sessions
+        +-- SourceSessionProvider ----> Bitget source availability
+        +-- SessionZeroContext -------> ACTIVE / INACTIVE / UNKNOWN
 ```
 
 Python is the authoritative quantitative and market-data environment. The browser does not call
@@ -37,6 +44,8 @@ production code.
 - `packages/config`: validated environment configuration.
 - `packages/bitget`: read-only UTA v3 client, normalization, errors, capabilities, verification CLI.
   Its history module owns bounded time pagination and candle-series quality evaluation.
+- `packages/market_data`: separate reference-calendar and source-session protocols, the pinned XNYS
+  adapter, curated Bitget capability provenance, and non-model Session Zero temporal primitives.
 - `packages/database`: PostgreSQL engine boundary, mapped persistence tables, transactional write
   service, and one-shot ingestion CLI.
 - `services/api`: FastAPI health, capability, and discovered-market routes.
@@ -56,13 +65,17 @@ records written.
 
 Historical retrieval validates dataset-level quality before persistence. Critical timestamp,
 pagination, OHLC, sign, duplicate, or empty-result defects produce `FAIL` and no raw/normalized
-data transaction. Missing expected intervals and identical overlap between page boundaries produce
-`WARN`; those observations may persist with explicit run metadata. No quality path synthesizes a
-candle.
+data transaction. Missing timestamps are evaluated through `SourceSessionProvider`: known closures
+are informational, absences while known open are warnings, and unknown historical eligibility stays
+an explicit warning. Identical page overlap also warns. No quality path synthesizes a candle.
+
+`TradingCalendarProvider` answers only reference U.S. cash-market questions. It cannot decide
+whether a Bitget instrument traded. `SourceSessionProvider` answers only source availability from
+effective-dated evidence. `SessionZeroContext` combines their typed outputs without producing fair
+value, state-model, signal, or strategy output.
 
 ## Planned after this narrow Phase 1 slice
 
-Persistent collection loops, native-equity providers, trading calendars, API expansion, and
-research remain unbuilt. The bounded command does not yet distinguish exchange closures from
-unexpected gaps. No queue, cache, scheduler, orchestration system, ML stack, or deployment
-workflow has been introduced.
+Persistent collection loops, native-equity price providers, complete historical Bitget rollout
+coverage, API expansion, and research remain unbuilt. No queue, cache, scheduler, orchestration
+system, ML stack, or deployment workflow has been introduced.

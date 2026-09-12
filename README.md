@@ -9,14 +9,15 @@ uncertainty and execution costs.
 
 ## Current status
 
-`PHASE 1 — DATA PLANE (BOUNDED HISTORY + QUALITY FOUNDATION)`
+`PHASE 1 — DATA PLANE (POINT-IN-TIME MARKET SESSION SEMANTICS)`
 
 - **BUILT:** the Phase 0 adapter/export/API/web foundation plus Alembic migrations, PostgreSQL raw
   observation and normalized-candle persistence, ingestion-run audit metadata, and a one-shot
-  idempotent, bounded Bitget history ingestion and machine-readable candle-quality checks.
+  idempotent bounded history ingestion, machine-readable candle quality, an XNYS reference
+  calendar, and evidence-backed point-in-time Bitget source-session semantics.
 - **VERIFIED:** unauthenticated instrument, ticker, current-candle, and historical-candle access on
   2026-09-12. Reality depth and platform fills are gated.
-- **PLANNED:** broader ingestion, collectors, reference providers, and all quantitative layers.
+- **PLANNED:** broader ingestion, collectors, native-equity providers, and all quantitative layers.
 - **NOT BUILT:** fair value, state, confidence, gap, conviction, backtesting, and execution.
 
 The locked eventual pipeline is `SENSE → FAIR VALUE → STATE → GAP → CONVICTION → EXECUTE`.
@@ -100,7 +101,15 @@ The command is one-shot, not a collector. It enforces a UTC `[start, end)` range
 days, walks backward with an explicit maximum-page guard, clips provider boundary spillover, sorts
 and deduplicates the result, and prints a structured quality report. Repeating it creates another
 run and raw audit records, but the database uniqueness constraint prevents duplicate normalized
-candles. Missing timestamps are reported and never filled or interpolated.
+candles. Missing timestamps are reported and never filled or interpolated. Missing intervals are
+classified as verified source closure, missing while expected open, or unknown source availability;
+the current instrument universe is never assumed to have inherited present-day 24/7 support.
+
+Reference cash sessions and Bitget source availability are separate. The XNYS reference calendar
+uses pinned `exchange-calendars==4.13.2` for DST, holidays, early closes, previous closes, and next
+opens. A version-controlled provenance dataset supplies only cited Bitget capability periods.
+Session Zero is `ACTIVE` only while cash is closed and at least one qualifying source is known to
+be available; uncertainty remains `UNKNOWN`.
 
 ## Checks
 

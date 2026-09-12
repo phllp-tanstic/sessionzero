@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from bisect import bisect_right
 from collections import Counter
 from collections.abc import Sequence
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from itertools import pairwise
 
+from sessionzero_market_data import SourceAvailabilityState, SourceSessionProvider
 from sessionzero_schemas import (
     CandleQualityReport,
     QualityIssue,
@@ -73,6 +75,7 @@ def evaluate_candle_quality(
     pagination_error_code: str | None = None,
     overlap_duplicate_count: int = 0,
     overlap_duplicate_examples: Sequence[datetime] = (),
+    source_session_provider: SourceSessionProvider | None = None,
 ) -> tuple[tuple[CandleObservation, ...], CandleQualityReport]:
     step = INTERVAL_DURATIONS[interval]
     identities = [_identity(item) for item in observations]
@@ -122,11 +125,28 @@ def evaluate_candle_quality(
             negative_turnover.append(candle.event_time)
 
     event_times = [item.candle.event_time for item in accepted]
-    unexpected_spacing = [
-        current for previous, current in pairwise(event_times) if current - previous != step
-    ]
     expected = _expected_times(requested_start, requested_end, step)
-    missing = sorted(set(expected).difference(event_times))
+    absent = sorted(set(expected).difference(event_times))
+    missing: list[datetime] = []
+    expected_closures: list[datetime] = []
+    unknown_sessions: list[datetime] = []
+    for timestamp in absent:
+        availability = (
+            SourceAvailabilityState.UNKNOWN
+            if source_session_provider is None
+            else source_session_provider.session_at(symbol, timestamp).availability
+        )
+        if availability == SourceAvailabilityState.EXPECTED_OPEN:
+            missing.append(timestamp)
+        elif availability == SourceAvailabilityState.EXPECTED_CLOSED:
+            expected_closures.append(timestamp)
+        else:
+            unknown_sessions.append(timestamp)
+    unexpected_spacing = [
+        current
+        for previous, current in pairwise(event_times)
+        if (index := bisect_right(missing, previous)) < len(missing) and missing[index] < current
+    ]
 
     issues = [
         _issue("DUPLICATE_TIMESTAMP", QualitySeverity.ERROR, duplicate_times),
@@ -136,8 +156,10 @@ def evaluate_candle_quality(
         _issue("NON_POSITIVE_PRICE", QualitySeverity.ERROR, non_positive),
         _issue("NEGATIVE_VOLUME", QualitySeverity.ERROR, negative_volume),
         _issue("NEGATIVE_TURNOVER", QualitySeverity.ERROR, negative_turnover),
-        _issue("MISSING_CANDLE", QualitySeverity.WARNING, missing),
+        _issue("MISSING_WHILE_EXPECTED_OPEN", QualitySeverity.WARNING, missing),
         _issue("UNEXPECTED_INTERVAL_SPACING", QualitySeverity.WARNING, unexpected_spacing),
+        _issue("EXPECTED_SOURCE_CLOSURE", QualitySeverity.INFO, expected_closures),
+        _issue("SOURCE_SESSION_UNKNOWN", QualitySeverity.WARNING, unknown_sessions),
         _issue(
             "OVERLAPPING_PAGE_DUPLICATE",
             QualitySeverity.WARNING,
@@ -157,7 +179,7 @@ def evaluate_candle_quality(
     filtered_issues = tuple(issue for issue in issues if issue is not None)
     if any(issue.severity == QualitySeverity.ERROR for issue in filtered_issues):
         status = QualityStatus.FAIL
-    elif filtered_issues:
+    elif any(issue.severity == QualitySeverity.WARNING for issue in filtered_issues):
         status = QualityStatus.WARN
     else:
         status = QualityStatus.PASS
@@ -175,6 +197,10 @@ def evaluate_candle_quality(
         expected_candles=len(expected),
         missing_count=len(missing),
         missing_examples=tuple(missing[:MAX_ISSUE_EXAMPLES]),
+        expected_source_closure_count=len(expected_closures),
+        expected_source_closure_examples=tuple(expected_closures[:MAX_ISSUE_EXAMPLES]),
+        source_session_unknown_count=len(unknown_sessions),
+        source_session_unknown_examples=tuple(unknown_sessions[:MAX_ISSUE_EXAMPLES]),
         duplicate_count=len(duplicate_times) + overlap_duplicate_count,
         out_of_order_count=len(out_of_order),
         unexpected_spacing_count=len(unexpected_spacing),

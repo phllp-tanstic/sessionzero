@@ -6,6 +6,11 @@ from decimal import Decimal
 import pytest
 from sessionzero_bitget import CandleObservation, HistoryPaginationError, fetch_bounded_history
 from sessionzero_bitget.quality import evaluate_candle_quality
+from sessionzero_market_data import (
+    SourceAvailabilityState,
+    SourceSessionAssessment,
+    SourceSessionMode,
+)
 from sessionzero_schemas import MarketCandle, QualityStatus
 
 START = datetime(2026, 6, 10, tzinfo=UTC)
@@ -65,7 +70,26 @@ class PageClient:
         return self.pages.pop(0)
 
 
-def quality(items: list[CandleObservation], *, end_hour: int = 3):
+class StaticSourceSessionProvider:
+    def __init__(self, state: SourceAvailabilityState) -> None:
+        self.state = state
+
+    def session_at(self, symbol: str, timestamp: datetime) -> SourceSessionAssessment:
+        return SourceSessionAssessment(
+            symbol=symbol,
+            as_of=timestamp,
+            availability=self.state,
+            session_mode=SourceSessionMode.TWENTY_FOUR_SEVEN,
+            reason="deterministic test provider",
+        )
+
+
+def quality(
+    items: list[CandleObservation],
+    *,
+    end_hour: int = 3,
+    state: SourceAvailabilityState = SourceAvailabilityState.EXPECTED_OPEN,
+):
     return evaluate_candle_quality(
         items,
         symbol="RTESTUSDT",
@@ -73,6 +97,7 @@ def quality(items: list[CandleObservation], *, end_hour: int = 3):
         requested_start=START,
         requested_end=START + end_hour * STEP,
         page_count=1,
+        source_session_provider=StaticSourceSessionProvider(state),
     )
 
 
@@ -183,7 +208,10 @@ def test_empty_result_has_machine_readable_failure() -> None:
     assert result.observations == ()
     assert result.quality.empty_result is True
     assert result.quality.quality_status == QualityStatus.FAIL
-    assert {issue.code for issue in result.quality.issues} >= {"EMPTY_RESULT", "MISSING_CANDLE"}
+    assert {issue.code for issue in result.quality.issues} >= {
+        "EMPTY_RESULT",
+        "SOURCE_SESSION_UNKNOWN",
+    }
 
 
 def test_missing_interval_warns_without_creating_or_filling_a_candle() -> None:
@@ -237,3 +265,29 @@ def test_missing_examples_are_bounded_and_never_synthesized() -> None:
     assert len(accepted) == 1
     assert report.missing_count == 29
     assert len(report.missing_examples) == 10
+
+
+def test_expected_source_closure_is_not_a_missing_data_defect() -> None:
+    accepted, report = quality(
+        [observation(0), observation(2)],
+        state=SourceAvailabilityState.EXPECTED_CLOSED,
+    )
+    assert len(accepted) == 2
+    assert report.missing_count == 0
+    assert report.expected_source_closure_count == 1
+    assert report.source_session_unknown_count == 0
+    assert report.unexpected_spacing_count == 0
+    assert report.quality_status == QualityStatus.PASS
+
+
+def test_unknown_source_session_remains_explicit_without_synthetic_candle() -> None:
+    accepted, report = quality(
+        [observation(0), observation(2)],
+        state=SourceAvailabilityState.UNKNOWN,
+    )
+    assert len(accepted) == 2
+    assert report.missing_count == 0
+    assert report.expected_source_closure_count == 0
+    assert report.source_session_unknown_count == 1
+    assert report.quality_status == QualityStatus.WARN
+    assert "SOURCE_SESSION_UNKNOWN" in {issue.code for issue in report.issues}

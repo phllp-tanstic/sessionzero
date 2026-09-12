@@ -4,6 +4,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 
+from sessionzero_market_data import SourceSessionProvider
 from sessionzero_schemas import CandleQualityReport
 
 from .client import REALITY_INTERVALS, BitgetMarketClient, CandleObservation
@@ -56,6 +57,7 @@ def _pagination_failure(
     end: datetime,
     page_count: int,
     records_received: int,
+    source_session_provider: SourceSessionProvider | None,
 ) -> HistoryPaginationError:
     _, report = evaluate_candle_quality(
         observations,
@@ -68,6 +70,7 @@ def _pagination_failure(
         pagination_error_count=1,
         stale_pagination_count=int(code == "PAGINATION_NO_PROGRESS"),
         pagination_error_code=code,
+        source_session_provider=source_session_provider,
     )
     return HistoryPaginationError(code, message, report)
 
@@ -81,6 +84,7 @@ def fetch_bounded_history(
     end: datetime,
     page_limit: int = 100,
     max_pages: int = 100,
+    source_session_provider: SourceSessionProvider | None = None,
 ) -> BoundedHistoryResult:
     start, end = _require_bounded_range(start, end)
     if interval not in REALITY_INTERVALS:
@@ -106,6 +110,7 @@ def fetch_bounded_history(
                 end=end,
                 page_count=len(pages_newest_first),
                 records_received=records_received,
+                source_session_provider=source_session_provider,
             )
         page = client.get_candle_observation_page(
             symbol,
@@ -132,6 +137,7 @@ def fetch_bounded_history(
                 end=end,
                 page_count=len(pages_newest_first),
                 records_received=records_received,
+                source_session_provider=source_session_provider,
             )
         if oldest <= start or len(page) < page_limit:
             break
@@ -166,5 +172,6 @@ def fetch_bounded_history(
         records_received=records_received,
         overlap_duplicate_count=len(overlap_examples),
         overlap_duplicate_examples=overlap_examples,
+        source_session_provider=source_session_provider,
     )
     return BoundedHistoryResult(observations=observations, quality=report)

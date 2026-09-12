@@ -9,6 +9,7 @@ description = "SessionZero market-data and PostgreSQL persistence foundation"
 requires-python = ">=3.12"
 dependencies = [
   "alembic==1.16.5",
+  "exchange-calendars==4.13.2",
   "fastapi==0.141.1",
   "httpx==0.28.1",
   "psycopg[binary]==3.2.10",
@@ -31,7 +32,10 @@ sessionzero-ingest-bitget-history = "sessionzero_database.cli:main"
 sessionzero-collector = "sessionzero_collector.main:main"
 
 [tool.setuptools.packages.find]
-where = ["packages/bitget", "packages/schemas", "packages/config", "packages/database", "services/api", "services/collector"]
+where = ["packages/bitget", "packages/schemas", "packages/config", "packages/database", "packages/market_data", "services/api", "services/collector"]
+
+[tool.setuptools.package-data]
+sessionzero_market_data = ["data/*.json"]
 
 [tool.pytest.ini_options]
 addopts = "-ra"

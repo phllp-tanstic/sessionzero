@@ -72,6 +72,19 @@ non-positive prices, negative quantities, pagination failure, and empty results 
 not persisted. Missing regular intervals, unexpected spacing, and identical page overlap are
 `WARN`; they may persist only with explicit quality metadata. Missing data is never filled.
 
-This slice deliberately treats every regular UTC interval as expected. Without a trading calendar,
-closures can therefore produce warnings. That conservative limitation is visible rather than
-encoded as an unverified market-hours assumption.
+ADR-010 replaces the original calendar-naive expected-interval policy while preserving ADR-009's
+validation-before-persistence and no-fill decisions.
+
+## ADR-010 — Reference sessions and source availability are separate point-in-time facts
+
+Status: **ACCEPTED**
+
+The reference U.S. cash calendar and a SessionZero source's expected availability have separate
+provider interfaces. XNYS rules determine regular sessions, holidays, early closes, and adjacent
+cash-session boundaries. They do not imply that a Bitget rToken was open or closed. Effective-dated,
+cited Bitget capability records determine source availability and resolve to `UNKNOWN` when evidence
+does not cover the symbol and timestamp.
+
+Gap validation consults source availability: `EXPECTED_CLOSED` is informational,
+`EXPECTED_OPEN` makes an absent candle a data-quality warning, and `UNKNOWN` remains visible. This
+prevents both false feed-failure claims and retroactive application of current 24/7 marketing.

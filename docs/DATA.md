@@ -49,6 +49,58 @@ backward by setting the next `endTime` to the oldest returned event time, reject
 enforces a caller-controlled maximum page count, and independently clips the final dataset to UTC
 `[start, end)`.
 
+## Reference and source-session verification — 2026-09-12
+
+Reference cash-market sources:
+
+- NYSE official hours and holidays: https://www.nyse.com/trade/hours-calendars. Core trading is
+  9:30 a.m.–4:00 p.m. Eastern. The 2026 calendar marks June 19 as closed and November 27 and
+  December 24 as 1:00 p.m. Eastern early closes.
+- Nasdaq official U.S. holiday schedule:
+  https://www.nasdaq.com/market-activity/stock-market-holiday-schedule. It independently confirms
+  the 2026 Juneteenth closure, 9:30 a.m.–4:00 p.m. Eastern regular hours, and the November 27 and
+  December 24 early closes.
+- Maintained implementation: https://pypi.org/project/exchange-calendars/ at pinned version
+  `4.13.2`, using its `XNYS` calendar. Deterministic checks match the official dates above and
+  verify the U.S. DST shift from a 14:30 UTC open on March 6, 2026 to 13:30 UTC on March 9.
+
+Bitget source-session evidence:
+
+- The official rToken trading-hours article, published `2026-06-23 07:39`, states a general 24/5
+  extended schedule and warns that weekend and U.S. holiday access may be limited:
+  https://www.bitget.com/support/articles/12560603887176. SessionZero conservatively uses its
+  publication timestamp as the earliest supported evidence boundary and does not project it back.
+- The official rollout published `2026-07-17 03:40` adds 22 named rTokens, including `rMRNA`, to
+  weekend/24/7 trading and explains DST-aware weekend operation:
+  https://www.bitget.com/support/articles/12560603889487. It establishes an effective transition
+  for `RMRNAUSDT`; it does not establish RAAL eligibility or retroactively cover earlier dates.
+- Bitget's current campaign page says rTokens are now 24/7, but it has no symbol-level historical
+  effective dates: https://www.bitget.com/campaigns/bitget-rtoken. It is current marketing evidence,
+  not authority for historical eligibility.
+
+The curated capability records live in
+`packages/market_data/sessionzero_market_data/data/bitget_source_sessions.json`. Each record has
+symbol, effective bounds, session mode, source, evidence URL, verification timestamp, and notes.
+Wildcard 24/5 evidence cannot prove that an unlisted symbol lacked a separate weekend exception;
+such weekend assessments remain `UNKNOWN`. Holiday availability also remains unknown unless an
+announcement explicitly establishes it.
+
+### Historical window reinterpretation
+
+The real `RAALUSDT` `1H` window `[2026-06-10T00:00:00Z, 2026-06-24T00:00:00Z)` still contains 216
+candles over 336 interval boundaries. All 120 absent hours predate the earliest RAAL-applicable
+cited session evidence. They are now `SOURCE_SESSION_UNKNOWN`: 0 proven expected closures, 0 proven
+missing-while-open intervals, and 120 unknown. Their alignment with weekends and Juneteenth is
+not promoted into a source-closure claim.
+
+For comparison, the evidenced post-rollout `RMRNAUSDT` weekend
+`[2026-07-18T00:00:00Z, 2026-07-20T00:00:00Z)` has 48 expected 24/7 hourly intervals. The live API
+returned 48 rows but only 2 were inside the requested range (`2026-07-18T13:00:00Z` and
+`2026-07-19T14:00:00Z`); 46 boundary-spillover rows were clipped. The quality result therefore
+reports 46 `MISSING_WHILE_EXPECTED_OPEN` intervals and `FAIL`. An independent read-only `bgc`
+request reproduced the same provider rows. A documented ability to trade does not guarantee an
+hourly candle when no qualifying trade prints.
+
 ## Direct API / Agent Hub cross-check
 
 Official Agent Hub source: https://github.com/Bitget-AI/agent-cli
@@ -152,10 +204,12 @@ out-of-order timestamps, boundary spillover, empty datasets, impossible OHLC rel
 non-positive prices, and negative volume/turnover are failures.
 
 Expected timestamps are regular UTC multiples of the requested interval within `[start, end)`.
-Missing timestamps and unexpected spacing produce `WARN`, with total counts and at most ten example
-timestamps. Missing candles remain `MISSING`: there is no forward fill, interpolation, or synthetic
-zero-volume record. Null volume or turnover is valid because Bitget documents those fields as
-possibly absent for older Reality history.
+Each absent timestamp is classified through point-in-time source evidence:
+`EXPECTED_SOURCE_CLOSURE` is informational and not a gap; `MISSING_WHILE_EXPECTED_OPEN` is a
+warning; and `SOURCE_SESSION_UNKNOWN` is a warning that cannot be silently resolved either way.
+Totals and at most ten examples are emitted per class. There is no forward fill, interpolation, or
+synthetic zero-volume record. Null volume or turnover remains valid because Bitget documents those
+fields as possibly absent for older Reality history.
 
 Quality validation occurs before persistence. `FAIL` datasets are returned as structured evidence
 and do not enter the raw/normalized transaction. `PASS` and `WARN` datasets persist through the

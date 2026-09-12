@@ -11,6 +11,7 @@ from sessionzero_bitget import (
     fetch_bounded_history,
 )
 from sessionzero_config import get_settings
+from sessionzero_market_data import CuratedBitgetSourceSessionProvider
 from sessionzero_schemas import QualityStatus
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -69,6 +70,7 @@ def main() -> None:
                 end=args.end,
                 page_limit=args.page_limit,
                 max_pages=args.max_pages,
+                source_session_provider=CuratedBitgetSourceSessionProvider(),
             )
         if history.quality.quality_status == QualityStatus.FAIL:
             print(

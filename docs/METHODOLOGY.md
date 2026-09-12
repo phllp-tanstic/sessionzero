@@ -7,10 +7,15 @@ provider's `isReality=yes` metadata. Market values are parsed as decimal strings
 timezone-aware UTC datetimes, and missing values remain missing.
 
 Bounded candle history uses explicit `[start, end)` semantics and deterministic ascending output.
-The quality gate compares observed timestamps with every regular UTC interval in that range. Until
-a trading calendar exists, expected market closures are still reported as missing warnings rather
-than silently excused. Warnings do not create synthetic data; structural/value failures reject the
-dataset before persistence.
+The quality gate compares observations with regular interval boundaries, then uses point-in-time
+source-session evidence to classify each absence. A known source closure is not a gap; a missing
+interval while the source was expected open remains a defect; and insufficient historical evidence
+stays unknown. None of these states creates a synthetic candle.
+
+The XNYS cash calendar and Bitget source availability are independent inputs. Cash-market closure
+alone does not make Session Zero active: at least one qualifying source must be known available.
+Present-day trading capabilities are never projected backward. These are deterministic temporal
+primitives, not Discovery State, Fair Value, Confidence, Gap, or a trading signal.
 
 No predictive hypothesis is tested and no performance metric is reported in this phase.
 

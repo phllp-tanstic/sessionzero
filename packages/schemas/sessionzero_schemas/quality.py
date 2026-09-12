@@ -13,6 +13,7 @@ class QualityStatus(StrEnum):
 
 
 class QualitySeverity(StrEnum):
+    INFO = "INFO"
     WARNING = "WARNING"
     ERROR = "ERROR"
 
@@ -41,6 +42,10 @@ class CandleQualityReport(BaseModel):
     expected_candles: int = Field(ge=0)
     missing_count: int = Field(ge=0)
     missing_examples: tuple[datetime, ...] = ()
+    expected_source_closure_count: int = Field(ge=0)
+    expected_source_closure_examples: tuple[datetime, ...] = ()
+    source_session_unknown_count: int = Field(ge=0)
+    source_session_unknown_examples: tuple[datetime, ...] = ()
     duplicate_count: int = Field(ge=0)
     out_of_order_count: int = Field(ge=0)
     unexpected_spacing_count: int = Field(ge=0)
