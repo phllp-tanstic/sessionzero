@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import uuid
+
 import pytest
 from alembic import command
 from alembic.config import Config
@@ -22,8 +24,32 @@ def test_upgrade_downgrade_and_restore(alembic_config: Config) -> None:
         }
         with engine.connect() as connection:
             assert connection.scalar(text("SELECT version_num FROM alembic_version")) == (
-                "20260912_01"
+                "20260912_02"
             )
+        command.downgrade(alembic_config, "20260912_01")
+        legacy_run_id = uuid.uuid4()
+        with engine.begin() as connection:
+            connection.execute(
+                text(
+                    "INSERT INTO ingestion_runs "
+                    "(run_id, provider, operation, started_at, finished_at, status, "
+                    "records_received, records_written) "
+                    "VALUES (:run_id, 'legacy', 'history_candles', now(), now(), "
+                    "'SUCCEEDED', 0, 0)"
+                ),
+                {"run_id": legacy_run_id},
+            )
+        command.upgrade(alembic_config, "head")
+        with engine.connect() as connection:
+            preserved = connection.execute(
+                text(
+                    "SELECT quality_status, pages_requested FROM ingestion_runs "
+                    "WHERE run_id = :run_id"
+                ),
+                {"run_id": legacy_run_id},
+            ).one()
+        assert preserved.quality_status is None
+        assert preserved.pages_requested is None
         command.downgrade(alembic_config, "base")
         assert set(inspect(engine).get_table_names()).isdisjoint(
             {"ingestion_runs", "raw_market_observations", "normalized_market_candles"}

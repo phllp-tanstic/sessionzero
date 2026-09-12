@@ -13,11 +13,15 @@ FastAPI service
         v
 Bitget UTA v3 public market API
 
-One-shot history ingestion
+Bounded one-shot history ingestion
         |
-        +-- raw provider row (JSONB) --------+
-        |                                    |
-        +-- validated MarketCandle ----------+--> PostgreSQL
+        +-- bounded backward page traversal
+        +-- raw provider rows
+        +-- existing MarketCandle normalization
+        +-- deterministic quality gate
+        |       +-- FAIL: report, no data commit
+        |       +-- PASS/WARN
+        +----------------------------------------> PostgreSQL
                                                    ingestion_runs
                                                    raw_market_observations
                                                    normalized_market_candles
@@ -29,9 +33,10 @@ production code.
 
 ## Components
 
-- `packages/schemas`: strict internal Pydantic market and capability contracts.
+- `packages/schemas`: strict internal Pydantic market, capability, and quality contracts.
 - `packages/config`: validated environment configuration.
 - `packages/bitget`: read-only UTA v3 client, normalization, errors, capabilities, verification CLI.
+  Its history module owns bounded time pagination and candle-series quality evaluation.
 - `packages/database`: PostgreSQL engine boundary, mapped persistence tables, transactional write
   service, and one-shot ingestion CLI.
 - `services/api`: FastAPI health, capability, and discovered-market routes.
@@ -49,8 +54,15 @@ Raw and normalized records plus successful finalization then commit atomically. 
 write error that transaction rolls back and the run is finalized `FAILED` separately with zero
 records written.
 
+Historical retrieval validates dataset-level quality before persistence. Critical timestamp,
+pagination, OHLC, sign, duplicate, or empty-result defects produce `FAIL` and no raw/normalized
+data transaction. Missing expected intervals and identical overlap between page boundaries produce
+`WARN`; those observations may persist with explicit run metadata. No quality path synthesizes a
+candle.
+
 ## Planned after this narrow Phase 1 slice
 
-Persistent collection loops, native-equity providers, calendars, backfills, data-quality
-processing, API expansion, and research remain unbuilt. No queue, cache, scheduler, orchestration
-system, ML stack, or deployment workflow has been introduced.
+Persistent collection loops, native-equity providers, trading calendars, API expansion, and
+research remain unbuilt. The bounded command does not yet distinguish exchange closures from
+unexpected gaps. No queue, cache, scheduler, orchestration system, ML stack, or deployment
+workflow has been introduced.

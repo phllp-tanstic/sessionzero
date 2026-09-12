@@ -9,11 +9,11 @@ uncertainty and execution costs.
 
 ## Current status
 
-`PHASE 1 — DATA PLANE (POSTGRESQL PERSISTENCE FOUNDATION)`
+`PHASE 1 — DATA PLANE (BOUNDED HISTORY + QUALITY FOUNDATION)`
 
 - **BUILT:** the Phase 0 adapter/export/API/web foundation plus Alembic migrations, PostgreSQL raw
   observation and normalized-candle persistence, ingestion-run audit metadata, and a one-shot
-  idempotent Bitget history ingestion command.
+  idempotent, bounded Bitget history ingestion and machine-readable candle-quality checks.
 - **VERIFIED:** unauthenticated instrument, ticker, current-candle, and historical-candle access on
   2026-09-12. Reality depth and platform fills are gated.
 - **PLANNED:** broader ingestion, collectors, reference providers, and all quantitative layers.
@@ -84,19 +84,23 @@ validated `MarketCandle`. The command fails before publishing on discovery, prov
 empty-range errors and refuses to replace an existing file unless `--overwrite` is explicit.
 Generated files under `artifacts/` are runtime data and are ignored by Git.
 
-Persist a small real, dynamically validated Reality history window:
+Persist a bounded, dynamically validated Reality history window across multiple pages:
 
 ```bash
 .venv/bin/sessionzero-ingest-bitget-history \
   --symbol RAALUSDT \
   --interval 1H \
   --start 2026-06-10T00:00:00Z \
-  --end 2026-06-10T06:00:00Z \
-  --limit 10
+  --end 2026-06-24T00:00:00Z \
+  --page-limit 100 \
+  --max-pages 10
 ```
 
-The command is one-shot, not a collector. Repeating it creates another run and raw audit records,
-but the database uniqueness constraint prevents duplicate normalized candles.
+The command is one-shot, not a collector. It enforces a UTC `[start, end)` range of at most 90
+days, walks backward with an explicit maximum-page guard, clips provider boundary spillover, sorts
+and deduplicates the result, and prints a structured quality report. Repeating it creates another
+run and raw audit records, but the database uniqueness constraint prevents duplicate normalized
+candles. Missing timestamps are reported and never filled or interpolated.
 
 ## Checks
 

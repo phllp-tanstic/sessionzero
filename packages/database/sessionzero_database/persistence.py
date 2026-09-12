@@ -27,7 +27,16 @@ class IngestionResult:
 
 
 def _create_run(
-    engine: Engine, *, provider: str, operation: str, started_at: datetime
+    engine: Engine,
+    *,
+    provider: str,
+    operation: str,
+    started_at: datetime,
+    requested_start: datetime | None,
+    requested_end: datetime | None,
+    interval: str | None,
+    pages_requested: int | None,
+    quality_status: str | None,
 ) -> uuid.UUID:
     run_id = uuid.uuid4()
     with engine.begin() as connection:
@@ -40,6 +49,11 @@ def _create_run(
                 status="RUNNING",
                 records_received=0,
                 records_written=0,
+                requested_start=requested_start,
+                requested_end=requested_end,
+                interval=interval,
+                pages_requested=pages_requested,
+                quality_status=quality_status,
             )
         )
     return run_id
@@ -107,12 +121,30 @@ def ingest_candle_observations(
     provider: str = "bitget",
     operation: str = "history_candles",
     clock: Clock = _utc_now,
+    records_received: int | None = None,
+    requested_start: datetime | None = None,
+    requested_end: datetime | None = None,
+    interval: str | None = None,
+    pages_requested: int | None = None,
+    quality_status: str | None = None,
 ) -> IngestionResult:
     if not observations:
         raise ValueError("at least one candle observation is required")
+    received = len(observations) if records_received is None else records_received
+    if received < len(observations):
+        raise ValueError("records_received cannot be smaller than unique observations")
     started_at = clock()
-    run_id = _create_run(engine, provider=provider, operation=operation, started_at=started_at)
-    received = len(observations)
+    run_id = _create_run(
+        engine,
+        provider=provider,
+        operation=operation,
+        started_at=started_at,
+        requested_start=requested_start,
+        requested_end=requested_end,
+        interval=interval,
+        pages_requested=pages_requested,
+        quality_status=quality_status,
+    )
     try:
         with engine.begin() as connection:
             raw_result = connection.execute(

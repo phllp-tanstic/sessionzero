@@ -31,6 +31,14 @@ class IngestionRun(Base):
         CheckConstraint("status IN ('RUNNING', 'SUCCEEDED', 'FAILED')", name="ck_run_status"),
         CheckConstraint("records_received >= 0", name="ck_run_records_received_nonnegative"),
         CheckConstraint("records_written >= 0", name="ck_run_records_written_nonnegative"),
+        CheckConstraint(
+            "pages_requested IS NULL OR pages_requested >= 1",
+            name="ck_run_pages_requested_positive",
+        ),
+        CheckConstraint(
+            "quality_status IS NULL OR quality_status IN ('PASS', 'WARN', 'FAIL')",
+            name="ck_run_quality_status",
+        ),
     )
 
     run_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
@@ -42,6 +50,11 @@ class IngestionRun(Base):
     records_received: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     records_written: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     error_code: Mapped[str | None] = mapped_column(String(128))
+    requested_start: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    requested_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    interval: Mapped[str | None] = mapped_column(String(16))
+    pages_requested: Mapped[int | None] = mapped_column(Integer)
+    quality_status: Mapped[str | None] = mapped_column(String(16))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )

@@ -111,6 +111,17 @@ def test_candle_observation_preserves_raw_provider_row() -> None:
     assert observation.candle.close == Decimal("10.5")
 
 
+def test_empty_candle_page_is_available_to_bounded_pagination() -> None:
+    payload = {"code": "00000", "msg": "success", "requestTime": 1, "data": []}
+    with client_for(lambda _request: response(payload)) as client:
+        assert client.get_candle_observation_page("RTESTUSDT", historical=True) == []
+    with (
+        client_for(lambda _request: response(payload)) as client,
+        pytest.raises(BitgetProviderError, match="no candles"),
+    ):
+        client.get_candles("RTESTUSDT", historical=True)
+
+
 @pytest.mark.parametrize(
     ("payload", "kind"),
     [

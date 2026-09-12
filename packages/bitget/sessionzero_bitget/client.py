@@ -217,6 +217,30 @@ class BitgetMarketClient:
         start_time_ms: int | None = None,
         end_time_ms: int | None = None,
     ) -> list[CandleObservation]:
+        observations = self.get_candle_observation_page(
+            symbol,
+            interval=interval,
+            limit=limit,
+            historical=historical,
+            start_time_ms=start_time_ms,
+            end_time_ms=end_time_ms,
+        )
+        if not observations:
+            raise BitgetProviderError(
+                kind="UPSTREAM_EMPTY_RESULT", message="Bitget returned no candles"
+            )
+        return sorted(observations, key=lambda item: item.candle.event_time)
+
+    def get_candle_observation_page(
+        self,
+        symbol: str,
+        *,
+        interval: str = "1H",
+        limit: int = 100,
+        historical: bool = False,
+        start_time_ms: int | None = None,
+        end_time_ms: int | None = None,
+    ) -> list[CandleObservation]:
         if interval not in REALITY_INTERVALS:
             raise ValueError(f"unsupported Reality interval: {interval}")
         maximum = 100 if historical else 1000
@@ -240,9 +264,7 @@ class BitgetMarketClient:
                 kind="UPSTREAM_SCHEMA_ERROR", message="Bitget candle data is not a list"
             )
         if not envelope.data:
-            raise BitgetProviderError(
-                kind="UPSTREAM_EMPTY_RESULT", message="Bitget returned no candles"
-            )
+            return []
         ingested_at = self._clock()
         try:
             observations = [
@@ -258,7 +280,7 @@ class BitgetMarketClient:
                 kind="UPSTREAM_SCHEMA_ERROR",
                 message="Bitget candle data failed validation",
             ) from exc
-        return sorted(observations, key=lambda item: item.candle.event_time)
+        return observations
 
     @staticmethod
     def _normalize_instrument(item: Any, ingested_at: datetime) -> MarketInstrument:

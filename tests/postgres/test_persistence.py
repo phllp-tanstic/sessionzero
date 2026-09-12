@@ -4,7 +4,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 
 import pytest
-from sessionzero_bitget import CandleObservation
+from sessionzero_bitget import CandleObservation, fetch_bounded_history
 from sessionzero_database import (
     IngestionRun,
     NormalizedMarketCandle,
@@ -152,3 +152,66 @@ def test_nullable_and_non_null_quantities_round_trip(database_engine: Engine) ->
         candle = connection.execute(select(NormalizedMarketCandle)).one()
     assert candle.volume == Decimal("0.000000000000000000000000000001")
     assert candle.turnover == Decimal("123.456789012345678901234567890123")
+
+
+class _PageClient:
+    def __init__(self) -> None:
+        self.pages = [
+            [observation_at(3), observation_at(4)],
+            [observation_at(2), observation_at(3)],
+            [observation_at(0), observation_at(1)],
+        ]
+
+    def get_candle_observation_page(self, _symbol: str, **_kwargs: object):
+        return self.pages.pop(0)
+
+
+def observation_at(hour: int) -> CandleObservation:
+    base = observation()
+    event_time = EVENT_TIME.replace(hour=hour)
+    row = list(base.payload)
+    row[0] = str(int(event_time.timestamp() * 1000))
+    return CandleObservation(
+        payload=row,
+        endpoint=base.endpoint,
+        candle=base.candle.model_copy(update={"event_time": event_time}),
+    )
+
+
+@pytest.mark.postgres
+def test_paginated_quality_metadata_and_idempotency(database_engine: Engine) -> None:
+    history = fetch_bounded_history(  # type: ignore[arg-type]
+        _PageClient(),
+        symbol="RTESTUSDT",
+        interval="1H",
+        start=EVENT_TIME,
+        end=EVENT_TIME.replace(hour=5),
+        page_limit=2,
+        max_pages=3,
+    )
+    kwargs = {
+        "operation": "bounded_history_candles",
+        "records_received": history.quality.records_received,
+        "requested_start": history.quality.requested_start,
+        "requested_end": history.quality.requested_end,
+        "interval": history.quality.interval,
+        "pages_requested": history.quality.page_count,
+        "quality_status": history.quality.quality_status.value,
+    }
+    first = ingest_candle_observations(database_engine, history.observations, **kwargs)
+    second = ingest_candle_observations(database_engine, history.observations, **kwargs)
+    with database_engine.connect() as connection:
+        runs = connection.execute(select(IngestionRun).order_by(IngestionRun.started_at)).all()
+        raw_count = connection.scalar(select(func.count()).select_from(RawMarketObservation))
+        normalized_count = connection.scalar(
+            select(func.count()).select_from(NormalizedMarketCandle)
+        )
+    assert first.records_received == 6
+    assert first.raw_records_written == 5
+    assert first.normalized_records_written == 5
+    assert second.normalized_records_written == 0
+    assert raw_count == 10
+    assert normalized_count == 5
+    assert all(run.pages_requested == 3 for run in runs)
+    assert all(run.quality_status == "WARN" for run in runs)
+    assert all(run.requested_start == EVENT_TIME for run in runs)

@@ -4,8 +4,14 @@ import argparse
 import json
 from datetime import UTC, datetime, timedelta
 
-from sessionzero_bitget import BitgetMarketClient, BitgetProviderError
+from sessionzero_bitget import (
+    BitgetMarketClient,
+    BitgetProviderError,
+    HistoryPaginationError,
+    fetch_bounded_history,
+)
 from sessionzero_config import get_settings
+from sessionzero_schemas import QualityStatus
 from sqlalchemy.exc import SQLAlchemyError
 
 from .engine import create_database_engine, verify_database_connection
@@ -27,7 +33,8 @@ def main() -> None:
     parser.add_argument("--end", required=True, type=_parse_utc)
     parser.add_argument("--symbol")
     parser.add_argument("--interval", default="1H")
-    parser.add_argument("--limit", type=int, default=100)
+    parser.add_argument("--page-limit", "--limit", dest="page_limit", type=int, default=100)
+    parser.add_argument("--max-pages", type=int, default=100)
     args = parser.parse_args()
     if args.start >= args.end or args.end - args.start > timedelta(days=90):
         parser.error("range must be increasing and no longer than 90 days")
@@ -54,20 +61,44 @@ def main() -> None:
                 raise ValueError(
                     "symbol is not an online Reality instrument discovered from Bitget"
                 )
-            observations = client.get_candle_observations(
-                symbol,
+            history = fetch_bounded_history(
+                client,
+                symbol=symbol,
                 interval=args.interval,
-                limit=args.limit,
-                historical=True,
-                start_time_ms=int(args.start.timestamp() * 1000),
-                end_time_ms=int(args.end.timestamp() * 1000),
+                start=args.start,
+                end=args.end,
+                page_limit=args.page_limit,
+                max_pages=args.max_pages,
             )
-        observations = [
-            item for item in observations if args.start <= item.candle.event_time < args.end
-        ]
-        if not observations:
-            raise ValueError("Bitget returned no observations inside the requested range")
-        result = ingest_candle_observations(engine, observations)
+        if history.quality.quality_status == QualityStatus.FAIL:
+            print(
+                json.dumps(
+                    {
+                        "error": {
+                            "code": "DATA_QUALITY_FAILED",
+                            "message": "bounded history failed data-quality validation",
+                        },
+                        "quality": history.quality.model_dump(mode="json"),
+                    },
+                    indent=2,
+                    sort_keys=True,
+                )
+            )
+            raise SystemExit(1)
+        result = ingest_candle_observations(
+            engine,
+            history.observations,
+            operation="bounded_history_candles",
+            records_received=history.quality.records_received,
+            requested_start=history.quality.requested_start,
+            requested_end=history.quality.requested_end,
+            interval=history.quality.interval,
+            pages_requested=history.quality.page_count,
+            quality_status=history.quality.quality_status.value,
+        )
+    except HistoryPaginationError as exc:
+        print(json.dumps(exc.as_dict(), indent=2, sort_keys=True))
+        raise SystemExit(1) from exc
     except (BitgetProviderError, SQLAlchemyError, ValueError) as exc:
         print(json.dumps({"error": {"code": "INGESTION_FAILED", "message": str(exc)}}))
         raise SystemExit(1) from exc
@@ -86,6 +117,7 @@ def main() -> None:
                 "records_received": result.records_received,
                 "raw_records_written": result.raw_records_written,
                 "normalized_records_written": result.normalized_records_written,
+                "quality": history.quality.model_dump(mode="json"),
             },
             indent=2,
             sort_keys=True,

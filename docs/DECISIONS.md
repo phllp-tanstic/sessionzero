@@ -61,3 +61,17 @@ do not overwrite normalized values until a dedicated, versioned revision policy 
 
 The run row is created independently. Raw and normalized inserts and successful run finalization
 share one transaction; a failed write rolls back both data tables before the run is marked failed.
+
+## ADR-009 — Dataset quality gates bounded historical persistence
+
+Status: **ACCEPTED**
+
+Bounded Bitget history is normalized and validated as a complete dataset before PostgreSQL writes.
+Timestamp/order/boundary defects, duplicates that survive page-overlap handling, impossible OHLC,
+non-positive prices, negative quantities, pagination failure, and empty results are `FAIL` and are
+not persisted. Missing regular intervals, unexpected spacing, and identical page overlap are
+`WARN`; they may persist only with explicit quality metadata. Missing data is never filled.
+
+This slice deliberately treats every regular UTC interval as expected. Without a trading calendar,
+closures can therefore produce warnings. That conservative limitation is visible rather than
+encoded as an unverified market-hours assumption.

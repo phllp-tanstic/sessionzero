@@ -34,6 +34,21 @@ observation, not the broad note alone.
 - Current endpoint maximum: 1,000 rows. Historical endpoint maximum: 100 rows and at most 90 days
   per requested range.
 
+### Historical pagination verification — 2026-09-12
+
+The current official history documentation defines `startTime` as data after the start, `endTime`
+as data before the end, a maximum/default limit of 100, and a maximum 90-day query range. It warns
+that an `endTime` even 1 ms beyond an interval boundary can round the calculation and return an
+additional earlier interval. It does not document response ordering or a cursor.
+
+Read-only `RAALUSDT` probes established the behavior used by this adapter: responses were ascending,
+`limit` selected the newest rows before the requested end, an aligned start timestamp was included,
+an aligned end timestamp was excluded, and a non-aligned start could be rounded down. These are
+dated observations rather than a stronger provider guarantee. SessionZero therefore paginates
+backward by setting the next `endTime` to the oldest returned event time, rejects non-progress,
+enforces a caller-controlled maximum page count, and independently clips the final dataset to UTC
+`[start, end)`.
+
 ## Direct API / Agent Hub cross-check
 
 Official Agent Hub source: https://github.com/Bitget-AI/agent-cli
@@ -114,9 +129,8 @@ Alembic revision `20260912_01` creates:
   source identity, UTC event/ingestion times, and owning run. Its per-run unique constraint prevents
   duplicate raw inserts inside one attempt while retaining each separate attempt as audit evidence.
 - `normalized_market_candles`: exact arbitrary-precision PostgreSQL `NUMERIC` OHLC, nullable
-  volume/turnover, UTC
-  `TIMESTAMPTZ`, and a database uniqueness constraint on source, symbol, market, interval, and
-  event time.
+  volume/turnover, UTC `TIMESTAMPTZ`, and a database uniqueness constraint on source, symbol,
+  market, interval, and event time.
 
 The boundary is `raw provider row → existing MarketCandle validation → normalized row`. Both data
 rows are written in one transaction. An identical/retried candle leaves the existing normalized
@@ -127,3 +141,23 @@ versioned revision model must be designed before revisions can replace canonical
 PostgreSQL `TIMESTAMPTZ` stores instants independent of display timezone. SessionZero connections
 set their session timezone to UTC, and tests verify UTC-aware round trips. Decimal input is never
 routed through binary floating point.
+
+## Bounded history quality contract
+
+The one-shot workflow accepts at most a 90-day interval and a historical page size from 1 through
+100. Pages are bounded by `max_pages`; empty responses terminate, and stale/non-progressing cursors
+or an exhausted page budget fail explicitly. Identical records repeated across adjacent pages are
+deduplicated deterministically and reported as a warning. Conflicting or same-series duplicates,
+out-of-order timestamps, boundary spillover, empty datasets, impossible OHLC relationships,
+non-positive prices, and negative volume/turnover are failures.
+
+Expected timestamps are regular UTC multiples of the requested interval within `[start, end)`.
+Missing timestamps and unexpected spacing produce `WARN`, with total counts and at most ten example
+timestamps. Missing candles remain `MISSING`: there is no forward fill, interpolation, or synthetic
+zero-volume record. Null volume or turnover is valid because Bitget documents those fields as
+possibly absent for older Reality history.
+
+Quality validation occurs before persistence. `FAIL` datasets are returned as structured evidence
+and do not enter the raw/normalized transaction. `PASS` and `WARN` datasets persist through the
+accepted transaction and idempotency contract. Migration `20260912_02` adds nullable request start,
+request end, interval, page count, and quality status to ingestion runs while preserving older rows.
