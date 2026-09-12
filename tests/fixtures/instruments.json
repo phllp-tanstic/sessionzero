@@ -1,0 +1,31 @@
+{
+  "fixture_notice": "TEST FIXTURE — NOT LIVE DATA",
+  "code": "00000",
+  "msg": "success",
+  "requestTime": 1760000000000,
+  "data": [
+    {
+      "symbol": "RTESTUSDT",
+      "category": "SPOT",
+      "baseCoin": "rTEST",
+      "quoteCoin": "USDT",
+      "status": "online",
+      "isReality": "yes",
+      "launchTime": "1750000000000",
+      "pricePrecision": "2",
+      "quantityPrecision": "4"
+    },
+    {
+      "symbol": "BTCUSDT",
+      "category": "SPOT",
+      "baseCoin": "BTC",
+      "quoteCoin": "USDT",
+      "status": "online",
+      "isReality": "no",
+      "launchTime": "1532454360000",
+      "pricePrecision": "2",
+      "quantityPrecision": "6"
+    }
+  ]
+}
+

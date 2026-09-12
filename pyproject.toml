@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sessionzero"
+version = "0.1.0"
+description = "SessionZero Phase 0 market-data foundation"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi==0.141.1",
+  "httpx==0.28.1",
+  "pydantic==2.13.5",
+  "uvicorn[standard]==0.52.4",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest==9.1.1",
+  "pytest-cov==6.2.1",
+  "ruff==0.16.7",
+]
+
+[project.scripts]
+sessionzero-verify-bitget = "sessionzero_bitget.verify:main"
+sessionzero-collector = "sessionzero_collector.main:main"
+
+[tool.setuptools.packages.find]
+where = ["packages/bitget", "packages/schemas", "packages/config", "services/api", "services/collector"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+markers = [
+  "live: opt-in tests that call an external provider",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.ruff.format]
+quote-style = "double"
