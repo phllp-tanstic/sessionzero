@@ -61,5 +61,44 @@ the application has no runtime dependency on it.
 ## Provenance and retention
 
 Normalized records include source, market/category, symbol, UTC event time where the provider
-supplies one, UTC ingestion time, and raw/derived status. Durable persistence, dataset versioning,
-availability timestamps, duplicate/gap checks, and point-in-time replay are **PLANNED** for Phase 1.
+supplies one, UTC ingestion time, and raw/derived status.
+
+### Historical export contract
+
+Run the production exporter with an explicit UTC half-open range `[start, end)`:
+
+```bash
+.venv/bin/sessionzero-export-bitget-history \
+  --symbol RAALUSDT \
+  --interval 1H \
+  --start 2026-06-10T00:00:00Z \
+  --end 2026-06-16T00:00:00Z \
+  --limit 100 \
+  --output artifacts/raalusdt-2026-06-10_2026-06-16-1h.jsonl
+```
+
+The command always discovers the Reality universe through `GET /api/v3/market/instruments` and
+accepts a requested symbol only when current metadata identifies it as an online Reality
+instrument. With no `--symbol`, it deterministically selects the lexicographically first online
+Reality symbol. It then requests real `market` candles from
+`GET /api/v3/market/history-candles`, normalizes every row through `MarketCandle`, filters to the
+requested half-open range, rejects duplicate event times, sorts ascending by `event_time`, and
+atomically publishes only a complete non-empty result. Fixtures and synthetic records are not
+production inputs.
+
+The format is canonical UTF-8 JSON Lines with one compact, key-sorted object and one LF terminator
+per normalized candle. Every object contains `source`, `symbol`, `market`, `event_time`,
+`ingestion_time`, `raw_or_derived`, `interval`, `open`, `high`, `low`, `close`, `volume`, and
+`turnover`. Times serialize in UTC. Decimal values serialize as strings to preserve decimal
+meaning. Missing provider volume or turnover serializes as JSON `null`, never zero.
+
+For identical upstream observations and a fixed ingestion clock, record ordering and serialized
+bytes are deterministic. In normal operation `ingestion_time` intentionally records the current
+ingestion run, so exports from separate runs are not expected to be byte-identical; tests compare
+market-record content independently of that field. Bitget may revise upstream observations, and
+the historical endpoint returns at most 100 records for a request of at most 90 days, so this
+exporter makes no stronger replay or completeness guarantee than that upstream response permits.
+
+Exports belong under `artifacts/`, which is ignored by Git. They must not be committed or mixed
+with deterministic test fixtures. Durable database persistence, dataset versioning, availability
+timestamps, gap checks, and point-in-time replay remain outside Phase 0.

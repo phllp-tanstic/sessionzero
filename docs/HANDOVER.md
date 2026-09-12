@@ -9,6 +9,8 @@
 - Standalone Git repository initialized on `main`.
 - Monorepo foundation, strict Python schemas/client, capability model, verification CLI, minimal API,
   minimal web shell, deterministic tests, and CI created.
+- Read-only historical Reality export publishes validated, canonical JSONL atomically under the
+  Git-ignored `artifacts/` runtime directory.
 - Official Agent Hub CLI and Codex skill installed; no credentials configured.
 
 ## Verified
@@ -17,11 +19,13 @@
 - Public Reality instruments, ticker, current candles, and historical candles accessed without auth.
 - Dedicated Reality depth and fills reject unauthenticated calls and are documented as gated.
 - Direct API and `bgc --read-only` results agree for the selected symbol.
+- Historical export discovery, retrieval, normalization, UTC ordering, provenance, nullable volume
+  and turnover, and fail-closed behavior are covered by deterministic tests and an opt-in live test.
 
 ## Failed
 
-- No acceptance check is failing. One initial dependency attempt selected a Pydantic release without
-  Python 3.14 support; pins and the hashed lock were corrected before verification.
+- No acceptance check is failing. One initial dependency attempt selected a Pydantic release
+  without Python 3.14 support; pins and the hashed lock were corrected before verification.
 
 ## Outstanding
 
@@ -32,13 +36,15 @@
 - Reality pre-2026-07-09 volume/turnover may be missing; a tested sample happened to contain both.
 - Reality depth and platform fills require authentication and whitelist access.
 - Capability evidence is a dated Phase 0 observation, not continuous monitoring.
+- Separate export runs have distinct ingestion timestamps, and Bitget may revise returned history;
+  deterministic serialization does not imply stronger reproducibility than the upstream data.
 - No persistent database or production deployment exists.
 
 ## Current services
 
 - FastAPI: `/health`, `/api/v1/capabilities`, `/api/v1/markets`.
 - Next.js: minimal API capability-status shell.
-- Collector: read-only verification entry point only.
+- Collector: read-only verification and canonical historical JSONL export entry points only.
 
 ## Environment requirements
 
@@ -57,8 +63,8 @@ explicit service URLs and exact CORS origins; see `.env.example`.
 
 ## Test counts
 
-17 deterministic tests passed with one live test deselected; the separate opt-in live test passed
-with 17 deterministic tests deselected. No TypeScript test suite exists in Phase 0.
+23 deterministic tests passed with two live tests deselected; the separate opt-in live suite passed
+with 23 deterministic tests deselected. No TypeScript test suite exists in Phase 0.
 
 ## Deployment URLs
 
@@ -66,9 +72,8 @@ with 17 deterministic tests deselected. No TypeScript test suite exists in Phase
 
 ## Latest commit
 
-`chore: initialize SessionZero production foundation` (current repository HEAD after handoff).
+`feat(data): add reproducible Reality history export` (new Phase 0 follow-up commit).
 
 ## Next exact task
 
-After Phase 0 review, implement the Phase 1 persisted Bitget collection slice with migrations,
-idempotent raw/normalized writes, and data-quality checks for one dynamically discovered symbol.
+Confirm the Phase 0 historical-export acceptance evidence. No Phase 1 work has started.

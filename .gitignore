@@ -15,5 +15,6 @@ node_modules/
 coverage/
 dist/
 build/
+artifacts/
 *.log
 *.tsbuildinfo

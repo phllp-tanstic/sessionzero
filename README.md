@@ -12,8 +12,8 @@ uncertainty and execution costs.
 `PHASE 0 — FOUNDATION + REAL BITGET VERIFICATION`
 
 - **BUILT:** strict typed Bitget UTA v3 public-market adapter, Reality discovery, ticker and candle
-  normalization, explicit capability states, minimal FastAPI routes, verification CLI, test suite,
-  minimal Next.js system shell, and secret-free CI.
+  normalization, deterministic historical JSONL export, explicit capability states, minimal
+  FastAPI routes, verification CLI, test suite, minimal Next.js system shell, and secret-free CI.
 - **VERIFIED:** unauthenticated instrument, ticker, current-candle, and historical-candle access on
   2026-09-12. Reality depth and platform fills are gated.
 - **PLANNED:** the data plane and all quantitative layers after Phase 0 review.
@@ -56,6 +56,24 @@ Read-only live verification:
 ```
 
 The command discovers the Reality universe from metadata and never falls back to fixtures.
+
+Export a discovered Reality symbol's normalized historical candles:
+
+```bash
+.venv/bin/sessionzero-export-bitget-history \
+  --symbol RAALUSDT \
+  --interval 1H \
+  --start 2026-06-10T00:00:00Z \
+  --end 2026-06-16T00:00:00Z \
+  --limit 100 \
+  --output artifacts/raalusdt-2026-06-10_2026-06-16-1h.jsonl
+```
+
+Omit `--symbol` to choose the lexicographically first online Reality instrument discovered from
+live Bitget metadata. Output is canonical UTF-8 JSONL ordered by UTC `event_time`; each line is one
+validated `MarketCandle`. The command fails before publishing on discovery, provider, schema, or
+empty-range errors and refuses to replace an existing file unless `--overwrite` is explicit.
+Generated files under `artifacts/` are runtime data and are ignored by Git.
 
 ## Checks
 
