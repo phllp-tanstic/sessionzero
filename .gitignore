@@ -18,3 +18,14 @@ build/
 artifacts/
 *.log
 *.tsbuildinfo
+
+# Internal project / AI build instructions
+SESSIONZERO_PRODUCTION_BLUEPRINT.md
+**/AGENTS.md
+**/CLAUDE.md
+docs/internal/
+.internal/
+CODEX_PROMPTS.md
+CLINE_PROMPTS.md
+TEAM_NOTES.md
+JUDGE_STRATEGY.md
