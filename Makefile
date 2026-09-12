@@ -1,4 +1,4 @@
-.PHONY: install test lint format-check typecheck build verify-live api web
+.PHONY: install test test-postgres lint format-check typecheck build verify-live migrate api web
 
 install:
 	python3 -m venv .venv
@@ -7,7 +7,13 @@ install:
 	npm ci
 
 test:
-	.venv/bin/pytest -m "not live"
+	.venv/bin/pytest -m "not live and not postgres"
+
+test-postgres:
+	.venv/bin/pytest -m postgres
+
+migrate:
+	.venv/bin/alembic upgrade head
 
 lint:
 	.venv/bin/ruff check .
@@ -30,4 +36,3 @@ api:
 
 web:
 	npm run dev:web
-

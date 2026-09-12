@@ -18,6 +18,7 @@ class Settings(BaseModel):
         "http://127.0.0.1:3000",
         "http://localhost:3000",
     )
+    database_url: str | None = None
 
     @field_validator("cors_origins")
     @classmethod
@@ -27,6 +28,22 @@ class Settings(BaseModel):
         if "*" in origins:
             raise ValueError("wildcard CORS origins are prohibited")
         return origins
+
+    @field_validator("database_url")
+    @classmethod
+    def require_postgresql(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        if not value.startswith(("postgresql://", "postgresql+psycopg://")):
+            raise ValueError("DATABASE_URL must use PostgreSQL with the psycopg driver")
+        return value
+
+    def require_database_url(self) -> str:
+        if self.database_url is None:
+            raise ValueError("DATABASE_URL is required for database operations")
+        if self.database_url.startswith("postgresql://"):
+            return self.database_url.replace("postgresql://", "postgresql+psycopg://", 1)
+        return self.database_url
 
     @classmethod
     def from_env(cls) -> Settings:
@@ -44,6 +61,7 @@ class Settings(BaseModel):
             bitget_timeout_seconds=os.getenv("BITGET_HTTP_TIMEOUT_SECONDS", "10"),
             bitget_max_retries=os.getenv("BITGET_HTTP_MAX_RETRIES", "2"),
             cors_origins=origins,
+            database_url=os.getenv("DATABASE_URL"),
         )
 
 

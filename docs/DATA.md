@@ -100,5 +100,30 @@ the historical endpoint returns at most 100 records for a request of at most 90 
 exporter makes no stronger replay or completeness guarantee than that upstream response permits.
 
 Exports belong under `artifacts/`, which is ignored by Git. They must not be committed or mixed
-with deterministic test fixtures. Durable database persistence, dataset versioning, availability
-timestamps, gap checks, and point-in-time replay remain outside Phase 0.
+with deterministic test fixtures. Dataset versioning, availability timestamps, gap checks, and
+point-in-time replay remain outside this slice.
+
+## PostgreSQL persistence contract
+
+Alembic revision `20260912_01` creates:
+
+- `ingestion_runs`: one row per persistence attempt. `records_received` is the number of validated
+  upstream observations presented to persistence; `records_written` is newly inserted normalized
+  candles.
+- `raw_market_observations`: the original Bitget candle array in JSONB plus endpoint, UTA version,
+  source identity, UTC event/ingestion times, and owning run. Its per-run unique constraint prevents
+  duplicate raw inserts inside one attempt while retaining each separate attempt as audit evidence.
+- `normalized_market_candles`: exact arbitrary-precision PostgreSQL `NUMERIC` OHLC, nullable
+  volume/turnover, UTC
+  `TIMESTAMPTZ`, and a database uniqueness constraint on source, symbol, market, interval, and
+  event time.
+
+The boundary is `raw provider row → existing MarketCandle validation → normalized row`. Both data
+rows are written in one transaction. An identical/retried candle leaves the existing normalized
+row unchanged, including its original ingestion time. If Bitget revises a candle, the new raw row
+preserves that evidence but the normalized row is conservatively not overwritten. A future
+versioned revision model must be designed before revisions can replace canonical values.
+
+PostgreSQL `TIMESTAMPTZ` stores instants independent of display timezone. SessionZero connections
+set their session timezone to UTC, and tests verify UTC-aware round trips. Decimal input is never
+routed through binary floating point.

@@ -5,12 +5,15 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "sessionzero"
 version = "0.1.0"
-description = "SessionZero Phase 0 market-data foundation"
+description = "SessionZero market-data and PostgreSQL persistence foundation"
 requires-python = ">=3.12"
 dependencies = [
+  "alembic==1.16.5",
   "fastapi==0.141.1",
   "httpx==0.28.1",
+  "psycopg[binary]==3.2.10",
   "pydantic==2.13.5",
+  "sqlalchemy==2.0.43",
   "uvicorn[standard]==0.52.4",
 ]
 
@@ -24,15 +27,17 @@ dev = [
 [project.scripts]
 sessionzero-verify-bitget = "sessionzero_bitget.verify:main"
 sessionzero-export-bitget-history = "sessionzero_bitget.export:main"
+sessionzero-ingest-bitget-history = "sessionzero_database.cli:main"
 sessionzero-collector = "sessionzero_collector.main:main"
 
 [tool.setuptools.packages.find]
-where = ["packages/bitget", "packages/schemas", "packages/config", "services/api", "services/collector"]
+where = ["packages/bitget", "packages/schemas", "packages/config", "packages/database", "services/api", "services/collector"]
 
 [tool.pytest.ini_options]
 addopts = "-ra"
 testpaths = ["tests"]
 markers = [
+  "postgres: tests that require a PostgreSQL DATABASE_URL",
   "live: opt-in tests that call an external provider",
 ]
 

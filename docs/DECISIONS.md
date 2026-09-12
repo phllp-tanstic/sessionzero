@@ -48,3 +48,16 @@ Status: **ACCEPTED**
 No Agentic Account OAuth, private credentials, account reads, paper/live execution, or order code is
 authorized. Research is the only eventual default until separately reviewed.
 
+## ADR-008 — PostgreSQL persistence and conservative candle idempotency
+
+Status: **ACCEPTED**
+
+PostgreSQL is the sole production persistence database and Alembic is the schema authority. Each
+persistence attempt retains its own run metadata and raw provider evidence. Normalized candle
+identity is `(source, symbol, market, interval, event_time)` and is enforced by a database unique
+constraint with `ON CONFLICT DO NOTHING` writes. Identical retries and differing ingestion times
+do not change the first normalized record. Revised upstream values remain auditable in raw rows but
+do not overwrite normalized values until a dedicated, versioned revision policy is designed.
+
+The run row is created independently. Raw and normalized inserts and successful run finalization
+share one transaction; a failed write rolls back both data tables before the run is marked failed.

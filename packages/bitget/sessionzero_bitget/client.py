@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
 from typing import Any
@@ -13,6 +14,15 @@ from sessionzero_schemas import MarketCandle, MarketInstrument, MarketTicker
 from .errors import BitgetProviderError
 
 REALITY_INTERVALS = frozenset({"1m", "5m", "15m", "1H", "4H", "1D"})
+HISTORY_CANDLES_ENDPOINT = "/api/v3/market/history-candles"
+CURRENT_CANDLES_ENDPOINT = "/api/v3/market/candles"
+
+
+@dataclass(frozen=True, slots=True)
+class CandleObservation:
+    candle: MarketCandle
+    payload: list[Any]
+    endpoint: str
 
 
 class _Envelope(BaseModel):
@@ -185,6 +195,28 @@ class BitgetMarketClient:
         start_time_ms: int | None = None,
         end_time_ms: int | None = None,
     ) -> list[MarketCandle]:
+        return [
+            observation.candle
+            for observation in self.get_candle_observations(
+                symbol,
+                interval=interval,
+                limit=limit,
+                historical=historical,
+                start_time_ms=start_time_ms,
+                end_time_ms=end_time_ms,
+            )
+        ]
+
+    def get_candle_observations(
+        self,
+        symbol: str,
+        *,
+        interval: str = "1H",
+        limit: int = 100,
+        historical: bool = False,
+        start_time_ms: int | None = None,
+        end_time_ms: int | None = None,
+    ) -> list[CandleObservation]:
         if interval not in REALITY_INTERVALS:
             raise ValueError(f"unsupported Reality interval: {interval}")
         maximum = 100 if historical else 1000
@@ -201,7 +233,7 @@ class BitgetMarketClient:
             params["startTime"] = str(start_time_ms)
         if end_time_ms is not None:
             params["endTime"] = str(end_time_ms)
-        path = "/api/v3/market/history-candles" if historical else "/api/v3/market/candles"
+        path = HISTORY_CANDLES_ENDPOINT if historical else CURRENT_CANDLES_ENDPOINT
         envelope = self._request(path, params)
         if not isinstance(envelope.data, list):
             raise BitgetProviderError(
@@ -213,15 +245,20 @@ class BitgetMarketClient:
             )
         ingested_at = self._clock()
         try:
-            candles = [
-                self._normalize_candle(row, symbol, interval, ingested_at) for row in envelope.data
+            observations = [
+                CandleObservation(
+                    candle=self._normalize_candle(row, symbol, interval, ingested_at),
+                    payload=list(row),
+                    endpoint=path,
+                )
+                for row in envelope.data
             ]
         except (IndexError, TypeError, ValueError, InvalidOperation, ValidationError) as exc:
             raise BitgetProviderError(
                 kind="UPSTREAM_SCHEMA_ERROR",
                 message="Bitget candle data failed validation",
             ) from exc
-        return sorted(candles, key=lambda item: item.event_time)
+        return sorted(observations, key=lambda item: item.candle.event_time)
 
     @staticmethod
     def _normalize_instrument(item: Any, ingested_at: datetime) -> MarketInstrument:

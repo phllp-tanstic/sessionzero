@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
+from decimal import Decimal
 from pathlib import Path
 
 import httpx
@@ -98,6 +99,16 @@ def test_candles_are_sorted_and_marked_utc() -> None:
         candles = client.get_candles("RTESTUSDT", limit=2)
     assert candles[0].event_time < candles[1].event_time
     assert all(item.event_time.tzinfo is UTC for item in candles)
+
+
+def test_candle_observation_preserves_raw_provider_row() -> None:
+    row = ["1760000000000", "10", "11", "9", "10.5", "", ""]
+    payload = {"code": "00000", "msg": "success", "requestTime": 1, "data": [row]}
+    with client_for(lambda _request: response(payload)) as client:
+        observation = client.get_candle_observations("RTESTUSDT", historical=True, limit=1)[0]
+    assert observation.payload == row
+    assert observation.endpoint == "/api/v3/market/history-candles"
+    assert observation.candle.close == Decimal("10.5")
 
 
 @pytest.mark.parametrize(

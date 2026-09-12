@@ -2,78 +2,72 @@
 
 ## Current phase
 
-`PHASE 0 — FOUNDATION + REAL BITGET VERIFICATION`
+`PHASE 1 — DATA PLANE (POSTGRESQL PERSISTENCE FOUNDATION SLICE)`
 
 ## Completed
 
-- Standalone Git repository initialized on `main`.
-- Monorepo foundation, strict Python schemas/client, capability model, verification CLI, minimal API,
-  minimal web shell, deterministic tests, and CI created.
-- Read-only historical Reality export publishes validated, canonical JSONL atomically under the
-  Git-ignored `artifacts/` runtime directory.
-- Official Agent Hub CLI and Codex skill installed; no credentials configured.
+- Phase 0 foundation and reproducible JSONL history export remain intact.
+- PostgreSQL-only environment configuration, SQLAlchemy persistence package, Alembic migration,
+  ingestion-run audit rows, raw JSONB observations, normalized decimal candles, and one-shot live
+  Bitget history ingestion are implemented.
+- Database uniqueness makes normalized ingestion idempotent; revised upstream payloads remain raw
+  evidence without silently replacing the initial normalized candle.
 
 ## Verified
 
-- Official UTA v3 and Reality documentation reviewed on 2026-09-12.
-- Public Reality instruments, ticker, current candles, and historical candles accessed without auth.
-- Dedicated Reality depth and fills reject unauthenticated calls and are documented as gated.
-- Direct API and `bgc --read-only` results agree for the selected symbol.
-- Historical export discovery, retrieval, normalization, UTC ordering, provenance, nullable volume
-  and turnover, and fail-closed behavior are covered by deterministic tests and an opt-in live test.
+- Alembic upgrade, current revision, downgrade, and restored upgrade against PostgreSQL 17.11.
+- PostgreSQL integration coverage for run finalization, raw/normalized inserts, direct uniqueness,
+  repeated ingestion, UTC, decimal precision, nullable quantities, revision behavior, and rollback.
+- Real dynamically validated `RAALUSDT` `1H` range `[2026-06-10T00:00:00Z,
+  2026-06-10T06:00:00Z)`: first attempt wrote 6 normalized rows, second wrote 0; final state is 2
+  successful runs, 12 raw rows, 6 normalized rows, and 0 duplicate identities.
 
 ## Failed
 
-- No acceptance check is failing. One initial dependency attempt selected a Pydantic release
-  without Python 3.14 support; pins and the hashed lock were corrected before verification.
+- An initial real query against a different dynamically selected symbol/window returned no rows and
+  failed closed before creating a persistence run. The verified window above succeeded.
 
 ## Outstanding
 
-- All Phase 1+ data persistence, providers, research, models, backtesting, product UI, and execution.
+- Broader ingestion/backfills, a collector loop, scheduling, native-equity/cross-asset/event
+  providers, data-quality rules, retention, models, backtesting, API expansion, and product UI.
 
 ## Known constraints
 
-- Reality pre-2026-07-09 volume/turnover may be missing; a tested sample happened to contain both.
-- Reality depth and platform fills require authentication and whitelist access.
-- Capability evidence is a dated Phase 0 observation, not continuous monitoring.
-- Separate export runs have distinct ingestion timestamps, and Bitget may revise returned history;
-  deterministic serialization does not imply stronger reproducibility than the upstream data.
-- No persistent database or production deployment exists.
+- Raw rows intentionally repeat across separate runs to preserve attempt-level evidence.
+- Upstream revisions are not promoted into normalized values; a versioning policy is required.
+- A process killed after run creation can leave `RUNNING`; stale-run reconciliation is future work.
+- The command handles one upstream response (maximum 100 historical rows), not pagination/backfill.
+- No managed production database, database backup policy, or deployment exists.
 
 ## Current services
 
-- FastAPI: `/health`, `/api/v1/capabilities`, `/api/v1/markets`.
-- Next.js: minimal API capability-status shell.
-- Collector: read-only verification and canonical historical JSONL export entry points only.
-
-## Environment requirements
-
-- Python 3.12+
-- Node.js 20+
-- npm
-
-Verified workstation snapshot: macOS 26.6.2 arm64; Git 2.55.0; Node 24.20.0; npm 11.19.0;
-Python 3.14.7; pip 26.2.1 globally and 25.2 in the project environment for `pip-tools`
-compatibility; Docker unavailable; GitHub CLI 2.98.0; VS Code 1.134.0.
+- Existing FastAPI and Next.js Phase 0 surfaces are unchanged.
+- One-shot CLI: `sessionzero-ingest-bitget-history`.
+- Migration CLI: `alembic upgrade head`.
+- No daemon, worker loop, or scheduler exists.
 
 ## Required env vars
 
-No secret env vars are required. Local runtime uses `SESSIONZERO_API_URL`; production will require
-explicit service URLs and exact CORS origins; see `.env.example`.
+- `DATABASE_URL`: required for migrations, persistence, and PostgreSQL tests; PostgreSQL/psycopg
+  only. Use separate development, test, and production databases.
+- Existing public Bitget and web/API settings remain as documented in `.env.example`.
 
 ## Test counts
 
-23 deterministic tests passed with two live tests deselected; the separate opt-in live suite passed
-with 23 deterministic tests deselected. No TypeScript test suite exists in Phase 0.
+- 30 deterministic non-live/non-PostgreSQL tests.
+- 6 direct PostgreSQL integration tests.
+- Live Bitget verification remains opt-in.
 
 ## Deployment URLs
 
-`NOT DEPLOYED — PHASE 0`
+`NOT DEPLOYED`
 
 ## Latest commit
 
-`feat(data): add reproducible Reality history export` (new Phase 0 follow-up commit).
+`feat(data): add PostgreSQL market persistence foundation` (this handover's commit).
 
 ## Next exact task
 
-Confirm the Phase 0 historical-export acceptance evidence. No Phase 1 work has started.
+Implement bounded historical pagination and explicit candle gap/ordering quality checks on top of
+the accepted persistence contract; do not add scheduling yet.

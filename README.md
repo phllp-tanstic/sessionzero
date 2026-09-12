@@ -9,14 +9,14 @@ uncertainty and execution costs.
 
 ## Current status
 
-`PHASE 0 — FOUNDATION + REAL BITGET VERIFICATION`
+`PHASE 1 — DATA PLANE (POSTGRESQL PERSISTENCE FOUNDATION)`
 
-- **BUILT:** strict typed Bitget UTA v3 public-market adapter, Reality discovery, ticker and candle
-  normalization, deterministic historical JSONL export, explicit capability states, minimal
-  FastAPI routes, verification CLI, test suite, minimal Next.js system shell, and secret-free CI.
+- **BUILT:** the Phase 0 adapter/export/API/web foundation plus Alembic migrations, PostgreSQL raw
+  observation and normalized-candle persistence, ingestion-run audit metadata, and a one-shot
+  idempotent Bitget history ingestion command.
 - **VERIFIED:** unauthenticated instrument, ticker, current-candle, and historical-candle access on
   2026-09-12. Reality depth and platform fills are gated.
-- **PLANNED:** the data plane and all quantitative layers after Phase 0 review.
+- **PLANNED:** broader ingestion, collectors, reference providers, and all quantitative layers.
 - **NOT BUILT:** fair value, state, confidence, gap, conviction, backtesting, and execution.
 
 The locked eventual pipeline is `SENSE → FAIR VALUE → STATE → GAP → CONVICTION → EXECUTE`.
@@ -37,7 +37,16 @@ npm ci
 cp .env.example .env
 ```
 
-No Bitget credentials are required or used in Phase 0.
+No Bitget credentials are required for these public read-only paths. Database commands require an
+explicit PostgreSQL `DATABASE_URL`; they never fall back to SQLite or memory.
+
+Create separate development and test databases, then migrate each explicitly:
+
+```bash
+export DATABASE_URL=postgresql+psycopg://sessionzero:password@127.0.0.1:5432/sessionzero_development
+.venv/bin/alembic upgrade head
+.venv/bin/alembic current
+```
 
 ## Run
 
@@ -75,18 +84,34 @@ validated `MarketCandle`. The command fails before publishing on discovery, prov
 empty-range errors and refuses to replace an existing file unless `--overwrite` is explicit.
 Generated files under `artifacts/` are runtime data and are ignored by Git.
 
+Persist a small real, dynamically validated Reality history window:
+
+```bash
+.venv/bin/sessionzero-ingest-bitget-history \
+  --symbol RAALUSDT \
+  --interval 1H \
+  --start 2026-06-10T00:00:00Z \
+  --end 2026-06-10T06:00:00Z \
+  --limit 10
+```
+
+The command is one-shot, not a collector. Repeating it creates another run and raw audit records,
+but the database uniqueness constraint prevents duplicate normalized candles.
+
 ## Checks
 
 ```bash
 .venv/bin/ruff format --check .
 .venv/bin/ruff check .
-.venv/bin/pytest -m "not live"
+.venv/bin/pytest -m "not live and not postgres"
 npm run lint
 npm run typecheck
 npm run build
 ```
 
 Live tests are opt-in: `SESSIONZERO_RUN_LIVE_TESTS=1 .venv/bin/pytest -m live`.
+PostgreSQL tests are separate and require a disposable database whose name contains `test`:
+`DATABASE_URL=...sessionzero_test .venv/bin/pytest -m postgres`.
 
 See [docs/DATA.md](docs/DATA.md) for provider evidence and [docs/HANDOVER.md](docs/HANDOVER.md)
 for the exact current state.
