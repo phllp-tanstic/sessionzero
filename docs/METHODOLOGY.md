@@ -24,6 +24,19 @@ primitives, not Discovery State, Fair Value, Confidence, Gap, or a trading signa
 
 No predictive hypothesis is tested and no performance metric is reported in this phase.
 
+Historical coverage uses a predeclared 60-day minimum total period and preserves the locked
+30-day final OOS requirement. For interval candles, observed duration is the inclusive covered
+interval from the earliest observation through the end of the latest observation. Passing means
+only that Reality-side market data could support those future validation windows. It does not make
+a symbol strategy-eligible, select it for research, or establish predictive value.
+
+Coverage classification is conservative. Empty/provider-failed history is `HISTORY_UNAVAILABLE`;
+existing quality errors are `DATA_QUALITY_FAILURE`; less than 60 observed days is
+`INSUFFICIENT_HISTORY`; sufficient duration with absent intervals whose source session cannot be
+established is `SOURCE_SESSION_TOO_UNKNOWN`; and known-open missing intervals prevent a pass and
+remain `UNKNOWN`. Only a non-failing series with at least 60 days and neither kind of unresolved
+absence is `SUFFICIENT_MINIMUM_HISTORY`. No outcomes or market performance tune these rules.
+
 Reality universe eligibility is objective and fixed before any future experiment: provider Reality
 identity, online status, explicit native mapping, supported interval, and observed ingestion quality.
 The bounded verification subset is the first N eligible symbols after canonical sorting. Failures

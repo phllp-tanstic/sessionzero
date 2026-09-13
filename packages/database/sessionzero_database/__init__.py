@@ -1,7 +1,14 @@
+from .coverage import (
+    AcceptedUniverse,
+    load_accepted_universe,
+    persist_historical_coverage_profile,
+)
 from .engine import create_database_engine
 from .models import (
     Base,
     CorporateActionRow,
+    HistoricalCoverageMemberRow,
+    HistoricalCoverageProfileRow,
     IngestionRun,
     NormalizedMarketCandle,
     RawMarketObservation,
@@ -28,8 +35,11 @@ from .universe import (
 )
 
 __all__ = [
+    "AcceptedUniverse",
     "Base",
     "CorporateActionRow",
+    "HistoricalCoverageMemberRow",
+    "HistoricalCoverageProfileRow",
     "IngestionResult",
     "IngestionRun",
     "NormalizedMarketCandle",
@@ -48,6 +58,8 @@ __all__ = [
     "ingest_candle_observations",
     "ingest_manifest_subset",
     "ingest_reference_bundle",
+    "load_accepted_universe",
+    "persist_historical_coverage_profile",
     "persist_historical_manifest",
     "persist_universe_snapshot",
 ]

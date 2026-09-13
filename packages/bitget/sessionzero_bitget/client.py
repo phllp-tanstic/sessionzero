@@ -5,6 +5,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
+from email.utils import parsedate_to_datetime
 from typing import Any
 
 import httpx
@@ -37,6 +38,13 @@ class InstrumentDiscovery:
     instruments: tuple[MarketInstrument, ...]
     payload: dict[str, Any]
     request_time: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class RequestTelemetry:
+    request_count: int
+    retry_count: int
+    rate_limit_count: int
 
 
 class _Envelope(BaseModel):
@@ -77,7 +85,14 @@ class BitgetMarketClient:
         max_retries: int = 2,
         transport: httpx.BaseTransport | None = None,
         clock: Callable[[], datetime] = _utc_now,
+        sleeper: Callable[[float], None] = time.sleep,
+        monotonic: Callable[[], float] = time.monotonic,
+        min_request_interval_seconds: float = 0.0,
     ) -> None:
+        if max_retries < 0:
+            raise ValueError("max_retries cannot be negative")
+        if min_request_interval_seconds < 0:
+            raise ValueError("minimum request interval cannot be negative")
         self._client = httpx.Client(
             base_url=base_url.rstrip("/"),
             timeout=httpx.Timeout(timeout_seconds),
@@ -86,6 +101,13 @@ class BitgetMarketClient:
         )
         self._max_retries = max_retries
         self._clock = clock
+        self._sleeper = sleeper
+        self._monotonic = monotonic
+        self._min_request_interval_seconds = min_request_interval_seconds
+        self._last_request_started: float | None = None
+        self._request_count = 0
+        self._retry_count = 0
+        self._rate_limit_count = 0
 
     def __enter__(self) -> BitgetMarketClient:
         return self
@@ -96,19 +118,55 @@ class BitgetMarketClient:
     def close(self) -> None:
         self._client.close()
 
+    @property
+    def request_telemetry(self) -> RequestTelemetry:
+        return RequestTelemetry(
+            request_count=self._request_count,
+            retry_count=self._retry_count,
+            rate_limit_count=self._rate_limit_count,
+        )
+
+    def _pace_request(self) -> None:
+        now = self._monotonic()
+        if self._last_request_started is not None:
+            remaining = self._min_request_interval_seconds - (now - self._last_request_started)
+            if remaining > 0:
+                self._sleeper(remaining)
+                now = self._monotonic()
+        self._last_request_started = now
+
+    def _retry_delay(self, response: httpx.Response | None, attempt: int) -> float:
+        if response is not None:
+            value = response.headers.get("Retry-After")
+            if value is not None:
+                try:
+                    return max(0.0, float(value))
+                except ValueError:
+                    try:
+                        retry_at = parsedate_to_datetime(value).astimezone(UTC)
+                        return max(0.0, (retry_at - self._clock().astimezone(UTC)).total_seconds())
+                    except (TypeError, ValueError):
+                        pass
+        return 0.2 * (2**attempt)
+
     def _request(self, path: str, params: dict[str, str]) -> _Envelope:
         for attempt in range(self._max_retries + 1):
+            self._pace_request()
+            self._request_count += 1
             try:
                 response = self._client.get(path, params=params)
-                if (
-                    response.status_code == 429 or response.status_code >= 500
-                ) and attempt < self._max_retries:
-                    time.sleep(0.2 * (2**attempt))
+                retryable_http = response.status_code == 429 or response.status_code >= 500
+                if response.status_code == 429:
+                    self._rate_limit_count += 1
+                if retryable_http and attempt < self._max_retries:
+                    self._retry_count += 1
+                    self._sleeper(self._retry_delay(response, attempt))
                     continue
                 response.raise_for_status()
             except (httpx.TimeoutException, httpx.NetworkError) as exc:
                 if attempt < self._max_retries:
-                    time.sleep(0.2 * (2**attempt))
+                    self._retry_count += 1
+                    self._sleeper(self._retry_delay(None, attempt))
                     continue
                 raise BitgetProviderError(
                     kind="UPSTREAM_NETWORK_ERROR",
@@ -133,11 +191,18 @@ class BitgetMarketClient:
                 ) from exc
 
             if envelope.code != "00000":
+                retryable_provider = envelope.code in {"429", "40762"}
+                if retryable_provider:
+                    self._rate_limit_count += 1
+                if retryable_provider and attempt < self._max_retries:
+                    self._retry_count += 1
+                    self._sleeper(self._retry_delay(response, attempt))
+                    continue
                 raise BitgetProviderError(
                     kind="UPSTREAM_PROVIDER_ERROR",
                     message="Bitget rejected the market data request",
                     provider_code=envelope.code,
-                    retryable=envelope.code in {"429", "40762"},
+                    retryable=retryable_provider,
                 )
             return envelope
         raise AssertionError("request retry loop exited unexpectedly")

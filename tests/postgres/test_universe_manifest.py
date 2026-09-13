@@ -113,6 +113,7 @@ def test_manifest_records_success_warning_and_isolated_failure(database_engine) 
         "UNAVAILABLE",
     ]
     assert manifest.entries[0].ingestion_run_id is not None
+    assert manifest.entries[0].records_available_for_requested_window == 2
     assert manifest.entries[2].failure_code == "UPSTREAM_PROVIDER_ERROR"
     assert persist_historical_manifest(database_engine, manifest)
     assert not persist_historical_manifest(database_engine, manifest)

@@ -143,3 +143,19 @@ wall-clock generation time is separate. Historical manifests deterministically c
 technically eligible members and reuse the accepted candle path. Each symbol commits its accepted
 candles independently, so an isolated failure remains an explicit manifest entry while other
 members continue. A manifest is Reality-side evidence, not a complete research dataset.
+
+## ADR-015 — Profile Reality history conservatively before broad backfill
+
+Status: **ACCEPTED**
+
+Historical sufficiency profiles are derived only from an accepted versioned Reality universe and a
+fixed UTC evaluation window. The locked minimum is 60 total days with 30 days reserved for final
+OOS validation. These are data-availability requirements, never performance thresholds or symbol
+selection criteria.
+
+Profiles reuse bounded history pagination and source-session quality semantics without persisting
+another candle copy. `SOURCE_SESSION_TOO_UNKNOWN` and `UNKNOWN` are preferred to false sufficiency;
+no candle is synthesized. Logical identity hashes the universe, interval, transformation, window,
+and normalized member evidence while excluding generation/verification times and operational retry
+noise. Pilot scope is the canonical first 10 by default; scans above 20 require an explicit full
+universe switch after reviewing provider and runtime budgets.

@@ -188,6 +188,53 @@ def test_http_error_is_structured() -> None:
     assert caught.value.http_status == 503
 
 
+def test_rate_limit_honors_retry_after_and_records_telemetry() -> None:
+    calls = 0
+    sleeps: list[float] = []
+
+    def handler(_request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        if calls == 1:
+            return httpx.Response(429, headers={"Retry-After": "1.5"}, json={})
+        return response(fixture("instruments.json"))
+
+    with BitgetMarketClient(
+        transport=httpx.MockTransport(handler),
+        max_retries=1,
+        clock=lambda: NOW,
+        sleeper=sleeps.append,
+    ) as client:
+        client.get_instruments()
+        telemetry = client.request_telemetry
+    assert calls == 2
+    assert sleeps == [1.5]
+    assert telemetry.request_count == 2
+    assert telemetry.retry_count == 1
+    assert telemetry.rate_limit_count == 1
+
+
+def test_provider_rate_limit_retry_exhaustion_is_bounded() -> None:
+    calls = 0
+
+    def handler(_request: httpx.Request) -> httpx.Response:
+        nonlocal calls
+        calls += 1
+        return response({"code": "429", "msg": "rate limited", "requestTime": 1, "data": None})
+
+    with (
+        BitgetMarketClient(
+            transport=httpx.MockTransport(handler), max_retries=2, sleeper=lambda _delay: None
+        ) as client,
+        pytest.raises(BitgetProviderError) as caught,
+    ):
+        client.get_instruments()
+    assert calls == 3
+    assert caught.value.retryable is True
+    assert client.request_telemetry.retry_count == 2
+    assert client.request_telemetry.rate_limit_count == 3
+
+
 def test_unsupported_reality_interval_is_rejected_before_network() -> None:
     with (
         client_for(lambda _request: pytest.fail("network should not be called")) as client,

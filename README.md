@@ -10,6 +10,22 @@ manifest with `sessionzero-build-reality-manifest --start ... --end ... --subset
 is the first N technically eligible symbols in canonical order; it is not selected using returns or
 model results. This command requires PostgreSQL and does not fetch native-equity data.
 
+Profile the canonical first 10 eligible members of an already accepted snapshot with:
+
+```bash
+.venv/bin/sessionzero-profile-reality-coverage \
+  --universe-version <sha256> \
+  --end 2026-09-13T20:00:00Z \
+  --evaluation-days 90 \
+  --subset-size 10
+```
+
+The profile measures Reality data availability only. `SUFFICIENT_MINIMUM_HISTORY` means the
+observed, session-aware data could support the locked minimum 60-day validation period including a
+30-day OOS holdout; it is not alpha evidence, strategy eligibility, or final universe selection.
+Unknown source-session intervals remain explicit. More than 20 symbols requires the deliberate
+`--full-universe` switch, and the command is rate-paced, retry-bounded, and one-shot.
+
 Price discovery for the market session that did not exist before 24/7 equities.
 
 When the U.S. cash market closes, tokenized equities keep trading while new information continues
@@ -24,7 +40,8 @@ uncertainty and execution costs.
 - **BUILT:** the Phase 0 adapter/export/API/web foundation plus Alembic migrations, PostgreSQL raw
   observation and normalized-candle persistence, ingestion-run audit metadata, and a one-shot
   idempotent bounded history ingestion, machine-readable candle quality, an XNYS reference
-  calendar, and evidence-backed point-in-time Bitget source-session semantics.
+  calendar, evidence-backed point-in-time Bitget source-session semantics, and content-addressed
+  Reality historical-coverage profiles linked to accepted universe snapshots.
 - **VERIFIED:** unauthenticated instrument, ticker, current-candle, and historical-candle access on
   2026-09-12. Reality depth and platform fills are gated.
 - **GATED:** native-equity implementation. Massive is the preferred technical candidate, but no
@@ -118,6 +135,9 @@ run and raw audit records, but the database uniqueness constraint prevents dupli
 candles. Missing timestamps are reported and never filled or interpolated. Missing intervals are
 classified as verified source closure, missing while expected open, or unknown source availability;
 the current instrument universe is never assumed to have inherited present-day 24/7 support.
+In historical manifests, `normalized_records_written` counts only new inserts from that run;
+`records_available_for_requested_window` separately reports validated unique observations already
+available for the requested range.
 
 Reference cash sessions and Bitget source availability are separate. The XNYS reference calendar
 uses pinned `exchange-calendars==4.13.2` for DST, holidays, early closes, previous closes, and next

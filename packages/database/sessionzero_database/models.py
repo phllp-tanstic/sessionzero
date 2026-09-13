@@ -401,6 +401,7 @@ class HistoricalIngestionManifestEntryRow(Base):
     page_count: Mapped[int] = mapped_column(Integer, nullable=False)
     raw_records_received: Mapped[int] = mapped_column(Integer, nullable=False)
     normalized_records_written: Mapped[int] = mapped_column(Integer, nullable=False)
+    records_available_for_requested_window: Mapped[int] = mapped_column(Integer, nullable=False)
     quality_status: Mapped[str | None] = mapped_column(String(16))
     missing_while_expected_open: Mapped[int] = mapped_column(Integer, nullable=False)
     source_session_unknown: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -409,6 +410,78 @@ class HistoricalIngestionManifestEntryRow(Base):
     )
     status: Mapped[str] = mapped_column(String(32), nullable=False)
     failure_code: Mapped[str | None] = mapped_column(String(128))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
+class HistoricalCoverageProfileRow(Base):
+    __tablename__ = "historical_coverage_profiles"
+
+    profile_version: Mapped[str] = mapped_column(String(64), primary_key=True)
+    universe_version: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("universe_snapshots.universe_version", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    interval: Mapped[str] = mapped_column(String(16), nullable=False)
+    transformation_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    evaluation_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    evaluation_end: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    minimum_total_history_days: Mapped[int] = mapped_column(Integer, nullable=False)
+    minimum_oos_days: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
+class HistoricalCoverageMemberRow(Base):
+    __tablename__ = "historical_coverage_members"
+    __table_args__ = (
+        UniqueConstraint("profile_version", "symbol", name="uq_coverage_member_symbol"),
+        CheckConstraint(
+            "coverage_status IN ('SUFFICIENT_MINIMUM_HISTORY', 'INSUFFICIENT_HISTORY', "
+            "'SOURCE_SESSION_TOO_UNKNOWN', 'DATA_QUALITY_FAILURE', 'HISTORY_UNAVAILABLE', "
+            "'UNKNOWN')",
+            name="ck_coverage_member_status",
+        ),
+        Index("ix_coverage_member_status", "profile_version", "coverage_status"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    profile_version: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("historical_coverage_profiles.profile_version", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    symbol: Mapped[str] = mapped_column(String(64), nullable=False)
+    native_ticker: Mapped[str] = mapped_column(String(32), nullable=False)
+    interval: Mapped[str] = mapped_column(String(16), nullable=False)
+    transformation_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    evaluation_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    evaluation_end: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    earliest_observed_event_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    latest_observed_event_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    observed_duration_days: Mapped[Decimal] = mapped_column(Numeric(12, 6), nullable=False)
+    observed_record_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    expected_intervals_where_session_known: Mapped[int] = mapped_column(Integer, nullable=False)
+    missing_while_expected_open: Mapped[int] = mapped_column(Integer, nullable=False)
+    source_session_unknown_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    quality_status: Mapped[str | None] = mapped_column(String(16))
+    coverage_status: Mapped[str] = mapped_column(String(40), nullable=False)
+    minimum_total_history_days: Mapped[int] = mapped_column(Integer, nullable=False)
+    minimum_oos_days: Mapped[int] = mapped_column(Integer, nullable=False)
+    request_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    retry_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    rate_limit_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    failure_code: Mapped[str | None] = mapped_column(String(128))
+    verification_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    universe_version: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("universe_snapshots.universe_version", ondelete="RESTRICT"),
+        nullable=False,
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )

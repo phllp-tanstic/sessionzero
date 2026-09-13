@@ -32,10 +32,17 @@ def test_upgrade_downgrade_and_restore(alembic_config: Config) -> None:
             "universe_snapshot_members",
             "historical_ingestion_manifests",
             "historical_ingestion_manifest_entries",
+            "historical_coverage_profiles",
+            "historical_coverage_members",
         }
+        manifest_columns = {
+            column["name"]
+            for column in inspect(engine).get_columns("historical_ingestion_manifest_entries")
+        }
+        assert "records_available_for_requested_window" in manifest_columns
         with engine.connect() as connection:
             assert connection.scalar(text("SELECT version_num FROM alembic_version")) == (
-                "20260913_04"
+                "20260913_05"
             )
         command.downgrade(alembic_config, "20260912_01")
         legacy_run_id = uuid.uuid4()

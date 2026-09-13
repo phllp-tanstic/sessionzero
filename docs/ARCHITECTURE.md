@@ -47,6 +47,10 @@ Metadata-derived universe --> universe_snapshots / universe_snapshot_members
         +-- first N eligible --> existing bounded history path
                               --> historical_ingestion_manifests / entries
 
+Accepted universe version --> bounded 60-90 day coverage evaluation
+                          --> existing pagination + session-aware quality
+                          --> historical_coverage_profiles / members
+
 Temporal classification
         |
         +-- TradingCalendarProvider --> XNYS cash sessions
@@ -93,6 +97,18 @@ an explicit warning. Identical page overlap also warns. No quality path synthesi
 whether a Bitget instrument traded. `SourceSessionProvider` answers only source availability from
 effective-dated evidence. `SessionZeroContext` combines their typed outputs without producing fair
 value, state-model, signal, or strategy output.
+
+Historical coverage profiling is a separate read-only evaluation path. It loads an accepted
+`universe_version` from PostgreSQL, takes the first N technically eligible members in canonical
+order, and evaluates exact observations in a fixed UTC window through the existing history and
+quality boundaries. It does not write candles or duplicate manifest storage. The root profile and
+per-symbol results are content-addressed and idempotent; operational timestamps and retry counters
+do not perturb logical identity.
+
+The profiler defaults to 10 serial symbols, rejects more than 20 unless `--full-universe` is
+explicit, caps pages/retries, paces requests at no more than the documented 20 requests/second,
+honors numeric `Retry-After`, and records requests, retries, and rate-limit responses. There is no
+daemon, scheduler, or infinite polling.
 
 ## Native-equity provider gate
 

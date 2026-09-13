@@ -113,6 +113,7 @@ class HistoricalManifestEntry(BaseModel):
     page_count: int = Field(ge=0)
     raw_records_received: int = Field(ge=0)
     normalized_records_written: int = Field(ge=0)
+    records_available_for_requested_window: int = Field(ge=0)
     quality_status: str | None = None
     missing_while_expected_open: int = Field(ge=0)
     source_session_unknown: int = Field(ge=0)

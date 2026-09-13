@@ -68,6 +68,51 @@ subset was `RAALUSDT`, `RAAOIUSDT`, `RAAONUSDT` over
 persisted two normalized rows, and retained its own ingestion-run linkage. This identifies only the
 Reality leg; the native-equity leg remains missing and no complete research dataset is claimed.
 
+`normalized_records_written` is only the number of normalized candles newly inserted by that
+manifest run. It is not a completeness measure. `records_available_for_requested_window` is the
+separate count of validated unique observations present in the requested window, regardless of
+whether they already existed in PostgreSQL. Provider rows received and raw records likewise remain
+evidence-volume counts rather than total dataset coverage.
+
+## Reality historical coverage profiling — 2026-09-13
+
+`reality_historical_coverage.v1` loads an already persisted `universe_version`; it never accepts a
+handwritten symbol list. Each member records Reality symbol, native ticker, interval, fixed UTC
+evaluation bounds, earliest/latest observed event time, inclusive observed duration, observed
+record count, session-known expected intervals, known-open missing intervals, unknown-session
+absences, existing quality status, coverage status, request/retry/throttle counts, verification
+time, and universe linkage.
+
+The logical `profile_version` is SHA-256 over universe version, interval, transformation version,
+evaluation window, and normalized member evidence. `generated_at`, per-member verification times,
+and operational request/retry/throttle counts are excluded, so identical market evidence has the
+same identity. PostgreSQL tables `historical_coverage_profiles` and
+`historical_coverage_members` use primary/unique constraints for idempotency and do not duplicate
+candle storage.
+
+The locked sufficiency threshold is at least 60 total observed days while retaining the future
+30-day OOS requirement. A pass is data availability only, never evidence of returns, predictive
+power, or final research-universe membership. Any existing quality failure fails coverage; unknown
+source-session absences remain `SOURCE_SESSION_TOO_UNKNOWN`; known-open missingness prevents a pass.
+The 90-day evaluation is deliberately bounded. An earliest observation equal to its left boundary
+is left-censored evidence of at least that much history, not a claim that the instrument launched
+there or has no older data.
+
+The canonical first-10 live 1H pilot used accepted universe
+`85c5d4fbf5c098d53016017b138e2e26e12d5146fa3e81e15b0c4fa9cf7b8db5` over
+`[2026-06-15T20:00:00Z, 2026-09-13T20:00:00Z)`. It made 139 serial requests with zero retries and
+zero rate-limit responses. Three members were `SOURCE_SESSION_TOO_UNKNOWN` and seven were
+`DATA_QUALITY_FAILURE`; none was marked sufficient. Observed durations ranged from 88.0 to 90.0
+days (median 88.166667): eight were in `[60, 90)` and two reached 90 days. Observed record counts
+ranged from 774 to 1,918. A repeat produced the same logical profile version, demonstrating
+idempotency: `a95ca9602706749e21276daea9eaf17b0f69973844f8800b2c2292da54de0421`.
+
+The full 1,173-symbol scan was not run. Extrapolating the pilot gives about 16,305 requests
+(13.9/symbol) and roughly 3.2 hours at observed serial runtime; even the unattainable pure
+20-request/second floor is about 13.6 minutes. That cost is unnecessary while 1,172 universe
+members still lack complete historical source-session evidence and the pilot produced no clean
+sufficiency pass.
+
 ## Native U.S. equity provider verification gate — 2026-09-13
 
 Verification timestamp: `2026-09-13T10:32:29Z`.

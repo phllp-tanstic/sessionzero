@@ -23,6 +23,13 @@
   canonical members, and attach typed technical eligibility/exclusion evidence.
 - Historical manifests deterministically ingest the first N eligible members through the existing
   quality/session/persistence path and preserve isolated failures per symbol.
+- Historical coverage profiles now load an accepted universe version, evaluate the canonical first
+  N members through the existing bounded/session-aware quality path, and persist content-addressed,
+  idempotent profile/member evidence without storing another candle copy.
+- Historical manifests now distinguish `normalized_records_written` (new inserts in that run) from
+  `records_available_for_requested_window` (validated unique observations in the requested range).
+- Bitget requests support explicit pacing, bounded retries, numeric `Retry-After`, retry exhaustion,
+  and request/retry/rate-limit telemetry.
 
 ## Verified
 
@@ -64,6 +71,13 @@
   1,173 mappings and technical eligibilities. One source-session assessment was known and 1,172
   were unknown without exclusion. The canonical first-three two-hour manifest selected RAAL,
   RAAOI, and RAAON; all received two rows, passed quality, and linked to successful ingestion runs.
+- A 2026-09-13 canonical first-10 coverage pilot used accepted universe `85c5d4fb...b8db5` and the
+  90-day 1H window ending `2026-09-13T20:00:00Z`. It made 139 serial requests with no retry or
+  throttle response. Three members were `SOURCE_SESSION_TOO_UNKNOWN`, seven were
+  `DATA_QUALITY_FAILURE`, and none passed sufficiency. Durations were 88.0-90.0 days with an
+  88.166667-day median. A deterministic repeat resolved to the same profile identity.
+- Migration `20260913_05` and all 11 PostgreSQL integration tests passed against an isolated local
+  PostgreSQL instance. The 73 non-live/non-PostgreSQL tests also passed.
 
 ### Bitget-native capability matrix
 
@@ -111,6 +125,10 @@
 - Reality session payloads currently exhibit contract drift (`EST` versus documented `ET`, and an
   array where `tradingPeriod` is documented as a string). They must remain fail-closed and cannot
   replace the point-in-time XNYS calendar.
+- Coverage earliest times are bounded-window observations. A value equal to the evaluation start is
+  left-censored evidence of at least that much history, not a provider launch-time assertion.
+- A full 1,173-member profile was not run: the pilot implies about 16,305 requests and 3.2 hours at
+  observed serial runtime (13.6 minutes is only the pure 20-request/second theoretical floor).
 
 ## Current services
 
@@ -118,6 +136,7 @@
 - One-shot CLI: `sessionzero-ingest-bitget-history`.
 - Read-only/optional-persistence CLI: `sessionzero-ingest-bitget-reference`.
 - Snapshot/manifest CLI: `sessionzero-build-reality-manifest`.
+- Coverage-profile CLI: `sessionzero-profile-reality-coverage`.
 - Migration CLI: `alembic upgrade head`.
 
 ## Required env vars
@@ -129,8 +148,8 @@
 
 ## Test counts
 
-- 63 deterministic non-live/non-PostgreSQL tests.
-- 10 direct PostgreSQL integration tests.
+- 73 deterministic non-live/non-PostgreSQL tests.
+- 11 direct PostgreSQL integration tests.
 - 4 opt-in live Bitget tests.
 
 ## Deployment URLs
@@ -139,9 +158,11 @@
 
 ## Latest commit
 
-`feat(data): add versioned Reality universe manifests` (no model or native provider was created).
+`feat(data): add Reality historical coverage profiling` (local; not pushed).
 
 ## Next exact task
 
 Obtain a written Bitget determination covering Stock+ read-only API eligibility and SessionZero's
 non-display, derived-output, public-display, and redistribution rights, without opening an account.
+Do not spend the estimated full-universe coverage budget until historical source-session evidence
+is broadened or the scan is otherwise explicitly justified.
