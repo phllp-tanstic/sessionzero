@@ -1,7 +1,8 @@
 # Data Verification
 
 Status labels in this document mean `BUILT`, `VERIFIED`, `PLANNED`, `BLOCKED`, or `UNVERIFIED`.
-All runtime observations below were unauthenticated, read-only, and made on 2026-09-12.
+All runtime observations below were unauthenticated and read-only. They are dated in the relevant
+section; the initial capability verification was made on 2026-09-12.
 
 ## Official documentation reviewed
 
@@ -48,6 +49,40 @@ dated observations rather than a stronger provider guarantee. SessionZero theref
 backward by setting the next `endTime` to the oldest returned event time, rejects non-progress,
 enforces a caller-controlled maximum page count, and independently clips the final dataset to UTC
 `[start, end)`.
+
+### Sparse-window boundary verification — 2026-09-13
+
+Follow-up direct HTTP probes for `RMRNAUSDT`, `1H`, `market`, with a page limit of 100 established
+an additional provider behavior. Every response had HTTP 200, provider code `00000`, and strictly
+ascending timestamps.
+
+| Request (`startTime` → `endTime`) | Rows | Oldest | Newest | In range | Outside |
+|---|---:|---|---|---:|---:|
+| `1784332800000` → `1784505600000` | 48 | 2026-07-16 02:00Z | 2026-07-19 14:00Z | 2 | 46 |
+| omitted → `1784505600000` | 100 | 2026-07-13 22:00Z | 2026-07-19 14:00Z | 100 | 0 |
+| `1784332800000` → `1784419200000` | 24 | 2026-07-17 01:00Z | 2026-07-18 13:00Z | 1 | 23 |
+| `1784419200000` → `1784505600000` | 24 | 2026-07-17 02:00Z | 2026-07-19 14:00Z | 1 | 23 |
+| `1784246400000` → `1784332800000` | 24 | 2026-07-17 00:00Z | 2026-07-17 23:00Z | 24 | 0 |
+| `1784505600000` → `1784592000000` | 24 | 2026-07-20 00:00Z | 2026-07-20 23:00Z | 24 | 0 |
+
+For the exact two-day target, the 46 outside rows were every hourly timestamp from July 16 02:00Z
+through July 17 23:00Z. The July 18 request returned July 17 01:00Z–23:00Z plus July 18 13:00Z.
+The July 19 request returned July 17 02:00Z–23:00Z, July 18 13:00Z, and July 19 14:00Z. Thus the
+provider did not apply `startTime` as a strict lower-bound filter when the target window contained
+fewer candle records than its calculated row count. An end-only request and a `limit=10` request
+showed that `endTime` still selected the newest available records before the boundary. The latter
+returned July 17 16:00Z–23:00Z plus the two target-weekend records.
+
+With the exact start and `endTime=1784505600001`, the response grew from 48 to 49 rows and began at
+July 16 01:00Z. This matches Bitget's documented one-extra-interval rounding warning. Moving only
+the start 1 ms later did not alter the 48-row response. These observations distinguish documented
+end rounding from the separate, undocumented sparse-window backfill behavior.
+
+The production adapter remains correct: it treats provider ordering as untrusted, pages backward
+from the oldest returned timestamp, stops once the page reaches the requested start, and clips all
+output to `[start, end)`. A live `page_limit=1` run took three pages, received the two target records
+plus one older record, and retained exactly July 18 13:00Z and July 19 14:00Z. There is no pagination
+defect to correct.
 
 ## Reference and source-session verification — 2026-09-12
 
@@ -97,9 +132,12 @@ For comparison, the evidenced post-rollout `RMRNAUSDT` weekend
 `[2026-07-18T00:00:00Z, 2026-07-20T00:00:00Z)` has 48 expected 24/7 hourly intervals. The live API
 returned 48 rows but only 2 were inside the requested range (`2026-07-18T13:00:00Z` and
 `2026-07-19T14:00:00Z`); 46 boundary-spillover rows were clipped. The quality result therefore
-reports 46 `MISSING_WHILE_EXPECTED_OPEN` intervals and `FAIL`. An independent read-only `bgc`
-request reproduced the same provider rows. A documented ability to trade does not guarantee an
-hourly candle when no qualifying trade prints.
+reports 46 `MISSING_WHILE_EXPECTED_OPEN` intervals and `FAIL`. Exact-window, end-only, adjacent-day,
+nearby control, page-size, and alignment probes confirm that the provider's history contains only
+those two target-window candle records; this is not a SessionZero pagination bug. An independent
+read-only `bgc` request reproduced all 48 rows. The result is confirmed provider-history sparsity,
+but the API does not establish whether each absent record means no qualifying trade, an upstream
+omission, or another cause. It must not be described as a confirmed feed outage.
 
 ## Direct API / Agent Hub cross-check
 

@@ -27,12 +27,18 @@
   unknowns because cited RAAL eligibility does not cover those timestamps.
 - Official Bitget evidence places `RMRNAUSDT` in a 24/7 rollout on `2026-07-17 03:40`. Its tested
   July 18–20 weekend had 2 in-range candles, 46 missing-while-open intervals, and quality `FAIL`.
-- Independent read-only `bgc` output reproduced the RMRNA provider rows.
+- Follow-up verification on `2026-09-13` used exact, end-only, adjacent-day, nearby control,
+  page-size, and millisecond-alignment probes. It confirmed that sparse two-boundary requests can
+  backfill earlier records instead of applying `startTime` as a strict response filter.
+- Independent read-only `bgc` output reproduced all 48 exact-window RMRNA provider rows.
+- A live `page_limit=1` adapter run reached both in-range candles in three backward pages and
+  clipped one older row, confirming that the SessionZero pagination cursor is correct.
 
 ## Failed
 
-- The RMRNA comparison deliberately fails quality: official source availability says 24/7 while
-  the two-day hourly dataset contains only two in-range candles.
+- The RMRNA comparison still fails quality because Bitget history contains only two candle records
+  in the verified-open two-day window. This is a confirmed provider-history gap, not a proven feed
+  outage, and no SessionZero pagination defect was found.
 
 ## Outstanding
 
@@ -46,6 +52,8 @@
 - General 24/5 evidence does not enumerate all exceptions. Holidays and generic-symbol weekends
   remain unknown unless symbol-specific evidence establishes availability.
 - Exchange calendars encode scheduled sessions, not unscheduled halts or source outages.
+- Bitget does not document the observed sparse-window `startTime` backfill behavior or explain why
+  individual expected-open intervals have no candle record. The missing records' cause is unknown.
 - Full quality reports are emitted by the command but only their summary fields are stored on the
   ingestion run.
 - `FAIL` datasets are rejected before the raw/normalized transaction; their machine report is not
@@ -75,7 +83,7 @@
 
 ## Latest commit
 
-`feat(data): add point-in-time market session semantics` (this handover's commit).
+`docs(data): record Bitget sparse history verification` (this handover's commit).
 
 ## Next exact task
 
