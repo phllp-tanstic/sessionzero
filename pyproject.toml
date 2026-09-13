@@ -29,6 +29,7 @@ dev = [
 sessionzero-verify-bitget = "sessionzero_bitget.verify:main"
 sessionzero-export-bitget-history = "sessionzero_bitget.export:main"
 sessionzero-ingest-bitget-history = "sessionzero_database.cli:main"
+sessionzero-ingest-bitget-reference = "sessionzero_database.reference_cli:main"
 sessionzero-collector = "sessionzero_collector.main:main"
 
 [tool.setuptools.packages.find]

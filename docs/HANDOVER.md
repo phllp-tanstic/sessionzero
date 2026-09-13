@@ -15,6 +15,10 @@
 - Gap quality now distinguishes expected source closure, missing while expected open, and unknown
   source availability without synthesizing observations.
 - Typed `SessionZeroContext` produces only temporal `ACTIVE`/`INACTIVE`/`UNKNOWN` primitives.
+- Public `BitgetReferenceDataProvider` validates explicit Reality/native mappings, actions, and
+  Bitget source-session metadata without authentication.
+- Raw response envelopes and versioned normalized reference records use separate PostgreSQL
+  tables; repeats deduplicate and corrections append rather than overwrite.
 
 ## Verified
 
@@ -47,6 +51,11 @@
   endpoints now provide native-ticker mapping, sessions/calendar, dividends, and splits; public UTA
   exposes stock perpetuals and their reference indices. Native Stock+ quotes and OHLC remain gated
   by signed read-only access, which was not authorized or used.
+- Production reference ingestion was verified on 2026-09-13 UTC with `RAALUSDT -> AAL`,
+  `RAAPLUSDT -> AAPL`, and `RMRNAUSDT -> MRNA`. The AAPL bundle contained 92 dividends, nine split
+  observations, one share-capital row, one suspension row, and nine raw responses. First
+  persistence wrote 105 normalized and nine raw rows; an identical repeat wrote zero normalized
+  and nine new per-run raw rows.
 
 ### Bitget-native capability matrix
 
@@ -99,6 +108,7 @@
 
 - Existing FastAPI and Next.js surfaces are unchanged.
 - One-shot CLI: `sessionzero-ingest-bitget-history`.
+- Read-only/optional-persistence CLI: `sessionzero-ingest-bitget-reference`.
 - Migration CLI: `alembic upgrade head`.
 
 ## Required env vars
@@ -110,9 +120,9 @@
 
 ## Test counts
 
-- 55 deterministic non-live/non-PostgreSQL tests.
-- 7 direct PostgreSQL integration tests.
-- 2 opt-in live Bitget tests.
+- 60 deterministic non-live/non-PostgreSQL tests.
+- 8 direct PostgreSQL integration tests.
+- 3 opt-in live Bitget tests.
 
 ## Deployment URLs
 
@@ -120,7 +130,7 @@
 
 ## Latest commit
 
-`docs(data): record Bitget sparse history verification` (no native-provider commit was created).
+`feat(data): add Bitget reference metadata ingestion` (no native-provider adapter was created).
 
 ## Next exact task
 

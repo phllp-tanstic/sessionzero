@@ -1,5 +1,12 @@
 # Architecture
 
+`BitgetReferenceDataProvider` is a narrow public, read-only boundary beside the candle client. It
+uses explicit `stock-info.code` mappings and normalizes supplemental actions plus Bitget
+source-session metadata. It neither implements `NativeEquityProvider` nor changes
+`TradingCalendarProvider`/`SourceSessionProvider`; XNYS remains the cash-session authority and no
+candle is adjusted here. Persistence is `raw envelope -> validated typed record -> versioned
+normalized table`, with per-run raw evidence and immutable normalized versions.
+
 ## Current runtime
 
 ```text

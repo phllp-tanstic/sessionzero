@@ -4,6 +4,34 @@ Status labels in this document mean `BUILT`, `VERIFIED`, `PLANNED`, `BLOCKED`, o
 All runtime observations below were unauthenticated and read-only. They are dated in the relevant
 section; the initial capability verification was made on 2026-09-12.
 
+## Implemented Bitget public reference-data contract — 2026-09-13
+
+`BitgetReferenceDataProvider` uses unauthenticated `GET` requests only: mapping uses
+`/api/v3/market/instruments` and `/api/v3/reality/market/stock-info`; actions use
+`/api/v3/reality/market/dividends`, `/api/v3/market/split-records`,
+`/api/v3/reality/market/share-capital-change`, and
+`/api/v3/reality/market/suspension-resumption-info`; source metadata uses
+`/api/v3/reality/market/states` and `/api/v3/reality/market/calendar`. Reality endpoints document
+one request/second/IP, split records five requests/second/IP, and all require no permission. The
+official sources are the Reality market-data, Reality basic-info, UTA public-config, and August
+2026 changelog pages linked below; retrieval was `2026-09-13T15:20:00Z`.
+
+Runtime differed from documentation: `tradingPeriod` was an array rather than a string;
+`states.data` was an object rather than an array and used `EST` where docs say `ET`; action dates
+were often epoch-millisecond strings; split dates were compact `YYYYMMDD` rather than
+`yyyy-MM-dd`; the terminal dividend page used `list=null` with `cursor=null`. Only verified forms
+are accepted. Contradictory identifiers, malformed dates or
+ratios, invalid types/statuses, and non-progressing pagination fail closed; empty histories are
+valid.
+
+Raw envelopes are retained in `raw_reference_observations`; validated versions use
+`reality_symbol_mappings`, `corporate_actions`, `share_capital_changes`, `suspension_records`, and
+`source_session_metadata`. With no provider action ID, identity is a SHA-256 of canonical JSON
+containing only record type and source fields. Identical later runs deduplicate normalized records;
+changed upstream fields append a new version without overwriting evidence. Bitget exposes no
+permanent identifier or publication timestamp. Availability is therefore `UNKNOWN`, and action
+coverage remains `AVAILABLE / PARTIAL`, unsuitable as an authoritative point-in-time master.
+
 ## Native U.S. equity provider verification gate — 2026-09-13
 
 Verification timestamp: `2026-09-13T10:32:29Z`.
@@ -109,7 +137,7 @@ trade endpoint was called.
 | Delayed U.S. equity market data | **UNAVAILABLE** | No documented public native-equity delayed endpoint | Stock+ account is required for documented Level 1 real-time data | Official Stock+ material describes Level 1 real-time quotes after account opening, not a public delayed API | Absence is limited to the current reviewed Bitget documentation; marketing pages are not treated as an API contract. |
 | U.S. stock futures / stock-related contracts | **AVAILABLE** | UTA instruments, tickers, market/mark/index candles, index components; Agent Hub `market` | None | Live UTA metadata returned 321 `USDT-FUTURES` rows marked `isRwa=YES` or `symbolType=stock`; `AAPLUSDT` was online | Useful as a cross-asset reference input only; perpetual funding, venue liquidity, and composite-index construction differ from native cash shares. |
 | Corporate-action metadata | **AVAILABLE / PARTIAL** for Reality-supported codes | Reality `dividends`, `share-capital-change`, `suspension-resumption-info`, and UTA `split-records` | None | Official August changelog and schemas; live AAPL dividends and four current split records returned `code=00000` | Coverage/completeness against an authoritative corporate-action master has not been established. |
-| Splits / dividends | **AVAILABLE / PARTIAL** | `GET /api/v3/reality/market/dividends`; `GET /api/v3/market/split-records` | None | Live AAPL query returned five cash-dividend records; split records returned KORU, MSTU, MUU, and SOXS events | Dividend query is keyed by native ticker. Runtime split dates used `YYYYMMDD`, while docs specify `yyyy-MM-dd`; consumers must fail closed on schema drift. |
+| Splits / dividends | **AVAILABLE / PARTIAL** | `GET /api/v3/reality/market/dividends`; `GET /api/v3/market/split-records` | None | Full live AAPL pagination returned 92 dividend rows and five historical splits; the public split feed added four current records | Dividend query is keyed by native ticker. Runtime split dates used `YYYYMMDD`, while docs specify `yyyy-MM-dd`; consumers must fail closed on schema drift. |
 | Stock-market trading-session metadata | **AVAILABLE**, with authority limitations | `GET /api/v3/reality/market/states`; `calendar`; `stock-info` | None | Live states returned pre/regular/after/overnight windows; calendar returned weekend rules and dated closures; symbol mapping returned eligible periods | Runtime says `EST` even though docs describe `ET`; no historical effective-dating or early-close contract was verified. Keep XNYS as authoritative cash calendar and use this only for Bitget source availability. |
 | Public / unauthenticated availability | **AVAILABLE** for a partial substrate | Reality reference endpoints and generic UTA market endpoints | None | All mapping, states, calendar, dividends, splits, Reality ticker/candles, and futures checks succeeded without credentials | Does not extend to Stock+ native quotes/OHLC, Reality depth, or Reality platform fills. |
 | Authenticated-but-read-only availability | **GATED** | Stock+ market data; Reality depth/fills | Signed key; some feeds additionally require entitlement/whitelist | Stock+ docs label endpoints `Stock+ Market Data (read-only)`; public probe returned `40006`; Reality guide gates depth/fills | No private access was requested or used. Account eligibility, KYC, jurisdiction, and market-data entitlement remain unresolved. |
@@ -123,6 +151,7 @@ trade endpoint was called.
 - Reality reference-market endpoints: https://www.bitget.com/docs/catalog/reality/market-data
 - Reality company and corporate-action endpoints:
   https://www.bitget.com/docs/catalog/reality/basic-info
+- UTA public split records: https://www.bitget.com/docs/catalog/market/public-config
 - August 2026 endpoint changelog: https://www.bitget.com/docs/uta/changelog/2026-08
 - Stock+ native stock quotes, static data, OHLC history, depth, intraday, and trades:
   https://www.bitget.com/zh-CN/docs/catalog/stock-plus/stock-quotes

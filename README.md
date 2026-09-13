@@ -1,5 +1,10 @@
 # SessionZero
 
+Inspect public Reality reference metadata with
+`sessionzero-ingest-bitget-reference [--symbol RAAPLUSDT]`; add `--persist` only with an approved
+PostgreSQL `DATABASE_URL`. This is supplemental mapping/corporate-action evidence, not native-stock
+OHLC or proof of complete coverage or display rights.
+
 Price discovery for the market session that did not exist before 24/7 equities.
 
 When the U.S. cash market closes, tokenized equities keep trading while new information continues

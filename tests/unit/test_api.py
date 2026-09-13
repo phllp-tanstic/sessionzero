@@ -17,7 +17,7 @@ def test_health_and_capabilities() -> None:
     assert client.get("/health").json()["phase"] == "PHASE_0"
     response = client.get("/api/v1/capabilities")
     assert response.status_code == 200
-    assert len(response.json()["capabilities"]) == 6
+    assert len(response.json()["capabilities"]) == 12
 
 
 def test_markets_has_no_fixture_fallback_on_provider_failure() -> None:

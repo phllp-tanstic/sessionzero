@@ -6,7 +6,7 @@ from sessionzero_schemas import CapabilityStatus, ProviderCapability
 
 
 def phase_zero_capabilities() -> list[ProviderCapability]:
-    observed_at = datetime(2026, 9, 12, 13, 50, tzinfo=UTC)
+    observed_at = datetime(2026, 9, 13, 15, 20, tzinfo=UTC)
     return [
         ProviderCapability(
             capability="rtoken_instruments",
@@ -52,6 +52,52 @@ def phase_zero_capabilities() -> list[ProviderCapability]:
                 "API key and Reality whitelist required; unauthenticated request returned 40006."
             ),
             documented_endpoint="GET /api/v3/account/reality-fills",
+            observed_at=observed_at,
+        ),
+        ProviderCapability(
+            capability="reality_native_mapping",
+            status=CapabilityStatus.AVAILABLE,
+            reason="Officially documented public metadata; permanent identifiers are absent.",
+            documented_endpoint="GET /api/v3/reality/market/stock-info",
+            observed_at=observed_at,
+        ),
+        ProviderCapability(
+            capability="reality_dividends",
+            status=CapabilityStatus.AVAILABLE,
+            reason="Public endpoint is available; completeness is not established.",
+            documented_endpoint="GET /api/v3/reality/market/dividends",
+            observed_at=observed_at,
+        ),
+        ProviderCapability(
+            capability="reality_splits",
+            status=CapabilityStatus.AVAILABLE,
+            reason="Public Reality history and public split-record endpoints; coverage is partial.",
+            documented_endpoint=(
+                "GET /api/v3/reality/market/dividends; GET /api/v3/market/split-records"
+            ),
+            observed_at=observed_at,
+        ),
+        ProviderCapability(
+            capability="reality_share_changes",
+            status=CapabilityStatus.AVAILABLE,
+            reason="Public point-in-time record; historical completeness is not established.",
+            documented_endpoint="GET /api/v3/reality/market/share-capital-change",
+            observed_at=observed_at,
+        ),
+        ProviderCapability(
+            capability="reality_suspensions",
+            status=CapabilityStatus.AVAILABLE,
+            reason="Public point-in-time record; historical completeness is not established.",
+            documented_endpoint="GET /api/v3/reality/market/suspension-resumption-info",
+            observed_at=observed_at,
+        ),
+        ProviderCapability(
+            capability="reality_source_session_metadata",
+            status=CapabilityStatus.AVAILABLE,
+            reason="Public states and calendar metadata, retained as source semantics.",
+            documented_endpoint=(
+                "GET /api/v3/reality/market/states; GET /api/v3/reality/market/calendar"
+            ),
             observed_at=observed_at,
         ),
     ]

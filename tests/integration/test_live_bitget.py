@@ -3,7 +3,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
-from sessionzero_bitget import BitgetMarketClient, export_history
+from sessionzero_bitget import BitgetMarketClient, BitgetReferenceDataProvider, export_history
 
 
 @pytest.mark.live
@@ -42,6 +42,24 @@ def test_live_reality_history_export(tmp_path: Path) -> None:
     assert result.record_count == len(records)
     assert records
     assert all(record["source"] == "bitget_uta_v3" for record in records)
+
+
+@pytest.mark.live
+@pytest.mark.skipif(
+    os.getenv("SESSIONZERO_RUN_LIVE_TESTS") != "1",
+    reason="set SESSIONZERO_RUN_LIVE_TESTS=1 to call Bitget",
+)
+def test_live_public_reference_mapping_and_actions() -> None:
+    with BitgetMarketClient() as client:
+        provider = BitgetReferenceDataProvider(client)
+        mappings = {
+            symbol: provider.get_mapping(symbol)[0].native_ticker
+            for symbol in ("RAALUSDT", "RAAPLUSDT", "RMRNAUSDT")
+        }
+        dividends, dividend_splits, raw = provider.get_dividends_and_splits(mappings["RAAPLUSDT"])
+    assert mappings == {"RAALUSDT": "AAL", "RAAPLUSDT": "AAPL", "RMRNAUSDT": "MRNA"}
+    assert dividends or dividend_splits
+    assert raw
 
 
 def _read_export(path: Path) -> list[dict[str, object]]:

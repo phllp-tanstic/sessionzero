@@ -25,6 +25,13 @@ class CandleObservation:
     endpoint: str
 
 
+@dataclass(frozen=True, slots=True)
+class PublicResponse:
+    data: Any
+    request_time: datetime
+    payload: dict[str, Any]
+
+
 class _Envelope(BaseModel):
     model_config = ConfigDict(extra="allow")
 
@@ -127,6 +134,15 @@ class BitgetMarketClient:
                 )
             return envelope
         raise AssertionError("request retry loop exited unexpectedly")
+
+    def request_public(self, path: str, params: dict[str, str] | None = None) -> PublicResponse:
+        """Return one validated public response without applying market-specific normalization."""
+        envelope = self._request(path, params or {})
+        return PublicResponse(
+            data=envelope.data,
+            request_time=_milliseconds_to_utc(envelope.requestTime),
+            payload=envelope.model_dump(mode="python"),
+        )
 
     def get_instruments(self, *, category: str = "SPOT") -> list[MarketInstrument]:
         envelope = self._request("/api/v3/market/instruments", {"category": category})

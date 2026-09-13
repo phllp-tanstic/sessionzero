@@ -1,5 +1,10 @@
 # Methodology
 
+Corporate-action evidence is supplemental. Event, announcement, effective, publication, and
+ingestion times are distinct. Records with `availability_time_status=UNKNOWN` must not be
+retroactively introduced into point-in-time research. This layer records splits but does not
+adjust OHLC, derive features, or reinterpret prior candle-quality results.
+
 ## Current phase
 
 Phase 1 currently establishes trustworthy inputs only. Reality instruments are selected by the

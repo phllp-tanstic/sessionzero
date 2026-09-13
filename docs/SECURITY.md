@@ -1,5 +1,9 @@
 # Security and Data Integrity
 
+Bitget reference ingestion uses documented public endpoints only and sends no API key, signature,
+account identifier, or order request. `--persist` requires only `DATABASE_URL`; default CLI use is
+read-only. Technical access does not grant display, redistribution, or quantitative-use rights.
+
 ## Current controls
 
 - Public Bitget endpoints only; no API key, private account, OAuth, trading, or orders.

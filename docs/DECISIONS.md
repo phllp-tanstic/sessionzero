@@ -121,3 +121,14 @@ native security metadata, real-time quotes, session-filtered candles, and histor
 remains `GATED`: signed access was not authorized, eligibility and entitlements are unresolved,
 and reviewed terms do not establish SessionZero's intended non-display, derived-output,
 public-display, or redistribution rights. No provider or adapter is selected by this decision.
+
+## ADR-013 — Version Bitget reference evidence without overwriting corrections
+
+Status: **ACCEPTED**
+
+Public Bitget Reality mapping, corporate actions, and source-session metadata use a dedicated
+provider boundary and raw/normalized tables. They are not native-equity OHLC and do not replace a
+calendar provider. Because Bitget exposes no stable action ID, a canonical hash of provider source
+fields identifies each normalized version. Identical retrievals deduplicate; changed source fields
+append a version and raw evidence. Missing publication timestamps remain explicitly `UNKNOWN`, and
+partial coverage is never described as authoritative.

@@ -40,7 +40,9 @@ def database_engine(migrated_engine: Engine) -> Iterator[Engine]:
     with migrated_engine.begin() as connection:
         connection.execute(
             text(
-                "TRUNCATE raw_market_observations, normalized_market_candles, "
+                "TRUNCATE raw_reference_observations, reality_symbol_mappings, "
+                "corporate_actions, share_capital_changes, suspension_records, "
+                "source_session_metadata, raw_market_observations, normalized_market_candles, "
                 "ingestion_runs RESTART IDENTITY CASCADE"
             )
         )
