@@ -294,3 +294,121 @@ class SourceSessionMetadataRow(Base):
     endpoint: Mapped[str] = mapped_column(String(255), nullable=False)
     source_version: Mapped[str] = mapped_column(String(64), nullable=False)
     raw_or_derived: Mapped[str] = mapped_column(String(16), nullable=False)
+
+
+class UniverseSnapshotRow(Base):
+    __tablename__ = "universe_snapshots"
+
+    universe_version: Mapped[str] = mapped_column(String(64), primary_key=True)
+    schema_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    transformation_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    source: Mapped[str] = mapped_column(String(64), nullable=False)
+    source_endpoint: Mapped[str] = mapped_column(String(255), nullable=False)
+    source_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    interval: Mapped[str] = mapped_column(String(16), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )
+
+
+class UniverseDiscoveryObservationRow(Base):
+    __tablename__ = "universe_discovery_observations"
+    __table_args__ = (Index("ix_universe_observation_version", "universe_version", "observed_at"),)
+
+    observation_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    universe_version: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("universe_snapshots.universe_version", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    observed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    raw_provider_payload: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+
+
+class UniverseSnapshotMemberRow(Base):
+    __tablename__ = "universe_snapshot_members"
+    __table_args__ = (
+        UniqueConstraint("universe_version", "reality_symbol", name="uq_universe_member_symbol"),
+        Index("ix_universe_member_eligibility", "universe_version", "technically_eligible"),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    universe_version: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("universe_snapshots.universe_version", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    reality_symbol: Mapped[str] = mapped_column(String(64), nullable=False)
+    base_coin: Mapped[str] = mapped_column(String(64), nullable=False)
+    quote_coin: Mapped[str] = mapped_column(String(64), nullable=False)
+    native_ticker: Mapped[str | None] = mapped_column(String(32))
+    instrument_status: Mapped[str] = mapped_column(String(32), nullable=False)
+    is_reality: Mapped[bool] = mapped_column(nullable=False)
+    launch_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    price_precision: Mapped[int | None] = mapped_column(Integer)
+    quantity_precision: Mapped[int | None] = mapped_column(Integer)
+    trading_periods: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+    weekend_tradable: Mapped[bool | None] = mapped_column()
+    mapping_status: Mapped[str] = mapped_column(String(16), nullable=False)
+    source_session_status: Mapped[str] = mapped_column(String(32), nullable=False)
+    source_session_mode: Mapped[str] = mapped_column(String(32), nullable=False)
+    technically_eligible: Mapped[bool] = mapped_column(nullable=False)
+    exclusion_reasons: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+    raw_metadata_key: Mapped[str] = mapped_column(String(64), nullable=False)
+
+
+class HistoricalIngestionManifestRow(Base):
+    __tablename__ = "historical_ingestion_manifests"
+
+    manifest_version: Mapped[str] = mapped_column(String(64), primary_key=True)
+    universe_version: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("universe_snapshots.universe_version", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    transformation_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    git_commit: Mapped[str] = mapped_column(String(64), nullable=False)
+    generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class HistoricalIngestionManifestEntryRow(Base):
+    __tablename__ = "historical_ingestion_manifest_entries"
+    __table_args__ = (
+        UniqueConstraint(
+            "manifest_version",
+            "symbol",
+            "interval",
+            "requested_start",
+            "requested_end",
+            name="uq_manifest_entry_range",
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    manifest_version: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("historical_ingestion_manifests.manifest_version", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    symbol: Mapped[str] = mapped_column(String(64), nullable=False)
+    native_ticker: Mapped[str | None] = mapped_column(String(32))
+    interval: Mapped[str] = mapped_column(String(16), nullable=False)
+    requested_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    requested_end: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    observed_start: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    observed_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    page_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    raw_records_received: Mapped[int] = mapped_column(Integer, nullable=False)
+    normalized_records_written: Mapped[int] = mapped_column(Integer, nullable=False)
+    quality_status: Mapped[str | None] = mapped_column(String(16))
+    missing_while_expected_open: Mapped[int] = mapped_column(Integer, nullable=False)
+    source_session_unknown: Mapped[int] = mapped_column(Integer, nullable=False)
+    ingestion_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ingestion_runs.run_id", ondelete="RESTRICT")
+    )
+    status: Mapped[str] = mapped_column(String(32), nullable=False)
+    failure_code: Mapped[str | None] = mapped_column(String(128))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=func.now()
+    )

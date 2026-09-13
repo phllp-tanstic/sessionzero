@@ -19,6 +19,10 @@
   Bitget source-session metadata without authentication.
 - Raw response envelopes and versioned normalized reference records use separate PostgreSQL
   tables; repeats deduplicate and corrections append rather than overwrite.
+- Metadata-derived Reality snapshots now retain complete discovery envelopes, content-address
+  canonical members, and attach typed technical eligibility/exclusion evidence.
+- Historical manifests deterministically ingest the first N eligible members through the existing
+  quality/session/persistence path and preserve isolated failures per symbol.
 
 ## Verified
 
@@ -56,6 +60,10 @@
   observations, one share-capital row, one suspension row, and nine raw responses. First
   persistence wrote 105 normalized and nine raw rows; an identical repeat wrote zero normalized
   and nine new per-run raw rows.
+- Live universe verification at `2026-09-13T16:25:55Z` discovered 1,173 Reality instruments with
+  1,173 mappings and technical eligibilities. One source-session assessment was known and 1,172
+  were unknown without exclusion. The canonical first-three two-hour manifest selected RAAL,
+  RAAOI, and RAAON; all received two rows, passed quality, and linked to successful ingestion runs.
 
 ### Bitget-native capability matrix
 
@@ -109,6 +117,7 @@
 - Existing FastAPI and Next.js surfaces are unchanged.
 - One-shot CLI: `sessionzero-ingest-bitget-history`.
 - Read-only/optional-persistence CLI: `sessionzero-ingest-bitget-reference`.
+- Snapshot/manifest CLI: `sessionzero-build-reality-manifest`.
 - Migration CLI: `alembic upgrade head`.
 
 ## Required env vars
@@ -120,9 +129,9 @@
 
 ## Test counts
 
-- 60 deterministic non-live/non-PostgreSQL tests.
-- 8 direct PostgreSQL integration tests.
-- 3 opt-in live Bitget tests.
+- 63 deterministic non-live/non-PostgreSQL tests.
+- 10 direct PostgreSQL integration tests.
+- 4 opt-in live Bitget tests.
 
 ## Deployment URLs
 
@@ -130,7 +139,7 @@
 
 ## Latest commit
 
-`feat(data): add Bitget reference metadata ingestion` (no native-provider adapter was created).
+`feat(data): add versioned Reality universe manifests` (no model or native provider was created).
 
 ## Next exact task
 

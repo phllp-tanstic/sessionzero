@@ -32,6 +32,13 @@ class PublicResponse:
     payload: dict[str, Any]
 
 
+@dataclass(frozen=True, slots=True)
+class InstrumentDiscovery:
+    instruments: tuple[MarketInstrument, ...]
+    payload: dict[str, Any]
+    request_time: datetime
+
+
 class _Envelope(BaseModel):
     model_config = ConfigDict(extra="allow")
 
@@ -145,25 +152,35 @@ class BitgetMarketClient:
         )
 
     def get_instruments(self, *, category: str = "SPOT") -> list[MarketInstrument]:
-        envelope = self._request("/api/v3/market/instruments", {"category": category})
-        if not isinstance(envelope.data, list):
+        return list(self.get_instrument_discovery(category=category).instruments)
+
+    def get_instrument_discovery(self, *, category: str = "SPOT") -> InstrumentDiscovery:
+        response = self.request_public("/api/v3/market/instruments", {"category": category})
+        if not isinstance(response.data, list):
             raise BitgetProviderError(
                 kind="UPSTREAM_SCHEMA_ERROR",
                 message="Bitget instrument data is not a list",
             )
-        if not envelope.data:
+        if not response.data:
             raise BitgetProviderError(
                 kind="UPSTREAM_EMPTY_RESULT",
                 message="Bitget returned no instruments",
             )
         ingested_at = self._clock()
         try:
-            return [self._normalize_instrument(item, ingested_at) for item in envelope.data]
+            instruments = tuple(
+                self._normalize_instrument(item, ingested_at) for item in response.data
+            )
         except (KeyError, TypeError, ValueError, ValidationError) as exc:
             raise BitgetProviderError(
                 kind="UPSTREAM_SCHEMA_ERROR",
                 message="Bitget instrument data failed validation",
             ) from exc
+        return InstrumentDiscovery(
+            instruments=instruments,
+            payload=response.payload,
+            request_time=response.request_time,
+        )
 
     def get_reality_instruments(self) -> list[MarketInstrument]:
         instruments = [item for item in self.get_instruments() if item.is_reality]

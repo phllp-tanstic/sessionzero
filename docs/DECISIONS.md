@@ -132,3 +132,14 @@ calendar provider. Because Bitget exposes no stable action ID, a canonical hash 
 fields identifies each normalized version. Identical retrievals deduplicate; changed source fields
 append a version and raw evidence. Missing publication timestamps remain explicitly `UNKNOWN`, and
 partial coverage is never described as authoritative.
+
+## ADR-014 — Content-address Reality universes and preserve per-symbol manifest failures
+
+Status: **ACCEPTED**
+
+Reality universes are immutable normalized snapshots derived only from retained Bitget metadata.
+Their identity hashes canonical member content together with schema and transformation versions;
+wall-clock generation time is separate. Historical manifests deterministically choose the first N
+technically eligible members and reuse the accepted candle path. Each symbol commits its accepted
+candles independently, so an isolated failure remains an explicit manifest entry while other
+members continue. A manifest is Reality-side evidence, not a complete research dataset.

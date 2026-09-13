@@ -3,7 +3,12 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
-from sessionzero_bitget import BitgetMarketClient, BitgetReferenceDataProvider, export_history
+from sessionzero_bitget import (
+    BitgetMarketClient,
+    BitgetReferenceDataProvider,
+    build_reality_universe_snapshot,
+    export_history,
+)
 
 
 @pytest.mark.live
@@ -60,6 +65,20 @@ def test_live_public_reference_mapping_and_actions() -> None:
     assert mappings == {"RAALUSDT": "AAL", "RAAPLUSDT": "AAPL", "RMRNAUSDT": "MRNA"}
     assert dividends or dividend_splits
     assert raw
+
+
+@pytest.mark.live
+@pytest.mark.skipif(
+    os.getenv("SESSIONZERO_RUN_LIVE_TESTS") != "1",
+    reason="set SESSIONZERO_RUN_LIVE_TESTS=1 to call Bitget",
+)
+def test_live_metadata_derived_reality_universe() -> None:
+    with BitgetMarketClient() as client:
+        snapshot = build_reality_universe_snapshot(client)
+    symbols = tuple(member.reality_symbol for member in snapshot.members)
+    assert symbols
+    assert all(member.is_reality for member in snapshot.members)
+    assert symbols == tuple(sorted(symbols))
 
 
 def _read_export(path: Path) -> list[dict[str, object]]:

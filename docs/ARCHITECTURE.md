@@ -7,6 +7,14 @@ source-session metadata. It neither implements `NativeEquityProvider` nor change
 candle is adjusted here. Persistence is `raw envelope -> validated typed record -> versioned
 normalized table`, with per-run raw evidence and immutable normalized versions.
 
+Universe construction is a separate control-plane slice over the same public clients. One
+instrument discovery envelope and one `stock-info` envelope produce a canonically sorted snapshot.
+The snapshot hash addresses normalized membership plus schema/transformation version; repeated
+observations retain new raw envelopes without duplicating logical members. A historical manifest
+selects the first N eligible members, invokes the existing bounded pagination, source-session,
+quality, and candle-persistence path per symbol, and records every result independently. An
+isolated failure does not erase successful peers or masquerade as coverage.
+
 ## Current runtime
 
 ```text
@@ -33,6 +41,11 @@ Bounded one-shot history ingestion
                                                    ingestion_runs
                                                    raw_market_observations
                                                    normalized_market_candles
+
+Metadata-derived universe --> universe_snapshots / universe_snapshot_members
+        |                     universe_discovery_observations (raw envelopes)
+        +-- first N eligible --> existing bounded history path
+                              --> historical_ingestion_manifests / entries
 
 Temporal classification
         |

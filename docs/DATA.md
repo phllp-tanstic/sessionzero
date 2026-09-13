@@ -32,6 +32,42 @@ changed upstream fields append a new version without overwriting evidence. Bitge
 permanent identifier or publication timestamp. Availability is therefore `UNKNOWN`, and action
 coverage remains `AVAILABLE / PARTIAL`, unsuitable as an authoritative point-in-time master.
 
+## Versioned Reality universe and historical manifest — 2026-09-13
+
+The authoritative Reality universe is generated from the complete public
+`GET /api/v3/market/instruments?category=SPOT` observation and joined to the complete public
+`GET /api/v3/reality/market/stock-info` observation by exact provider symbol. There is no
+handwritten production symbol list and no prefix-removal mapping. `reality_universe.v1` members are
+sorted by Reality symbol and preserve instrument/mapping/trading metadata, current technical
+eligibility, typed exclusions, source-session assessment, and a hash linking the raw source rows.
+
+`universe_version` is SHA-256 over canonical normalized members, requested interval, schema
+version, and transformation version. `generated_at` and provider envelope request times are not
+the identity. A materially changed normalized field changes the version; an identical logical
+snapshot can receive another raw discovery observation without duplicating members.
+
+Eligibility is data-plane only: the instrument must be online, have an explicit valid native
+mapping, and support the requested interval. Codes are `INSTRUMENT_NOT_ONLINE`,
+`MISSING_NATIVE_MAPPING`, `UNSUPPORTED_INTERVAL`, `MALFORMED_METADATA`, and
+`DATA_QUALITY_FAILURE`. Malformed upstream metadata fails the snapshot closed. Source-session
+`UNKNOWN` stays visible but is not by itself a permanent exclusion. No return, alpha, Sharpe, or
+model result participates.
+
+The manifest records requested and observed ranges, pages, provider rows received, newly inserted
+normalized candles, quality counts/status, ingestion run, and exact failure. `SUCCEEDED`,
+`SUCCEEDED_WITH_WARNINGS`, `FAILED`, `UNAVAILABLE`, and `UNKNOWN` are explicit. Processing
+continues after an isolated symbol failure. One raw page/envelope can produce many normalized
+records; conversely deduplication may make `normalized_records_written` smaller than provider rows
+received. Raw counts therefore measure evidence received, not normalized inserts.
+
+The first live run at `2026-09-13T16:25:55Z` discovered 1,173 Reality instruments: 1,173 eligible,
+zero ineligible, and 1,173 explicit native mappings. Snapshot-time source-session assessment was
+known for one and unknown for 1,172; unknown did not exclude them. The deterministic first-three
+subset was `RAALUSDT`, `RAAOIUSDT`, `RAAONUSDT` over
+`[2026-09-11T14:00:00Z, 2026-09-11T16:00:00Z)`. Each received two rows on one page, passed quality,
+persisted two normalized rows, and retained its own ingestion-run linkage. This identifies only the
+Reality leg; the native-equity leg remains missing and no complete research dataset is claimed.
+
 ## Native U.S. equity provider verification gate — 2026-09-13
 
 Verification timestamp: `2026-09-13T10:32:29Z`.

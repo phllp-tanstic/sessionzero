@@ -5,6 +5,11 @@ Inspect public Reality reference metadata with
 PostgreSQL `DATABASE_URL`. This is supplemental mapping/corporate-action evidence, not native-stock
 OHLC or proof of complete coverage or display rights.
 
+Build a metadata-derived, versioned Reality snapshot and a deliberately small bounded-history
+manifest with `sessionzero-build-reality-manifest --start ... --end ... --subset-size 3`. The subset
+is the first N technically eligible symbols in canonical order; it is not selected using returns or
+model results. This command requires PostgreSQL and does not fetch native-equity data.
+
 Price discovery for the market session that did not exist before 24/7 equities.
 
 When the U.S. cash market closes, tokenized equities keep trading while new information continues

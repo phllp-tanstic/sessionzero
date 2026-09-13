@@ -24,6 +24,14 @@ primitives, not Discovery State, Fair Value, Confidence, Gap, or a trading signa
 
 No predictive hypothesis is tested and no performance metric is reported in this phase.
 
+Reality universe eligibility is objective and fixed before any future experiment: provider Reality
+identity, online status, explicit native mapping, supported interval, and observed ingestion quality.
+The bounded verification subset is the first N eligible symbols after canonical sorting. Failures
+remain in the manifest and the subset is never changed to improve its appearance. Future research
+must reference `universe_version`, `manifest_version`, `transformation_version`, and `git_commit`;
+these Reality-side identities do not imply a complete dataset while native-equity observations are
+gated.
+
 The 2026-09-13 native-equity provider gate did not authorize a reference dataset. Provider
 documentation, free plans, or test fixtures cannot substitute for credentials and rights covering
 non-display quantitative use. Consequently no native close/open target, split-adjusted series,

@@ -27,10 +27,15 @@ def test_upgrade_downgrade_and_restore(alembic_config: Config) -> None:
             "share_capital_changes",
             "suspension_records",
             "source_session_metadata",
+            "universe_snapshots",
+            "universe_discovery_observations",
+            "universe_snapshot_members",
+            "historical_ingestion_manifests",
+            "historical_ingestion_manifest_entries",
         }
         with engine.connect() as connection:
             assert connection.scalar(text("SELECT version_num FROM alembic_version")) == (
-                "20260913_03"
+                "20260913_04"
             )
         command.downgrade(alembic_config, "20260912_01")
         legacy_run_id = uuid.uuid4()

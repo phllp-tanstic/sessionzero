@@ -19,11 +19,23 @@ from .reference import (
     SplitRecord,
     SuspensionRecord,
 )
+from .universe import (
+    HistoricalIngestionManifest,
+    HistoricalManifestEntry,
+    ManifestEntryStatus,
+    RealityUniverseSnapshot,
+    UniverseEligibilityReason,
+    UniverseMappingStatus,
+    UniverseMember,
+)
 
 __all__ = [
     "CandleQualityReport",
     "CapabilityStatus",
     "DividendRecord",
+    "HistoricalIngestionManifest",
+    "HistoricalManifestEntry",
+    "ManifestEntryStatus",
     "MarketCandle",
     "MarketClosure",
     "MarketInstrument",
@@ -36,9 +48,13 @@ __all__ = [
     "QualityStatus",
     "RawOrDerived",
     "RealitySymbolMapping",
+    "RealityUniverseSnapshot",
     "ReferenceActionType",
     "ShareCapitalChange",
     "SourceSessionMetadata",
     "SplitRecord",
     "SuspensionRecord",
+    "UniverseEligibilityReason",
+    "UniverseMappingStatus",
+    "UniverseMember",
 ]
