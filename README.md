@@ -9,7 +9,7 @@ uncertainty and execution costs.
 
 ## Current status
 
-`PHASE 1 — DATA PLANE (POINT-IN-TIME MARKET SESSION SEMANTICS)`
+`PHASE 1 — DATA PLANE (NATIVE EQUITY PROVIDER ACCESS GATED)`
 
 - **BUILT:** the Phase 0 adapter/export/API/web foundation plus Alembic migrations, PostgreSQL raw
   observation and normalized-candle persistence, ingestion-run audit metadata, and a one-shot
@@ -17,7 +17,11 @@ uncertainty and execution costs.
   calendar, and evidence-backed point-in-time Bitget source-session semantics.
 - **VERIFIED:** unauthenticated instrument, ticker, current-candle, and historical-candle access on
   2026-09-12. Reality depth and platform fills are gated.
-- **PLANNED:** broader ingestion, collectors, native-equity providers, and all quantitative layers.
+- **GATED:** native-equity implementation. Massive is the preferred technical candidate, but no
+  provider credential or project-appropriate non-display/public-product license is present. Alpaca
+  Basic's IEX-only feed is insufficient as the reference close; Twelve Data also requires resolved
+  tier and licensing terms. No speculative adapter or fixture-backed live claim was added.
+- **PLANNED:** broader ingestion, collectors, and all quantitative layers after this gate clears.
 - **NOT BUILT:** fair value, state, confidence, gap, conviction, backtesting, and execution.
 
 The locked eventual pipeline is `SENSE → FAIR VALUE → STATE → GAP → CONVICTION → EXECUTE`.

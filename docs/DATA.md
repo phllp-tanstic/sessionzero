@@ -4,6 +4,190 @@ Status labels in this document mean `BUILT`, `VERIFIED`, `PLANNED`, `BLOCKED`, o
 All runtime observations below were unauthenticated and read-only. They are dated in the relevant
 section; the initial capability verification was made on 2026-09-12.
 
+## Native U.S. equity provider verification gate — 2026-09-13
+
+Verification timestamp: `2026-09-13T10:32:29Z`.
+
+No native-equity provider is selected. The technical candidates can all be reached from a remote
+worker over authenticated HTTPS, but this workspace has no provider credentials and none of the
+reviewed self-service terms establish the rights SessionZero needs for its intended research,
+strategy-derived outputs, and eventual public application. Under ADR-011 the implementation gate
+is therefore `GATED`; no adapter, symbol mapping, historical slice, or database schema was added.
+
+| Requirement | Massive | Alpaca Market Data | Twelve Data |
+|---|---|---|---|
+| U.S. stock coverage | All U.S. stocks; official product page says 100% coverage across exchanges, dark pools, and FINRA facilities | Basic is IEX only; Algo Trader Plus is SIP/all U.S. exchanges | U.S. equities/ETFs; provider advertises all U.S. markets but does not identify a consolidated reference-close feed as clearly as Massive/Alpaca SIP |
+| Historical depth | Basic: 2 years; Starter: 5; Developer: 10; Advanced: 20+ | Since 2016 on Basic and Algo Trader Plus | Daily generally back to first trading date; one-minute data from 2020-02-10; depth varies by instrument/interval |
+| OHLC | Daily and minute/custom aggregates; qualifying trades; missing bar when no eligible trade | Minute through monthly aggregate bars | Intraday and daily/weekly/monthly OHLCV |
+| Adjustment semantics | `adjusted=true` is split-adjusted; `false` is as-traded/unadjusted; response repeats the flag | Explicit `raw`, `split`, `dividend`, `spin-off`, and `all` modes | `adjust=all|splits|dividends|none`; support also states daily/weekly/monthly are split-adjusted and intraday is unadjusted, so exact behavior still needs live contract verification |
+| Corporate actions | New `/stocks/v1/splits` endpoint supplies event id, execution date, type, ratio, and historical adjustment factor; included in all stock plans | `/v1/corporate-actions` includes forward/reverse/unit splits and other actions, but warns creation may be delayed | `/splits` supplies date and ratio; available on Grow/Venture and above |
+| Instrument identity | Point-in-time ticker reference supports ticker, name, market, locale, primary-exchange MIC, CIK, composite FIGI, and share-class FIGI | U.S. stock/ETF symbol coverage; historical bars offer `asof` symbol mapping, with documented next-day mapping lag after a rename | Symbol catalog plus exchange/MIC metadata; FIGI access is higher-tier |
+| Authentication | API key in `apiKey` query parameter or official client | `APCA-API-KEY-ID` and `APCA-API-SECRET-KEY` headers | API key; examples use `apikey` query parameter |
+| Rate limit | Basic: 5 requests/minute; paid individual stock plans advertise unlimited calls | Basic: 200 historical calls/minute; Algo Trader Plus docs say 10,000/minute (marketing also says unlimited, so the API documentation is controlling) | Basic: 8 API credits/minute and 800/day; higher tiers start at 55 credits/minute; endpoint weights apply |
+| Current relevant price | Stocks Basic $0/month, Starter $29, Developer $79, Advanced $199; all are labeled individual/non-professional | Basic $0; Algo Trader Plus $99/month | Individual Basic $0, Grow $79, Pro $229, Ultra $999; current business Venture pricing is materially higher and must be confirmed for the needed rights |
+| Free/developer limitations | Basic has 2-year history, end-of-day data, and 5 calls/minute; individual license only | Free uses IEX, approximately 2.5% of U.S. volume, and excludes the latest 15 minutes; it is not a trustworthy consolidated official/reference close | Free is internal non-display, 8 credits/minute, 800/day; split endpoint requires Grow/Venture |
+| Research/non-display rights | Self-service terms restrict use to personal, non-business, non-commercial display use and separately prohibit non-display use, derived works, and an investment strategy unless licensed | Customer agreement permits personal access but forbids reproduction, distribution, sale, or commercial exploitation without written consent | Individual plans are personal/internal/non-commercial; non-display scope depends on tier; free commercial use is forbidden |
+| Public display/redistribution | Individual plans expressly forbid customer-facing display and redistribution; Business/order-form rights require sales and applicable exchange licensing | Public/commercial display or redistribution is not established by the reviewed Trading API plan or customer agreement; written consent/partner terms are required | External display requires an eligible business tier; redistribution requires an add-on or separate written agreement and may require exchange agreements |
+| Remote worker | Technically yes, over HTTPS with a key | Technically yes, over HTTPS with key/secret | Technically yes, over HTTPS with a key |
+| Gate result | Best technical fit, but `GATED` on credentials and an appropriate non-display/business license | `GATED`; free IEX is insufficient for reference close and public rights are not verified | `GATED`; credentials, split-tier access, exact adjustment behavior, and public/redistribution rights remain unresolved |
+
+### Official sources and verified implications
+
+**Massive**
+
+- Stocks overview and plan matrix: https://massive.com/docs/rest/stocks/overview
+- Current stock pricing: https://massive.com/pricing
+- Custom bars contract: https://massive.com/docs/rest/stocks/aggregates/custom-bars
+- Point-in-time ticker details: https://massive.com/docs/rest/stocks/tickers/ticker-overview
+- Current splits endpoint: https://massive.com/docs/rest/stocks/corporate-actions/splits
+- Individual market-data terms: https://massive.com/legal/market-data-terms-of-service
+- Business terms: https://massive.com/legal/businesses-terms-of-service
+
+Massive is the preferred technical candidate because it combines consolidated U.S. coverage,
+point-in-time identifiers, raw or split-adjusted aggregates, and explicit split data. That is not a
+selection: its individual terms expressly restrict non-display strategy use, derived works, public
+display, and redistribution. A suitable Business order form and any required exchange permissions
+must be reviewed before SessionZero uses the data.
+
+**Alpaca Market Data**
+
+- Plans, authentication, coverage, history, and rate limits:
+  https://docs.alpaca.markets/us/v1.1/docs/about-market-data-api
+- Historical feeds: https://docs.alpaca.markets/us/v1.1/docs/historical-stock-data-1
+- Historical bars and adjustment modes: https://docs.alpaca.markets/us/reference/stockbars
+- Corporate actions: https://docs.alpaca.markets/us/reference/corporateactions-1
+- Current customer agreement:
+  https://files.alpaca.markets/disclosures/library/AcctAppMarginAndCustAgmt.pdf
+
+Alpaca has the strongest explicit point-in-time adjustment choices and a useful corporate-action
+API. The free IEX feed represents only a small fraction of U.S. volume and cannot serve as the
+required consolidated reference close. Algo Trader Plus supplies SIP coverage, but the reviewed
+self-service agreement does not grant SessionZero public/commercial display or redistribution.
+
+**Twelve Data**
+
+- API, OHLC, adjustment, symbol, and splits contracts: https://twelvedata.com/docs
+- Current individual pricing and credit limits: https://twelvedata.com/pricing
+- Historical depth: https://support.twelvedata.com/en/articles/5656039-how-to-get-historical-prices
+- Adjustment clarification:
+  https://support.twelvedata.com/en/articles/5179064-are-the-prices-adjusted
+- Terms and redistribution boundary: https://twelvedata.com/terms
+
+Twelve Data is technically viable for OHLC and has explicit adjustment modes, but split access is
+not on the free individual tier, its published adjustment descriptions require live contract
+verification, and external display/redistribution depends on business/add-on agreements.
+
+### Access and licensing decision
+
+- `RESEARCH_USE: GATED` — no credentials or project-appropriate non-display/strategy license is
+  present. Personal experimentation rights are not treated as authorization for SessionZero.
+- `PUBLIC_DISPLAY: UNVERIFIED` — the intended public application requires provider/business and
+  potentially exchange permissions that have not been obtained and reviewed.
+- `REDISTRIBUTION: GATED` — all reviewed providers require express entitlements, add-ons, written
+  consent, or a negotiated agreement; no such grant exists in the workspace.
+
+Unblock evidence must include a named provider/account tier, credentials supplied through the
+secret environment, the applicable executed/current terms for internal quantitative use, and a
+written determination of whether raw prices, charts, and derived SessionZero outputs may be shown
+publicly. API availability or a free signup alone is not evidence of those rights.
+
+## Bitget-native reference-data verification — 2026-09-13
+
+Verification timestamp: `2026-09-13T11:42:27Z`. The status vocabulary in this matrix is specific
+to this investigation: `AVAILABLE`, `GATED`, `UNAVAILABLE`, or `UNKNOWN`. All runtime calls were
+unauthenticated, read-only requests. No account was opened, no credentials were supplied, and no
+trade endpoint was called.
+
+| Capability | Status | Endpoint/tool | Auth requirement | Evidence | Notes |
+|---|---|---|---|---|---|
+| Canonical native U.S. equity ticker for a Reality instrument | **AVAILABLE** | `GET /api/v3/reality/market/stock-info` | None; 1 request/s/IP | Live `code=00000` mappings: `RAALUSDT -> AAL`, `RAAPLUSDT -> AAPL`, `RMRNAUSDT -> MRNA` | `code` is documented as the stock ticker. It is a ticker, not a permanent security identifier. |
+| Underlying identifier / ticker mapping | **AVAILABLE** for ticker; **UNAVAILABLE** for ISIN/CUSIP/FIGI | Reality `stock-info`; Stock+ `market/static` | Reality mapping public; Stock+ static read-only authentication | Reality responses expose `symbol` and `code`; reviewed Reality, UTA, and Stock+ schemas expose no ISIN, CUSIP, or FIGI | Stock+ uses `ticker.region` such as `AAPL.US`, but no direct Reality-to-Stock+ identifier field was observed. |
+| Native-equity regular-session close | **GATED** | Stock+ `GET /api/v3/stockplus/market/quote`; `candlestick`; `history-candlestick` | Stock+ market-data read-only permission and signed headers | Docs expose `prevClose` and `Intraday` OHLC; unauthenticated `AAPL.US` quote returned `40006 Invalid ACCESS_KEY` | No live native close was inspected. The public Reality `lastPrice` is an rToken market price, not a native close. |
+| Native-equity next regular-session open | **GATED** | Stock+ quote and session-filtered candles | Stock+ market-data read-only permission and signed headers | Docs expose regular-session `open`/`Intraday` bars; no authenticated call was authorized | A future open price cannot exist before the session trades. Scheduled session timing is separately public below. |
+| Official/index/reference price tied to underlying stock | **AVAILABLE** as a derivative reference input; **GATED** as a native quote | UTA futures ticker, index components, index candles; Stock+ quote | Futures reference endpoints public; Stock+ signed auth | Live `AAPLUSDT` perp: index `331.1904438179967775`, mark `331.1`; components were Binance Index, Hyperliquid, and Pyth Pro | This is a Bitget composite for a stock perpetual, not an exchange official close or a direct native-equity print. |
+| Native U.S. stock OHLC history | **GATED** | Stock+ `GET /api/v3/stockplus/market/history-candlestick` | Stock+ market-data read-only permission and signed headers | Official schema supports minute through day/year, `Intraday`/pre/post/overnight sessions, and `NoAdjust`/`ForwardAdjust` | Reality and stock-perpetual candles are different instruments and cannot be relabeled as native stock history. |
+| Delayed U.S. equity market data | **UNAVAILABLE** | No documented public native-equity delayed endpoint | Stock+ account is required for documented Level 1 real-time data | Official Stock+ material describes Level 1 real-time quotes after account opening, not a public delayed API | Absence is limited to the current reviewed Bitget documentation; marketing pages are not treated as an API contract. |
+| U.S. stock futures / stock-related contracts | **AVAILABLE** | UTA instruments, tickers, market/mark/index candles, index components; Agent Hub `market` | None | Live UTA metadata returned 321 `USDT-FUTURES` rows marked `isRwa=YES` or `symbolType=stock`; `AAPLUSDT` was online | Useful as a cross-asset reference input only; perpetual funding, venue liquidity, and composite-index construction differ from native cash shares. |
+| Corporate-action metadata | **AVAILABLE / PARTIAL** for Reality-supported codes | Reality `dividends`, `share-capital-change`, `suspension-resumption-info`, and UTA `split-records` | None | Official August changelog and schemas; live AAPL dividends and four current split records returned `code=00000` | Coverage/completeness against an authoritative corporate-action master has not been established. |
+| Splits / dividends | **AVAILABLE / PARTIAL** | `GET /api/v3/reality/market/dividends`; `GET /api/v3/market/split-records` | None | Live AAPL query returned five cash-dividend records; split records returned KORU, MSTU, MUU, and SOXS events | Dividend query is keyed by native ticker. Runtime split dates used `YYYYMMDD`, while docs specify `yyyy-MM-dd`; consumers must fail closed on schema drift. |
+| Stock-market trading-session metadata | **AVAILABLE**, with authority limitations | `GET /api/v3/reality/market/states`; `calendar`; `stock-info` | None | Live states returned pre/regular/after/overnight windows; calendar returned weekend rules and dated closures; symbol mapping returned eligible periods | Runtime says `EST` even though docs describe `ET`; no historical effective-dating or early-close contract was verified. Keep XNYS as authoritative cash calendar and use this only for Bitget source availability. |
+| Public / unauthenticated availability | **AVAILABLE** for a partial substrate | Reality reference endpoints and generic UTA market endpoints | None | All mapping, states, calendar, dividends, splits, Reality ticker/candles, and futures checks succeeded without credentials | Does not extend to Stock+ native quotes/OHLC, Reality depth, or Reality platform fills. |
+| Authenticated-but-read-only availability | **GATED** | Stock+ market data; Reality depth/fills | Signed key; some feeds additionally require entitlement/whitelist | Stock+ docs label endpoints `Stock+ Market Data (read-only)`; public probe returned `40006`; Reality guide gates depth/fills | No private access was requested or used. Account eligibility, KYC, jurisdiction, and market-data entitlement remain unresolved. |
+| Agent Hub exposure | **AVAILABLE** only for generic UTA/derivative inputs | `bgc discover --tool market --read-only` (SDK `3.1.0`) | Public for listed market actions | Catalog includes instruments, ticker, candles/history, and index components; searches for stock info, states, calendar, dividends, and split records returned no matches | Agent Hub does not currently expose the new Reality reference endpoints or Stock+ native-equity endpoints, so direct public REST was required for verification. |
+
+### Official Bitget sources checked
+
+- Reality trading and access model: https://www.bitget.com/docs/uta/reality-trading-guide
+- UTA instruments, tickers, candles, and index components:
+  https://www.bitget.com/docs/catalog/market/market-data
+- Reality reference-market endpoints: https://www.bitget.com/docs/catalog/reality/market-data
+- Reality company and corporate-action endpoints:
+  https://www.bitget.com/docs/catalog/reality/basic-info
+- August 2026 endpoint changelog: https://www.bitget.com/docs/uta/changelog/2026-08
+- Stock+ native stock quotes, static data, OHLC history, depth, intraday, and trades:
+  https://www.bitget.com/zh-CN/docs/catalog/stock-plus/stock-quotes
+- Stock+ static-info English endpoint page:
+  https://www.bitget.com/api-doc/uta/stockplus/market/equity-etf/Get-Static-Info
+- Stock+ product/access description:
+  https://www.bitget.com/support/articles/12560603887309
+- U.S. stock Level 2 eligibility:
+  https://www.bitget.com/support/articles/12560603885453
+- Agent Hub surface: https://www.bitget.com/activity-hub/agent-hub
+- API Key Terms of Use: https://www.bitget.com/support/articles/12560603797947
+
+### Reality mapping and price semantics
+
+`stock-info` is the first reviewed official Bitget endpoint that establishes a native ticker
+mapping rather than relying on the `r` prefix. Runtime examples were:
+
+| Reality pair | Reality base coin | Native ticker (`code`) | Declared source periods | Weekend tradable |
+|---|---|---|---|---|
+| `RAALUSDT` | `rAAL` | `AAL` | overnight, pre-market, regular, after-hours | no |
+| `RAAPLUSDT` | `rAAPL` | `AAPL` | overnight, pre-market, regular, after-hours | yes |
+| `RMRNAUSDT` | `rMRNA` | `MRNA` | overnight, pre-market, regular, after-hours | no |
+
+At the live comparison, the public `RAAPLUSDT` Reality ticker reported `lastPrice=332.78` with
+instrument timestamp `1789299700870`. The public `AAPLUSDT` stock perpetual reported
+`lastPrice=331.02`, `indexPrice=331.1904438179967775`, and `markPrice=331.1` with timestamp
+`1789299696410`. The index was a three-way Bitget composite of Binance Index, Hyperliquid, and
+Pyth Pro. These timestamps are Bitget data-generation timestamps and the prices describe an rToken
+venue and a perpetual/index respectively; neither establishes the native AAPL official close.
+
+The native Stock+ `AAPL.US` quote would distinguish `lastDone`, `prevClose`, regular `open`, and
+pre/post/overnight subquotes, but the unauthenticated read-only probe returned `40006`. It was not
+retried with credentials. Consequently there is no verified live native-equity price example and
+no Reality-to-native price comparison in this gate.
+
+### Corporate actions and sessions
+
+The public Reality dividend endpoint returned five AAPL cash-dividend records, including explicit
+announcement, record, ex-right, and payment dates plus dividend-per-share. Public split records
+returned type, status, ratio, effective date, timezone, and Bitget halt bounds. This is sufficient
+to add Bitget as a future *supplemental* corporate-action signal after contract tests, but not to
+claim complete historical coverage or authoritative adjustment semantics.
+
+The public states/calendar endpoints can describe Bitget's source availability: pre-market
+04:00–09:30, regular 09:30–16:00, after-hours 16:00–20:00, and overnight 20:00–04:00, plus weekend
+rules and specific closures. They do not replace `exchange-calendars`/XNYS: the live payload used
+fixed `EST`, the docs use `ET`, no point-in-time version history was exposed, and no early-close
+representation was verified. `stock-info.tradingPeriod` also arrived as an array although its
+published schema describes a string.
+
+### Replacement boundary and access implications
+
+Bitget can now satisfy the Reality-to-native ticker mapping and can supplement corporate-action
+risk, Bitget source-session availability, and derivative/index reference inputs. It cannot yet
+satisfy SessionZero's native cash-equity OHLC/regular-close/next-open requirement without Stock+
+authentication. Even then, Stock+ would require live contract verification for history depth,
+venue/consolidation semantics, corrections, point-in-time symbol changes, and adjustment behavior.
+
+Technical public access is not a redistribution license. The reviewed API Key Terms grant a
+limited, revocable license tied to use of the platform and do not expressly authorize public
+display, redistribution, or SessionZero's intended quantitative/non-display derived-product use.
+Stock+ Level 1 is described as available after account opening, Level 2 requires VIP eligibility,
+and official institutional material says Stock+ permissions/KYC and, for some feeds, whitelisting
+may apply. Therefore Bitget does not remove the existing licensing gate for a public product.
+
 ## Official documentation reviewed
 
 | Capability | Official documentation URL | Documented endpoint | Documented access | Observed access | Observed UTC timestamp | Notes |

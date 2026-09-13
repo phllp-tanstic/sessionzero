@@ -88,3 +88,36 @@ does not cover the symbol and timestamp.
 Gap validation consults source availability: `EXPECTED_CLOSED` is informational,
 `EXPECTED_OPEN` makes an absent candle a data-quality warning, and `UNKNOWN` remains visible. This
 prevents both false feed-failure claims and retroactive application of current 24/7 marketing.
+
+## ADR-011 — Native-equity implementation requires technical and licensing access
+
+Status: **ACCEPTED — GATED**
+
+The 2026-09-13 official-documentation review compared Massive, Alpaca Market Data, and Twelve Data.
+Massive is the preferred technical candidate because it supplies consolidated U.S. coverage,
+point-in-time identifiers, explicit adjusted/unadjusted aggregates, and splits. It is not selected:
+no credentials are available and its self-service terms do not authorize SessionZero's intended
+non-display strategy/derived-work use or public display/redistribution.
+
+Alpaca Basic is IEX-only and therefore insufficient for the authoritative reference close. Twelve
+Data requires paid split access and separate business/display or redistribution rights. No adapter,
+schema, persistence, or symbol mapping may be implemented until a provider account and applicable
+rights are verified. Clearing this gate does not authorize public display unless that permission is
+separately explicit.
+
+## ADR-012 — Check Bitget-native reference data before purchasing an external feed
+
+Status: **ACCEPTED — PARTIALLY AVAILABLE / GATED**
+
+After ADR-011 gated external-provider implementation, Bitget's current official Reality, UTA v3,
+Stock+, stock-perpetual, and Agent Hub surfaces were reviewed before any external feed purchase.
+Public Reality endpoints provide an explicit Reality-to-native-ticker mapping and partial
+corporate-action metadata. Public UTA endpoints also provide stock-perpetual market, mark, and
+index inputs. These capabilities may supplement reference metadata and risk controls but do not
+constitute native cash-equity OHLC or an official regular-session close.
+
+Stock+ is technically promising because its documented read-only market-data surface includes
+native security metadata, real-time quotes, session-filtered candles, and historical OHLC. It
+remains `GATED`: signed access was not authorized, eligibility and entitlements are unresolved,
+and reviewed terms do not establish SessionZero's intended non-display, derived-output,
+public-display, or redistribution rights. No provider or adapter is selected by this decision.

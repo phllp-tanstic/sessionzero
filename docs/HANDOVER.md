@@ -2,7 +2,7 @@
 
 ## Current phase
 
-`PHASE 1 — DATA PLANE (POINT-IN-TIME MARKET SESSION SEMANTICS)`
+`PHASE 1 — DATA PLANE (NATIVE EQUITY PROVIDER ACCESS GATED)`
 
 ## Completed
 
@@ -39,10 +39,36 @@
 - The RMRNA comparison still fails quality because Bitget history contains only two candle records
   in the verified-open two-day window. This is a confirmed provider-history gap, not a proven feed
   outage, and no SessionZero pagination defect was found.
+- Native-equity implementation did not pass its provider gate. Massive, Alpaca, and Twelve Data
+  were reviewed against current official documentation at `2026-09-13T10:32:29Z`; no credentials
+  or project-appropriate non-display/public-product license is present. Per ADR-011, no speculative
+  adapter, schema, mapping, migration, or fixture-backed live result was added.
+- Bitget-native reference-data verification completed at `2026-09-13T11:42:27Z`. Public Reality
+  endpoints now provide native-ticker mapping, sessions/calendar, dividends, and splits; public UTA
+  exposes stock perpetuals and their reference indices. Native Stock+ quotes and OHLC remain gated
+  by signed read-only access, which was not authorized or used.
+
+### Bitget-native capability matrix
+
+| Capability | Status | Endpoint / evidence | Operational consequence |
+|---|---|---|---|
+| Reality to native ticker | **AVAILABLE** | Public `reality/market/stock-info`; live `RAAL->AAL`, `RAAPL->AAPL`, `RMRNA->MRNA` | Mapping substrate can come from Bitget, but ticker is not a permanent identifier. |
+| ISIN/CUSIP/FIGI | **UNAVAILABLE** | No such field in reviewed Reality, UTA, or Stock+ schemas | A canonical identifier source remains external. |
+| Native regular close / next open | **GATED** | Stock+ quote and session-filtered OHLC require signed `Stock+ Market Data (read-only)` permission | No native price entered SessionZero; public rToken/perp prices are not substitutes. |
+| Native U.S. OHLC history | **GATED** | Stock+ `history-candlestick`; unauthenticated quote probe returned `40006` | Technically promising, but access, contract, and license gates remain. |
+| Public delayed native data | **UNAVAILABLE** | No documented public delayed stock endpoint; Stock+ documents real-time Level 1 after account opening | Cannot replace an external public/delayed feed. |
+| Underlying-linked index/reference input | **AVAILABLE** | Public `AAPLUSDT` perp ticker/index components returned a three-source composite | Supplemental derivative signal only, not an official cash close. |
+| Stock futures/contracts | **AVAILABLE** | 321 live UTA futures rows marked RWA or stock | Cross-asset input is possible without authentication. |
+| Corporate actions / splits / dividends | **AVAILABLE / PARTIAL** | Public Reality dividends/share changes/suspensions and UTA split records; live AAPL dividends verified | Can supplement risk controls after schema/coverage tests; completeness is unproven. |
+| Trading sessions/calendar | **AVAILABLE** with limitations | Public Reality states, calendar, and per-symbol periods | Use for Bitget source availability only; XNYS remains the authoritative cash calendar. |
+| Public unauthenticated substrate | **AVAILABLE** partially | Mapping, sessions, calendar, actions, Reality ticker/candles, futures/index all returned `00000` | Useful portions do not require credentials. |
+| Authenticated read-only substrate | **GATED** | Stock+ market data and Reality depth/fills | No account, KYC, key, permission, or whitelist was requested. |
+| Agent Hub | **AVAILABLE** partially | SDK `3.1.0` exposes generic market/futures actions; searches found no new Reality-reference or Stock+ actions | Direct public REST is currently required for the new reference endpoints. |
+| Public-product/non-display rights | **UNVERIFIED / GATED** | Bitget API Key Terms do not expressly grant the required display, redistribution, or derived-product rights | Technical availability does not clear the licensing gate. |
 
 ## Outstanding
 
-- Native-equity price/reference data, broader historical capability coverage, backfills, continuous
+- Authorized native-equity price/reference data, broader historical capability coverage, backfills, continuous
   collection/scheduling, cross-asset/event providers, models, backtesting, API expansion, and UI.
 
 ## Known constraints
@@ -59,6 +85,15 @@
 - `FAIL` datasets are rejected before the raw/normalized transaction; their machine report is not
   durably stored in this slice.
 - No native-equity price adapter, daemon, scheduler, managed database, or deployment exists.
+- Massive is the preferred technical candidate only. `RESEARCH_USE` is `GATED`, `PUBLIC_DISPLAY`
+  is `UNVERIFIED`, and `REDISTRIBUTION` is `GATED` until the applicable provider/order-form and
+  exchange rights are supplied and reviewed.
+- Bitget's public mapping, action, and session data do not make its Stock+ native-equity feed public.
+  Stock+ is separately authenticated, eligibility/KYC and market-data permissions may apply, and
+  reviewed terms do not establish SessionZero's public/non-display rights.
+- Reality session payloads currently exhibit contract drift (`EST` versus documented `ET`, and an
+  array where `tradingPeriod` is documented as a string). They must remain fail-closed and cannot
+  replace the point-in-time XNYS calendar.
 
 ## Current services
 
@@ -69,6 +104,8 @@
 ## Required env vars
 
 - `DATABASE_URL`: required for migrations, persistence, and PostgreSQL tests.
+- A native-provider API key and an account/license authorizing the intended use are required before
+  native-equity implementation or live verification; no variable name is committed until selection.
 - Existing public Bitget and web/API settings remain in `.env.example`.
 
 ## Test counts
@@ -83,8 +120,9 @@
 
 ## Latest commit
 
-`docs(data): record Bitget sparse history verification` (this handover's commit).
+`docs(data): record Bitget sparse history verification` (no native-provider commit was created).
 
 ## Next exact task
 
-Add a point-in-time native-equity historical price provider behind the existing provider boundary.
+Obtain a written Bitget determination covering Stock+ read-only API eligibility and SessionZero's
+non-display, derived-output, public-display, and redistribution rights, without opening an account.

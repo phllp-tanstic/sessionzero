@@ -74,8 +74,20 @@ whether a Bitget instrument traded. `SourceSessionProvider` answers only source 
 effective-dated evidence. `SessionZeroContext` combines their typed outputs without producing fair
 value, state-model, signal, or strategy output.
 
+## Native-equity provider gate
+
+`NativeEquityProvider` remains a required generic boundary, but no concrete adapter exists.
+Official provider and licensing review on 2026-09-13 found Massive to be the strongest technical
+candidate; access is gated by absent credentials and unresolved non-display/business/public-product
+rights. No provider-specific schema, persistence table, mapping, or fallback was introduced.
+
+When access clears, the adapter must sit beside (not inside) the Bitget package, preserve raw
+responses separately from normalized U.S. session observations, use the existing XNYS calendar for
+session boundaries, expose honest capabilities, and fail closed. Native daily bars must not be
+written to `normalized_market_candles`, whose identity and semantics are Bitget interval candles.
+
 ## Planned after this narrow Phase 1 slice
 
-Persistent collection loops, native-equity price providers, complete historical Bitget rollout
+Persistent collection loops, an authorized native-equity price provider, complete historical Bitget rollout
 coverage, API expansion, and research remain unbuilt. No queue, cache, scheduler, orchestration
 system, ML stack, or deployment workflow has been introduced.

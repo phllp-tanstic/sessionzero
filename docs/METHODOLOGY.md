@@ -19,6 +19,13 @@ primitives, not Discovery State, Fair Value, Confidence, Gap, or a trading signa
 
 No predictive hypothesis is tested and no performance metric is reported in this phase.
 
+The 2026-09-13 native-equity provider gate did not authorize a reference dataset. Provider
+documentation, free plans, or test fixtures cannot substitute for credentials and rights covering
+non-display quantitative use. Consequently no native close/open target, split-adjusted series,
+provider-integrated symbol mapping, or overlapping historical slice exists, and no future U.S.
+open has entered a feature dataset. The separately verified public Bitget Reality-to-ticker
+mapping is reference metadata only and has not entered a model or provider adapter.
+
 ## Locked future methodology
 
 The eventual target is the next regular-session opening return. Work must begin with interpretable
