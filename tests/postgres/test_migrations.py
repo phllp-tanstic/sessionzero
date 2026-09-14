@@ -64,10 +64,18 @@ def test_upgrade_downgrade_and_restore(alembic_config: Config) -> None:
             "unknown_fraction",
             "left_censored",
             "source_session_evidence_ids",
+            "structural_quality_status",
+            "provider_boundary_spillover_count",
+            "meets_duration_requirement",
+            "final_oos_window_start",
+            "final_oos_window_end",
+            "pre_oos_observation_present",
+            "oos_observation_present",
+            "final_oos_feasible",
         } <= coverage_columns
         with engine.connect() as connection:
             assert connection.scalar(text("SELECT version_num FROM alembic_version")) == (
-                "20260914_06"
+                "20260914_07"
             )
         command.downgrade(alembic_config, "20260912_01")
         legacy_run_id = uuid.uuid4()

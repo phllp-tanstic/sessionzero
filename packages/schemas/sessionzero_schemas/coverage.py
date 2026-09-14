@@ -6,6 +6,8 @@ from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from .quality import StructuralQualityStatus
+
 
 class CoverageStatus(StrEnum):
     SUFFICIENT_MINIMUM_HISTORY = "SUFFICIENT_MINIMUM_HISTORY"
@@ -94,6 +96,14 @@ class HistoricalCoverageMember(BaseModel):
     left_censored: bool = False
     source_session_evidence_ids: tuple[str, ...] = ()
     quality_status: str | None = None
+    structural_quality_status: StructuralQualityStatus | None = None
+    provider_boundary_spillover_count: int = Field(default=0, ge=0)
+    meets_duration_requirement: bool = False
+    final_oos_window_start: datetime | None = None
+    final_oos_window_end: datetime | None = None
+    pre_oos_observation_present: bool = False
+    oos_observation_present: bool = False
+    final_oos_feasible: bool = False
     coverage_status: CoverageStatus
     minimum_total_history_days: int = Field(default=60, ge=1)
     minimum_oos_days: int = Field(default=30, ge=1)
@@ -110,6 +120,8 @@ class HistoricalCoverageMember(BaseModel):
         "earliest_observed_event_time",
         "latest_observed_event_time",
         "verification_time",
+        "final_oos_window_start",
+        "final_oos_window_end",
     )
     @classmethod
     def validate_times(cls, value: datetime | None) -> datetime | None:
@@ -150,6 +162,18 @@ class HistoricalCoverageMember(BaseModel):
             raise ValueError("holiday ambiguity must be a subset of unknown intervals")
         if len(self.holiday_ambiguous_timestamps) != self.holiday_ambiguous_interval_count:
             raise ValueError("holiday ambiguity count must match its timestamp evidence")
+        if (self.final_oos_window_start is None) != (self.final_oos_window_end is None):
+            raise ValueError("OOS window bounds must be both present or both absent")
+        if (
+            self.final_oos_window_start is not None
+            and self.final_oos_window_end is not None
+            and self.final_oos_window_end <= self.final_oos_window_start
+        ):
+            raise ValueError("OOS window must be increasing")
+        if self.final_oos_feasible and not (
+            self.pre_oos_observation_present and self.oos_observation_present
+        ):
+            raise ValueError("OOS feasibility requires observations on both sides of the split")
         return self
 
 

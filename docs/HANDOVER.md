@@ -114,6 +114,26 @@
   remain in-memory in this read-only profiler and are not durably joined to the profile; do not
   claim complete candle-level audit lineage.
 
+### Coverage semantics correction — 2026-09-14
+
+- `reality_historical_coverage.v4` supersedes the v3 classification without rewriting its
+  persisted profile. It independently records structural validity, availability completeness,
+  60-day duration sufficiency, and deterministic final-30-day OOS feasibility.
+- The exact same 21 members and immutable `1H` window were rerun. All 21 are structural `PASS`,
+  meet the duration requirement, have actual observations before and within the final OOS segment,
+  and are `SUFFICIENT_MINIMUM_HISTORY` under the corrected data-plane definition.
+- The deterministic OOS boundary is `2026-08-14T20:00:00Z`. This is only a feasibility boundary;
+  no split optimization, returns, alpha statistic, or strategy evaluation was performed.
+- Availability warnings are unchanged: 43,848 known-open intervals, 38,228 observed while known
+  open, 5,620 missing while known open, and 1,512 holiday-qualified unknown intervals. No density
+  threshold was introduced.
+- AVGO's five and META's nine pre-start provider rows are clipped and retained as boundary-
+  spillover warning telemetry. Neither has another structural defect. Post-end leakage remains a
+  structural failure.
+- Duration sufficiency is not future research eligibility. The native-equity leg remains gated,
+  availability completeness remains a future selection input, and candle-level profile lineage is
+  still incomplete.
+
 ### Bitget-native capability matrix
 
 | Capability | Status | Endpoint / evidence | Operational consequence |
@@ -185,7 +205,7 @@
 
 ## Test counts
 
-- 85 deterministic non-live/non-PostgreSQL tests.
+- 90 deterministic non-live/non-PostgreSQL tests.
 - 11 direct PostgreSQL integration tests.
 - 4 opt-in live Bitget tests.
 
@@ -195,12 +215,11 @@
 
 ## Latest commit
 
-`feat(data): audit evidence-qualified Reality coverage` (local; not pushed).
+`fix(data): separate coverage validity from sufficiency` (local; not pushed).
 
 ## Next exact task
 
-Resolve holiday availability for the 21-member evidence-qualified cohort from explicit official
-Bitget evidence, and investigate the known-open missing intervals plus AVGO/META boundary spillover
-without changing the fixed audit window. Do not expand to 1,173 symbols or begin research while
-every cohort member remains conservatively non-sufficient. Native Stock+ access/licensing remains
-independently gated.
+Resolve the native-equity access and licensing gate for a technically suitable historical OHLC
+source, beginning with the outstanding Bitget Stock+ clarification. Do not start modeling merely
+because the 21 Reality histories meet duration/OOS feasibility; complete native-leg availability,
+point-in-time mapping, and rights must be established first.

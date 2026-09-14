@@ -90,10 +90,10 @@ same identity. PostgreSQL tables `historical_coverage_profiles` and
 `historical_coverage_members` use primary/unique constraints for idempotency and do not duplicate
 candle storage.
 
-The locked sufficiency threshold is at least 60 total observed days while retaining the future
-30-day OOS requirement. A pass is data availability only, never evidence of returns, predictive
-power, or final research-universe membership. Any existing quality failure fails coverage; unknown
-source-session absences remain `SOURCE_SESSION_TOO_UNKNOWN`; known-open missingness prevents a pass.
+Versions v1-v3 used a single conservative status that allowed session unknowns and known-open
+missingness to prevent a sufficiency pass. That historical classification is retained in old
+profiles and is superseded by the independent v4 structural, completeness, duration, and OOS
+fields described below. No old row is rewritten.
 The 90-day evaluation is deliberately bounded. An earliest observation equal to its left boundary
 is left-censored evidence of at least that much history, not a claim that the instrument launched
 there or has no older data.
@@ -471,8 +471,9 @@ not promoted into a source-closure claim.
 For comparison, the evidenced post-rollout `RMRNAUSDT` weekend
 `[2026-07-18T00:00:00Z, 2026-07-20T00:00:00Z)` has 48 expected 24/7 hourly intervals. The live API
 returned 48 rows but only 2 were inside the requested range (`2026-07-18T13:00:00Z` and
-`2026-07-19T14:00:00Z`); 46 boundary-spillover rows were clipped. The quality result therefore
-reports 46 `MISSING_WHILE_EXPECTED_OPEN` intervals and `FAIL`. Exact-window, end-only, adjacent-day,
+`2026-07-19T14:00:00Z`); 46 boundary-spillover rows were clipped. The v4 quality result therefore
+reports 46 `MISSING_WHILE_EXPECTED_OPEN` intervals, a provider-spillover warning, and structural
+`PASS`. Exact-window, end-only, adjacent-day,
 nearby control, page-size, and alignment probes confirm that the provider's history contains only
 those two target-window candle records; this is not a SessionZero pagination bug. An independent
 read-only `bgc` request reproduced all 48 rows. The result is confirmed provider-history sparsity,
@@ -578,8 +579,10 @@ The one-shot workflow accepts at most a 90-day interval and a historical page si
 100. Pages are bounded by `max_pages`; empty responses terminate, and stale/non-progressing cursors
 or an exhausted page budget fail explicitly. Identical records repeated across adjacent pages are
 deduplicated deterministically and reported as a warning. Conflicting or same-series duplicates,
-out-of-order timestamps, boundary spillover, empty datasets, impossible OHLC relationships,
-non-positive prices, and negative volume/turnover are failures.
+out-of-order timestamps, empty datasets, impossible OHLC relationships, non-positive prices,
+negative volume/turnover, post-end timestamp leakage, and pagination failures are structural
+failures. Verified pre-start Bitget boundary spillover is clipped and recorded as warning
+telemetry; it is not a structural failure.
 
 Expected timestamps are regular UTC multiples of the requested interval within `[start, end)`.
 Each absent timestamp is classified through point-in-time source evidence:
@@ -623,3 +626,26 @@ transformation and Git versions plus the fixed window and canonical logical resu
 timestamps and retry telemetry remain outside content identity. Because profiling is read-only,
 request envelopes and raw/normalized observations are not durably joined to a profile; this is an
 explicit lineage gap. Run normal ingestion when durable candle-level lineage is required.
+
+### Structural validity, completeness, and duration sufficiency — v4
+
+`reality_historical_coverage.v4` separates four questions that must not be collapsed:
+
+- **Structural validity** asks whether in-range normalized candles and pagination are objectively
+  valid. Schema/normalization failure, unresolved canonical duplicates, impossible OHLC, invalid
+  signs, timestamp corruption, post-end leakage, empty history, and pagination failure are fatal.
+- **Availability completeness** retains known-open observed/missing counts, expected closures,
+  source-session unknown counts, holiday ambiguity, and density ratios. `MISSING_WHILE_EXPECTED_OPEN`
+  means only that no candle was returned for an evidenced-open timestamp; it does not establish an
+  exchange outage, Bitget outage, or corrupted candle.
+- **Duration sufficiency** means the inclusive earliest-to-latest in-range observed chronology is
+  at least 60 days. It does not require 100% candle density.
+- **OOS feasibility** uses the deterministic boundary `evaluation_end - 30 days` and requires at
+  least one actual observation before the boundary and one in the final 30-day window. No split is
+  optimized and no returns are calculated.
+
+`SUFFICIENT_MINIMUM_HISTORY` in v4 means only structurally valid Reality observations meet the
+locked duration and final-OOS feasibility requirements. It is not final research eligibility.
+Missing-open and holiday-unknown intervals remain explicit warnings and independent metrics.
+Migration `20260914_07` adds the typed structural result, spillover telemetry, duration result, OOS
+bounds, observation-presence flags, and OOS feasibility without modifying v1-v3 profiles.

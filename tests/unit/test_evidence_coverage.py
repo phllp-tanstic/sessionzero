@@ -182,4 +182,72 @@ def test_ratios_use_known_open_denominator_and_preserve_left_censoring() -> None
     assert result.missing_over_known_expected == Decimal(2) / 102
     assert result.unknown_fraction == Decimal(6) / 108
     assert result.left_censored is True
+    assert result.meets_duration_requirement is False
     assert {"return", "alpha", "sharpe"}.isdisjoint(type(result).model_fields)
+
+
+def test_holiday_unknown_does_not_override_duration_and_oos_sufficiency() -> None:
+    quality = SimpleNamespace(
+        records_unique=2088,
+        observed_start=START,
+        observed_end=END - timedelta(hours=1),
+        quality_status=QualityStatus.WARN,
+        structural_quality_status="PASS",
+        missing_count=0,
+        source_session_unknown_count=72,
+        expected_open_interval_count=2088,
+        observed_while_expected_open_count=2088,
+        expected_closed_interval_count=0,
+        observed_while_expected_closed_count=0,
+        source_session_unknown_interval_count=72,
+        observed_while_source_session_unknown_count=0,
+        holiday_ambiguous_interval_count=72,
+        holiday_ambiguous_timestamps=tuple(
+            START + timedelta(hours=index) for index in range(72)
+        ),
+    )
+    result = build_coverage_member(
+        _member("RAUSDT"),
+        universe_version=VERSION,
+        interval="1H",
+        evaluation_start=START,
+        evaluation_end=END,
+        verification_time=END,
+        quality=quality,
+    )
+    assert result.unknown_fraction == Decimal(72) / 2160
+    assert result.meets_duration_requirement is True
+    assert result.final_oos_feasible is True
+    assert result.coverage_status == "SUFFICIENT_MINIMUM_HISTORY"
+
+
+def test_missing_open_is_completeness_evidence_not_structural_failure() -> None:
+    quality = SimpleNamespace(
+        records_unique=2000,
+        observed_start=START,
+        observed_end=END - timedelta(hours=1),
+        quality_status=QualityStatus.WARN,
+        structural_quality_status="PASS",
+        missing_count=88,
+        source_session_unknown_count=0,
+        expected_open_interval_count=2088,
+        observed_while_expected_open_count=2000,
+        expected_closed_interval_count=0,
+        observed_while_expected_closed_count=0,
+        source_session_unknown_interval_count=0,
+        observed_while_source_session_unknown_count=0,
+        holiday_ambiguous_interval_count=0,
+        holiday_ambiguous_timestamps=(),
+    )
+    result = build_coverage_member(
+        _member("RAUSDT"),
+        universe_version=VERSION,
+        interval="1H",
+        evaluation_start=START,
+        evaluation_end=END,
+        verification_time=END,
+        quality=quality,
+    )
+    assert result.missing_while_expected_open == 88
+    assert result.structural_quality_status == "PASS"
+    assert result.coverage_status == "SUFFICIENT_MINIMUM_HISTORY"

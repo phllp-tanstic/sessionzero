@@ -14,7 +14,13 @@ from .market import (
     ProviderCapability,
     RawOrDerived,
 )
-from .quality import CandleQualityReport, QualityIssue, QualitySeverity, QualityStatus
+from .quality import (
+    CandleQualityReport,
+    QualityIssue,
+    QualitySeverity,
+    QualityStatus,
+    StructuralQualityStatus,
+)
 from .reference import (
     DividendRecord,
     MarketClosure,
@@ -67,6 +73,7 @@ __all__ = [
     "ShareCapitalChange",
     "SourceSessionMetadata",
     "SplitRecord",
+    "StructuralQualityStatus",
     "SuspensionRecord",
     "UniverseEligibilityReason",
     "UniverseMappingStatus",

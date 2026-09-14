@@ -146,7 +146,7 @@ members continue. A manifest is Reality-side evidence, not a complete research d
 
 ## ADR-015 — Profile Reality history conservatively before broad backfill
 
-Status: **ACCEPTED**
+Status: **ACCEPTED — CLASSIFICATION SUPERSEDED IN PART BY ADR-018**
 
 Historical sufficiency profiles are derived only from an accepted versioned Reality universe and a
 fixed UTC evaluation window. The locked minimum is 60 total days with 30 days reserved for final
@@ -180,7 +180,7 @@ but cannot become wildcard closures. This policy is versioned as `bitget_source_
 
 ## ADR-017 — Audit only full-window evidence-qualified Reality histories
 
-Status: **ACCEPTED**
+Status: **ACCEPTED — CLASSIFICATION SUPERSEDED IN PART BY ADR-018**
 
 The expanded Reality coverage audit uses a machine-derived cohort, never a manually maintained
 production list. Qualification requires membership in the selected persisted universe, a native
@@ -193,3 +193,20 @@ intervals, holiday-qualified ambiguity remains explicit, and bounded starts rema
 The result reuses historical coverage persistence and is versioned as
 `reality_historical_coverage.v3`. This audit does not authorize native-equity implementation,
 alpha metrics, signal research, backtesting, or Phase 2 work.
+
+## ADR-018 — Separate structural validity from coverage and chronology sufficiency
+
+Status: **ACCEPTED**
+
+Coverage v4 answers four independent data-plane questions: structural validity, availability
+completeness, 60-day observed chronology, and deterministic final-30-day OOS feasibility. Verified
+Bitget pre-start spillover is clipped and warned rather than treated as corruption. A known-open
+timestamp with no returned candle remains counted, but it does not prove an outage or structural
+failure. Holiday-qualified unknowns remain outside known-session denominators without invalidating
+an otherwise feasible chronology.
+
+The final OOS boundary is `evaluation_end - 30 days`; actual observations must exist before it and
+within the final segment. No candle-density threshold exists because none is locked or externally
+required. `SUFFICIENT_MINIMUM_HISTORY` therefore means only structurally valid Reality data meets
+the duration and OOS feasibility requirements. It does not mean future research eligibility,
+strategy readiness, alpha selection, or complete native-plus-Reality data.

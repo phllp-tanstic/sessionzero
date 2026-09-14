@@ -12,6 +12,11 @@ class QualityStatus(StrEnum):
     FAIL = "FAIL"
 
 
+class StructuralQualityStatus(StrEnum):
+    PASS = "PASS"
+    FAIL = "FAIL"
+
+
 class QualitySeverity(StrEnum):
     INFO = "INFO"
     WARNING = "WARNING"
@@ -62,8 +67,12 @@ class CandleQualityReport(BaseModel):
     negative_volume_count: int = Field(ge=0)
     negative_turnover_count: int = Field(ge=0)
     outside_range_count: int = Field(ge=0)
+    provider_boundary_spillover_count: int = Field(default=0, ge=0)
+    provider_boundary_spillover_examples: tuple[datetime, ...] = ()
+    out_of_range_leakage_count: int = Field(default=0, ge=0)
     pagination_error_count: int = Field(ge=0)
     stale_pagination_count: int = Field(ge=0)
     empty_result: bool
     quality_status: QualityStatus
+    structural_quality_status: StructuralQualityStatus = StructuralQualityStatus.PASS
     issues: tuple[QualityIssue, ...] = ()

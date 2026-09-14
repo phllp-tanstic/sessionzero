@@ -17,6 +17,7 @@ from sessionzero_schemas import (
     QualityIssue,
     QualitySeverity,
     QualityStatus,
+    StructuralQualityStatus,
 )
 
 from .client import CandleObservation
@@ -96,11 +97,17 @@ def evaluate_candle_quality(
         for previous, current in pairwise(observations)
         if current.candle.event_time < previous.candle.event_time
     ]
-    outside = [
+    provider_boundary_spillover = [
         item.candle.event_time
         for item in unique
-        if not requested_start <= item.candle.event_time < requested_end
+        if item.candle.event_time < requested_start
     ]
+    out_of_range_leakage = [
+        item.candle.event_time
+        for item in unique
+        if item.candle.event_time >= requested_end
+    ]
+    outside = provider_boundary_spillover + out_of_range_leakage
     accepted = sorted(
         (item for item in unique if requested_start <= item.candle.event_time < requested_end),
         key=lambda item: item.candle.event_time,
@@ -173,7 +180,12 @@ def evaluate_candle_quality(
     issues = [
         _issue("DUPLICATE_TIMESTAMP", QualitySeverity.ERROR, duplicate_times),
         _issue("OUT_OF_ORDER_TIMESTAMP", QualitySeverity.ERROR, out_of_order),
-        _issue("TIMESTAMP_OUTSIDE_RANGE", QualitySeverity.ERROR, outside),
+        _issue(
+            "PROVIDER_BOUNDARY_SPILLOVER",
+            QualitySeverity.WARNING,
+            provider_boundary_spillover,
+        ),
+        _issue("TIMESTAMP_OUTSIDE_RANGE", QualitySeverity.ERROR, out_of_range_leakage),
         _issue("INVALID_OHLC", QualitySeverity.ERROR, invalid_ohlc),
         _issue("NON_POSITIVE_PRICE", QualitySeverity.ERROR, non_positive),
         _issue("NEGATIVE_VOLUME", QualitySeverity.ERROR, negative_volume),
@@ -205,6 +217,11 @@ def evaluate_candle_quality(
         status = QualityStatus.WARN
     else:
         status = QualityStatus.PASS
+    structural_status = (
+        StructuralQualityStatus.FAIL
+        if any(issue.severity == QualitySeverity.ERROR for issue in filtered_issues)
+        else StructuralQualityStatus.PASS
+    )
 
     report = CandleQualityReport(
         symbol=symbol,
@@ -241,10 +258,16 @@ def evaluate_candle_quality(
         negative_volume_count=len(negative_volume),
         negative_turnover_count=len(negative_turnover),
         outside_range_count=len(outside),
+        provider_boundary_spillover_count=len(provider_boundary_spillover),
+        provider_boundary_spillover_examples=tuple(
+            provider_boundary_spillover[:MAX_ISSUE_EXAMPLES]
+        ),
+        out_of_range_leakage_count=len(out_of_range_leakage),
         pagination_error_count=pagination_error_count,
         stale_pagination_count=stale_pagination_count,
         empty_result=not accepted,
         quality_status=status,
+        structural_quality_status=structural_status,
         issues=filtered_issues,
     )
     return tuple(accepted), report

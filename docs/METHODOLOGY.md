@@ -14,8 +14,9 @@ timezone-aware UTC datetimes, and missing values remain missing.
 Bounded candle history uses explicit `[start, end)` semantics and deterministic ascending output.
 The quality gate compares observations with regular interval boundaries, then uses point-in-time
 source-session evidence to classify each absence. A known source closure is not a gap; a missing
-interval while the source was expected open remains a defect; and insufficient historical evidence
-stays unknown. None of these states creates a synthetic candle.
+interval while the source was expected open is explicit availability incompleteness; and
+insufficient historical evidence stays unknown. Missingness alone is not structural corruption or
+proof of an outage. None of these states creates a synthetic candle.
 
 The XNYS cash calendar and Bitget source availability are independent inputs. Cash-market closure
 alone does not make Session Zero active: at least one qualifying source must be known available.
@@ -37,17 +38,19 @@ Missing candles likewise never serve as evidence of a source opening or closure.
 No predictive hypothesis is tested and no performance metric is reported in this phase.
 
 Historical coverage uses a predeclared 60-day minimum total period and preserves the locked
-30-day final OOS requirement. For interval candles, observed duration is the inclusive covered
-interval from the earliest observation through the end of the latest observation. Passing means
-only that Reality-side market data could support those future validation windows. It does not make
-a symbol strategy-eligible, select it for research, or establish predictive value.
+30-day final OOS requirement. For interval candles, observed duration is the inclusive chronology
+from the earliest observation through the end of the latest observation. The deterministic OOS
+boundary is `evaluation_end - 30 days`; feasibility requires actual observations both before that
+boundary and inside the final window. The split is not optimized.
 
-Coverage classification is conservative. Empty/provider-failed history is `HISTORY_UNAVAILABLE`;
-existing quality errors are `DATA_QUALITY_FAILURE`; less than 60 observed days is
-`INSUFFICIENT_HISTORY`; sufficient duration with absent intervals whose source session cannot be
-established is `SOURCE_SESSION_TOO_UNKNOWN`; and known-open missing intervals prevent a pass and
-remain `UNKNOWN`. Only a non-failing series with at least 60 days and neither kind of unresolved
-absence is `SUFFICIENT_MINIMUM_HISTORY`. No outcomes or market performance tune these rules.
+Coverage v4 evaluates structural validity, availability completeness, duration sufficiency, and
+OOS feasibility independently. Empty/provider-failed history is `HISTORY_UNAVAILABLE`; objective
+structural errors are `DATA_QUALITY_FAILURE`; and a duration or OOS failure is
+`INSUFFICIENT_HISTORY`. Otherwise `SUFFICIENT_MINIMUM_HISTORY` means only that Reality-side data
+could support the locked chronological split. Known-open missingness and session unknowns remain
+warnings and metrics but do not automatically override that result. No density threshold, outcome,
+or market-performance statistic tunes these rules, and no duration pass makes a symbol part of a
+future research universe.
 
 Reality universe eligibility is objective and fixed before any future experiment: provider Reality
 identity, online status, explicit native mapping, supported interval, and observed ingestion quality.

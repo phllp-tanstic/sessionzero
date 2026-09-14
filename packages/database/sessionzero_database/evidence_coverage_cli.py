@@ -97,6 +97,12 @@ def main() -> None:
             )
         written = persist_historical_coverage_profile(engine, profile)
         statuses = Counter(member.coverage_status.value for member in profile.members)
+        structural_statuses = Counter(
+            None
+            if member.structural_quality_status is None
+            else member.structural_quality_status.value
+            for member in profile.members
+        )
         expected_open = sum(member.expected_open_interval_count for member in profile.members)
         observed_open = sum(
             member.observed_while_expected_open_count for member in profile.members
@@ -116,6 +122,9 @@ def main() -> None:
             "aggregates": {
                 "cohort_size": len(cohort.members),
                 "coverage_status_counts": dict(sorted(statuses.items())),
+                "structural_quality_status_counts": dict(
+                    sorted((str(key), value) for key, value in structural_statuses.items())
+                ),
                 "sufficient_history_count": statuses.get(
                     "SUFFICIENT_MINIMUM_HISTORY", 0
                 ),
@@ -130,6 +139,15 @@ def main() -> None:
                 "missing_over_known_expected": _ratio(missing_open, expected_open),
                 "unknown_fraction": _ratio(unknown, total_grid),
                 "left_censored_count": sum(member.left_censored for member in profile.members),
+                "meets_duration_requirement_count": sum(
+                    member.meets_duration_requirement for member in profile.members
+                ),
+                "final_oos_feasible_count": sum(
+                    member.final_oos_feasible for member in profile.members
+                ),
+                "provider_boundary_spillover_count": sum(
+                    member.provider_boundary_spillover_count for member in profile.members
+                ),
                 "request_count": sum(member.request_count for member in profile.members),
                 "retry_count": sum(member.retry_count for member in profile.members),
                 "rate_limit_count": sum(member.rate_limit_count for member in profile.members),

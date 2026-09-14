@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Callable, Sequence
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from sessionzero_market_data import CuratedBitgetSourceSessionProvider, SourceSessionProvider
@@ -13,6 +13,7 @@ from sessionzero_schemas import (
     HistoricalCoverageMember,
     HistoricalCoverageProfile,
     QualityStatus,
+    StructuralQualityStatus,
     UniverseMember,
 )
 
@@ -21,7 +22,7 @@ from .errors import BitgetProviderError
 from .history import HistoryPaginationError, fetch_bounded_history
 from .quality import INTERVAL_DURATIONS
 
-COVERAGE_TRANSFORMATION_VERSION = "reality_historical_coverage.v3"
+COVERAGE_TRANSFORMATION_VERSION = "reality_historical_coverage.v4"
 MINIMUM_TOTAL_HISTORY_DAYS = 60
 MINIMUM_OOS_DAYS = 30
 Clock = Callable[[], datetime]
@@ -57,23 +58,22 @@ def coverage_status_for(
     observed_record_count: int,
     observed_duration_days: float,
     quality_status: QualityStatus | None,
-    missing_while_expected_open: int,
-    source_session_unknown_count: int,
+    structural_quality_status: StructuralQualityStatus | None = None,
+    final_oos_feasible: bool = True,
     failure_code: str | None = None,
     minimum_total_history_days: int = MINIMUM_TOTAL_HISTORY_DAYS,
 ) -> CoverageStatus:
     if observed_record_count == 0:
         return CoverageStatus.HISTORY_UNAVAILABLE
-    if quality_status == QualityStatus.FAIL:
+    structural_failure = structural_quality_status == StructuralQualityStatus.FAIL or (
+        structural_quality_status is None and quality_status == QualityStatus.FAIL
+    )
+    if structural_failure:
         return CoverageStatus.DATA_QUALITY_FAILURE
     if failure_code is not None:
         return CoverageStatus.HISTORY_UNAVAILABLE
-    if observed_duration_days < minimum_total_history_days:
+    if observed_duration_days < minimum_total_history_days or not final_oos_feasible:
         return CoverageStatus.INSUFFICIENT_HISTORY
-    if source_session_unknown_count:
-        return CoverageStatus.SOURCE_SESSION_TOO_UNKNOWN
-    if missing_while_expected_open:
-        return CoverageStatus.UNKNOWN
     return CoverageStatus.SUFFICIENT_MINIMUM_HISTORY
 
 
@@ -102,6 +102,19 @@ def build_coverage_member(
             observed_end - observed_start + INTERVAL_DURATIONS[interval]
         ).total_seconds() / 86_400
     quality_status = None if quality is None else quality.quality_status
+    structural_quality_status = (
+        None
+        if quality is None
+        else getattr(
+            quality,
+            "structural_quality_status",
+            (
+                StructuralQualityStatus.FAIL
+                if quality.quality_status == QualityStatus.FAIL
+                else StructuralQualityStatus.PASS
+            ),
+        )
+    )
     missing = 0 if quality is None else quality.missing_count
     expected_open = (
         0
@@ -141,12 +154,28 @@ def build_coverage_member(
     observed_ratio = None if expected_open == 0 else Decimal(observed_open) / expected_open
     missing_ratio = None if expected_open == 0 else Decimal(missing) / expected_open
     unknown_fraction = Decimal(0) if total_intervals == 0 else Decimal(unknown) / total_intervals
+    evaluation_end_utc = _as_utc(evaluation_end, "evaluation_end")
+    evaluation_start_utc = _as_utc(evaluation_start, "evaluation_start")
+    final_oos_window_start = evaluation_end_utc - timedelta(days=MINIMUM_OOS_DAYS)
+    pre_oos_observation_present = (
+        observed_start is not None and observed_start < final_oos_window_start
+    )
+    oos_observation_present = (
+        observed_end is not None
+        and final_oos_window_start <= observed_end < evaluation_end_utc
+    )
+    meets_duration_requirement = duration_days >= MINIMUM_TOTAL_HISTORY_DAYS
+    final_oos_feasible = (
+        final_oos_window_start >= evaluation_start_utc
+        and pre_oos_observation_present
+        and oos_observation_present
+    )
     status = coverage_status_for(
         observed_record_count=observed_count,
         observed_duration_days=duration_days,
         quality_status=quality_status,
-        missing_while_expected_open=missing,
-        source_session_unknown_count=unknown,
+        structural_quality_status=structural_quality_status,
+        final_oos_feasible=final_oos_feasible,
         failure_code=failure_code,
     )
     return HistoricalCoverageMember(
@@ -177,6 +206,18 @@ def build_coverage_member(
         left_censored=observed_start == _as_utc(evaluation_start, "evaluation_start"),
         source_session_evidence_ids=source_session_evidence_ids,
         quality_status=None if quality_status is None else quality_status.value,
+        structural_quality_status=structural_quality_status,
+        provider_boundary_spillover_count=(
+            0
+            if quality is None
+            else getattr(quality, "provider_boundary_spillover_count", 0)
+        ),
+        meets_duration_requirement=meets_duration_requirement,
+        final_oos_window_start=final_oos_window_start,
+        final_oos_window_end=evaluation_end_utc,
+        pre_oos_observation_present=pre_oos_observation_present,
+        oos_observation_present=oos_observation_present,
+        final_oos_feasible=final_oos_feasible,
         coverage_status=status,
         request_count=telemetry.request_count,
         retry_count=telemetry.retry_count,

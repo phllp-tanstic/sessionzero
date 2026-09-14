@@ -11,7 +11,7 @@ from sessionzero_market_data import (
     SourceSessionAssessment,
     SourceSessionMode,
 )
-from sessionzero_schemas import MarketCandle, QualityStatus
+from sessionzero_schemas import MarketCandle, QualityStatus, StructuralQualityStatus
 
 START = datetime(2026, 6, 10, tzinfo=UTC)
 STEP = timedelta(hours=1)
@@ -194,7 +194,27 @@ def test_half_open_clipping_excludes_outside_candles() -> None:
     )
     assert [item.candle.event_time for item in result.observations] == [START, START + STEP]
     assert result.quality.outside_range_count == 2
+    assert result.quality.provider_boundary_spillover_count == 1
+    assert result.quality.out_of_range_leakage_count == 1
     assert result.quality.quality_status == QualityStatus.FAIL
+    assert result.quality.structural_quality_status == StructuralQualityStatus.FAIL
+
+
+def test_verified_pre_start_spillover_is_clipped_without_structural_failure() -> None:
+    accepted, report = quality([observation(-2), observation(-1), observation(0), observation(1)])
+    assert [item.candle.event_time for item in accepted] == [START, START + STEP]
+    assert report.provider_boundary_spillover_count == 2
+    assert report.out_of_range_leakage_count == 0
+    assert report.quality_status == QualityStatus.WARN
+    assert report.structural_quality_status == StructuralQualityStatus.PASS
+
+
+def test_post_end_timestamp_leakage_remains_structural_failure() -> None:
+    accepted, report = quality([observation(0), observation(1), observation(3)])
+    assert [item.candle.event_time for item in accepted] == [START, START + STEP]
+    assert report.provider_boundary_spillover_count == 0
+    assert report.out_of_range_leakage_count == 1
+    assert report.structural_quality_status == StructuralQualityStatus.FAIL
 
 
 def test_empty_result_has_machine_readable_failure() -> None:
@@ -222,6 +242,7 @@ def test_missing_interval_warns_without_creating_or_filling_a_candle() -> None:
     assert report.missing_count == 1
     assert report.missing_examples == (START + STEP,)
     assert report.quality_status == QualityStatus.WARN
+    assert report.structural_quality_status == StructuralQualityStatus.PASS
 
 
 def test_duplicate_and_out_of_order_timestamps_fail() -> None:

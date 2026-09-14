@@ -113,7 +113,8 @@ order, and evaluates exact observations in a fixed UTC window through the existi
 quality boundaries. It does not write candles or duplicate manifest storage. The root profile and
 per-symbol results are content-addressed and idempotent; operational timestamps and retry counters
 do not perturb logical identity. The source-evidence expansion changes classification semantics,
-so the evidence-qualified profiler output is versioned as `reality_historical_coverage.v3`.
+so the corrected evidence-qualified profiler output is versioned as
+`reality_historical_coverage.v4`; older persisted profiles retain their original semantics.
 
 The evidence-qualified audit derives its cohort from explicit, effective-dated, symbol-scoped
 schedule records that cover the entire locked window. Membership also requires presence in the
@@ -123,11 +124,18 @@ source-evidence and derivation versions, window, interval, and canonical members
 reuses the existing history client, pagination, normalization, and quality evaluator for every
 derived member.
 
-Coverage v3 classifies every expected hourly boundary, including observed boundaries, as known
+Coverage v4 classifies every expected hourly boundary, including observed boundaries, as known
 open, known closed, or source unknown. Known-open observations and missing intervals share the
 same explicit denominator; unknown fractions use the complete interval grid. Holiday-qualified
 unknown timestamps are retained in full, and an observed start equal to the evaluation start is
 stored as left-censored rather than interpreted as launch time.
+
+Structural validity is independent from those completeness metrics. Verified Bitget pre-start
+spillover is clipped and retained as warning telemetry. Only objective schema, normalization,
+canonical timestamp, OHLC/sign, timestamp-leakage, or pagination failures make structural quality
+fail. Duration and final-OOS feasibility are separate booleans using the locked 60-day span and the
+deterministic `evaluation_end - 30 days` boundary. `SUFFICIENT_MINIMUM_HISTORY` expresses only
+these data-plane chronology requirements, never future research eligibility.
 
 The profiler defaults to 10 serial symbols, rejects more than 20 unless `--full-universe` is
 explicit, caps pages/retries, paces requests at no more than the documented 20 requests/second,
