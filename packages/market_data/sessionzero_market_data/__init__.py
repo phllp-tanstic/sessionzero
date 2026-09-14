@@ -7,12 +7,24 @@ from .models import (
     SourceAvailabilityState,
     SourceSessionAssessment,
     SourceSessionCapability,
+    SourceSessionCapabilityKind,
+    SourceSessionEvidence,
+    SourceSessionEvidenceConfidence,
+    SourceSessionEvidenceDataset,
+    SourceSessionEvidenceType,
     SourceSessionMode,
+    SourceSessionResolutionStatus,
 )
 from .session_zero import classify_session_zero
-from .source_sessions import CuratedBitgetSourceSessionProvider, load_bitget_source_capabilities
+from .source_sessions import (
+    SOURCE_SESSION_TRANSFORMATION_VERSION,
+    CuratedBitgetSourceSessionProvider,
+    load_bitget_source_capabilities,
+    load_bitget_source_session_evidence,
+)
 
 __all__ = [
+    "SOURCE_SESSION_TRANSFORMATION_VERSION",
     "CashSessionContext",
     "CuratedBitgetSourceSessionProvider",
     "SessionZeroContext",
@@ -20,10 +32,17 @@ __all__ = [
     "SourceAvailabilityState",
     "SourceSessionAssessment",
     "SourceSessionCapability",
+    "SourceSessionCapabilityKind",
+    "SourceSessionEvidence",
+    "SourceSessionEvidenceConfidence",
+    "SourceSessionEvidenceDataset",
+    "SourceSessionEvidenceType",
     "SourceSessionMode",
     "SourceSessionProvider",
+    "SourceSessionResolutionStatus",
     "TradingCalendarProvider",
     "XnysTradingCalendar",
     "classify_session_zero",
     "load_bitget_source_capabilities",
+    "load_bitget_source_session_evidence",
 ]

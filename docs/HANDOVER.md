@@ -30,6 +30,11 @@
   `records_available_for_requested_window` (validated unique observations in the requested range).
 - Bitget requests support explicit pacing, bounded retries, numeric `Retry-After`, retry exhaustion,
   and request/retry/rate-limit telemetry.
+- Historical source-session provenance now uses `bitget_source_sessions.v2`: eight typed official
+  source records, clean batch symbol sets, explicit effective/publication/retrieval times, stable
+  precedence, visible conflicts, and assessment-level evidence IDs/URLs.
+- Coverage classification semantics are now `reality_historical_coverage.v2`; present-day metadata
+  and ambiguous notices cannot rewrite historical source availability.
 
 ## Verified
 
@@ -76,8 +81,17 @@
   throttle response. Three members were `SOURCE_SESSION_TOO_UNKNOWN`, seven were
   `DATA_QUALITY_FAILURE`, and none passed sufficiency. Durations were 88.0-90.0 days with an
   88.166667-day median. A deterministic repeat resolved to the same profile identity.
+- The exact pilot was rerun on 2026-09-14 after the source-evidence expansion. Status counts stayed
+  at three source-session-unknown and seven quality failures with zero sufficiency passes. Across
+  the ten members, unknown absences fell `6,004 -> 5,243` while known-open missing intervals rose
+  `2,302 -> 3,063`; this is a classification improvement, not a data-quality improvement. The v2
+  profile identity is `0e5657bf...a5a3fb4` and again used 139 requests without retries/rate limits.
+  The exact accepted pairs came from the retained prior profile because its temporary snapshot
+  database no longer existed; no fresh snapshot was mislabeled with the accepted version.
+- Of 1,173 universe symbols, 21 (1.79%) have full-window dated symbol-level schedule evidence, 76
+  more have partial-window evidence, and 1,076 have none. The full-universe scan was not run.
 - Migration `20260913_05` and all 11 PostgreSQL integration tests passed against an isolated local
-  PostgreSQL instance. The 73 non-live/non-PostgreSQL tests also passed.
+  PostgreSQL instance. The 80 non-live/non-PostgreSQL tests also passed.
 
 ### Bitget-native capability matrix
 
@@ -104,8 +118,9 @@
 
 ## Known constraints
 
-- Curated source history includes only one general 24/5 publication and one evidenced RMRNA 24/7
-  rollout; unproven symbols/times remain unknown.
+- Curated source history includes official June 12, June 23, July 3, July 17, and August 14
+  publications. The explicit dated union covers 97 symbols for some part of the pilot window, but
+  only 21 at schedule level for the full window; unproven symbols/times remain unknown.
 - General 24/5 evidence does not enumerate all exceptions. Holidays and generic-symbol weekends
   remain unknown unless symbol-specific evidence establishes availability.
 - Exchange calendars encode scheduled sessions, not unscheduled halts or source outages.
@@ -148,7 +163,7 @@
 
 ## Test counts
 
-- 73 deterministic non-live/non-PostgreSQL tests.
+- 80 deterministic non-live/non-PostgreSQL tests.
 - 11 direct PostgreSQL integration tests.
 - 4 opt-in live Bitget tests.
 
@@ -158,11 +173,10 @@
 
 ## Latest commit
 
-`feat(data): add Reality historical coverage profiling` (local; not pushed).
+`feat(data): expand historical Reality session evidence` (local; not pushed).
 
 ## Next exact task
 
-Obtain a written Bitget determination covering Stock+ read-only API eligibility and SessionZero's
-non-display, derived-output, public-display, and redistribution rights, without opening an account.
-Do not spend the estimated full-universe coverage budget until historical source-session evidence
-is broadened or the scan is otherwise explicitly justified.
+Find additional official, dated Bitget batch/launch/suspension records—especially before June 12
+and for the remaining 1,076 symbols—before reconsidering a full coverage scan. Do not infer omitted
+symbols or pre-announcement modes. Native Stock+ access/licensing remains independently gated.

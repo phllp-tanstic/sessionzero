@@ -54,7 +54,8 @@ Accepted universe version --> bounded 60-90 day coverage evaluation
 Temporal classification
         |
         +-- TradingCalendarProvider --> XNYS cash sessions
-        +-- SourceSessionProvider ----> Bitget source availability
+        +-- typed source evidence ----> deterministic precedence / conflict resolution
+        +-- SourceSessionProvider ----> Bitget source availability + provenance
         +-- SessionZeroContext -------> ACTIVE / INACTIVE / UNKNOWN
 ```
 
@@ -98,12 +99,21 @@ whether a Bitget instrument traded. `SourceSessionProvider` answers only source 
 effective-dated evidence. `SessionZeroContext` combines their typed outputs without producing fair
 value, state-model, signal, or strategy output.
 
+The curated source dataset stores one record per official source-level assertion, including clean
+symbol sets for batch announcements. `bitget_source_sessions.v2` filters records by explicit scope
+and `[effective_from, effective_to)`, then resolves suspension, batch-addition, dated-status-list,
+and general-rule evidence in deterministic order. Same-rank contradictory outcomes return
+`CONFLICT`; absent, ambiguous-scope, and present-day-only records return no historical assertion.
+Every resolved assessment carries evidence IDs/URLs and the transformation version. Current
+`stock-info` fields remain universe observation metadata and never enter this historical resolver.
+
 Historical coverage profiling is a separate read-only evaluation path. It loads an accepted
 `universe_version` from PostgreSQL, takes the first N technically eligible members in canonical
 order, and evaluates exact observations in a fixed UTC window through the existing history and
 quality boundaries. It does not write candles or duplicate manifest storage. The root profile and
 per-symbol results are content-addressed and idempotent; operational timestamps and retry counters
-do not perturb logical identity.
+do not perturb logical identity. The source-evidence expansion changes classification semantics,
+so profiler output is versioned as `reality_historical_coverage.v2`.
 
 The profiler defaults to 10 serial symbols, rejects more than 20 unless `--full-universe` is
 explicit, caps pages/retries, paces requests at no more than the documented 20 requests/second,

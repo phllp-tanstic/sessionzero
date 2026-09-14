@@ -159,3 +159,21 @@ no candle is synthesized. Logical identity hashes the universe, interval, transf
 and normalized member evidence while excluding generation/verification times and operational retry
 noise. Pilot scope is the canonical first 10 by default; scans above 20 require an explicit full
 universe switch after reviewing provider and runtime budgets.
+
+## ADR-016 — Resolve historical source sessions from typed, effective-dated evidence
+
+Status: **ACCEPTED**
+
+Bitget historical source-session evidence is stored as source-level records with explicit symbol
+sets, capability, session mode, effective bounds, publication time, URL, retrieval time, evidence
+type, and confidence. Announcement publication time is the conservative lower bound when Bitget
+says support is available “now” but gives no separate effective timestamp. No symbol state is
+projected before that bound, and current `stock-info` metadata is excluded from historical
+resolution.
+
+Resolution first requires explicit scope and an effective range. Explicit suspensions outrank
+schedule evidence only when their affected symbols are enumerated. Within schedule evidence,
+dated symbol-addition batches outrank dated status lists, which outrank general product rules;
+newer effective evidence wins within the same class. Equal-precedence evidence with different
+outcomes resolves to typed `CONFLICT` and `UNKNOWN`. Ambiguous notices remain retained provenance
+but cannot become wildcard closures. This policy is versioned as `bitget_source_sessions.v2`.

@@ -3,12 +3,15 @@ from __future__ import annotations
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 
+import httpx
 import pytest
 from sessionzero_bitget import (
+    BitgetMarketClient,
     RequestTelemetry,
     build_coverage_member,
     build_coverage_profile,
     coverage_status_for,
+    profile_reality_coverage,
 )
 from sessionzero_schemas import (
     CoverageStatus,
@@ -22,9 +25,9 @@ END = START + timedelta(days=90)
 VERSION = "a" * 64
 
 
-def _member() -> UniverseMember:
+def _member(symbol: str = "RTESTUSDT") -> UniverseMember:
     return UniverseMember(
-        reality_symbol="RTESTUSDT",
+        reality_symbol=symbol,
         base_coin="rTEST",
         quote_coin="USDT",
         native_ticker="TEST",
@@ -151,3 +154,35 @@ def test_coverage_times_must_be_utc() -> None:
             verification_time=END,
             quality=None,
         )
+
+
+def test_profiler_keeps_the_same_first_ten_and_window_without_synthetic_data() -> None:
+    pilot_start = datetime(2026, 6, 15, 20, tzinfo=UTC)
+    pilot_end = datetime(2026, 9, 13, 20, tzinfo=UTC)
+    members = tuple(_member(f"R{index:02d}USDT") for index in range(11))
+
+    def empty_history(_request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={"code": "00000", "msg": "success", "requestTime": 1, "data": []},
+        )
+
+    with BitgetMarketClient(
+        transport=httpx.MockTransport(empty_history), max_retries=0, clock=lambda: pilot_end
+    ) as client:
+        profile = profile_reality_coverage(
+            client,
+            universe_version=VERSION,
+            interval="1H",
+            universe_members=members,
+            evaluation_start=pilot_start,
+            evaluation_end=pilot_end,
+            subset_size=10,
+            clock=lambda: pilot_end,
+        )
+    assert [member.symbol for member in profile.members] == [
+        f"R{index:02d}USDT" for index in range(10)
+    ]
+    assert profile.evaluation_start == pilot_start
+    assert profile.evaluation_end == pilot_end
+    assert all(member.observed_record_count == 0 for member in profile.members)

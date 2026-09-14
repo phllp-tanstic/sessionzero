@@ -113,6 +113,52 @@ The full 1,173-symbol scan was not run. Extrapolating the pilot gives about 16,3
 members still lack complete historical source-session evidence and the pilot produced no clean
 sufficiency pass.
 
+## Historical Reality source-session evidence expansion — 2026-09-14
+
+`bitget_source_sessions.v2` replaces inferred per-symbol history with eight typed official-source
+records. Bitget's June 12 announcement supplies the first explicit 21-symbol weekend/24/7 batch
+and says non-batch stocks retained regular exchange hours. The June 23 FAQ supplies a general
+24/5 rule, qualified for weekends and U.S. holidays. The July 17 announcement supplies 22 named
+additions and an enumerated 61-symbol status list; the August 14 announcement supplies 14 named
+additions and an enumerated 93-symbol status list. Publication timestamps are conservative lower
+bounds where no separate effective timestamp is stated. The July 3 notice says only “select”
+Reality tokens were suspended, so its empty symbol scope is preserved as ambiguous provenance and
+does not close any symbol.
+
+Official sources:
+
+- 2026-06-12 13:21 — <https://www.bitget.com/support/articles/12560603885756>
+- 2026-06-23 07:39 — <https://www.bitget.com/support/articles/12560603887176>
+- 2026-07-03 07:25 — <https://www.bitget.com/support/articles/12560603888071>
+- 2026-07-17 03:40 — <https://www.bitget.com/support/articles/12560603889487>
+- 2026-08-14 09:20 — <https://www.bitget.com/support/articles/12560603892041>
+
+Across the 1,173-symbol universe, 97 symbols have explicit dated symbol evidence for at least part
+of the requested 90-day window: 21 cover the entire window at schedule level, 76 begin partway
+through it, and 1,076 have no explicit dated symbol evidence. Therefore only 21/1,173 (1.79%) have
+full-window symbol-level schedule evidence; 1,152 (98.21%) lack it for at least part of the window.
+Even those 21 retain `UNKNOWN` holiday intervals because Bitget says holiday opening may be
+delayed. The 97-symbol union is larger than the August 93-symbol status list because four earlier
+enumerated symbols are absent from the later list; absence from a later list is not treated as an
+explicit removal.
+
+The unchanged canonical first-10 1H pilot was rerun over
+`[2026-06-15T20:00:00Z, 2026-09-13T20:00:00Z)` against accepted universe
+`85c5d4fbf5c098d53016017b138e2e26e12d5146fa3e81e15b0c4fa9cf7b8db5`. The original temporary
+database was no longer present, so the exact ten symbol/native pairs were recovered from the prior
+content-addressed profile; a fresh metadata snapshot was not relabeled as the accepted version.
+Provider observations and the 139-request count were unchanged. Coverage statuses were also unchanged: three
+`SOURCE_SESSION_TOO_UNKNOWN`, seven `DATA_QUALITY_FAILURE`, and zero
+`SUFFICIENT_MINIMUM_HISTORY`. More accurate evidence reclassified 761 absent intervals from
+source-unknown to missing-while-expected-open: total unknown absences fell from 6,004 to 5,243 and
+known-open missing intervals rose from 2,302 to 3,063. AAOI changed `376 -> 34` unknown and
+`19 -> 361` missing; AAPL `226 -> 21` and `16 -> 221`; ABNB `644 -> 430` and `180 -> 394`.
+The other seven pilot members were unchanged. The v2 profile is
+`0e5657bfed6e39e13d8d76f65c726d64db1e0103eeddd61fca90594eae5a3fb4`.
+
+This is not sufficient evidence breadth for a useful full-universe scan. No 1,173-symbol profile
+was run.
+
 ## Native U.S. equity provider verification gate — 2026-09-13
 
 Verification timestamp: `2026-09-13T10:32:29Z`.

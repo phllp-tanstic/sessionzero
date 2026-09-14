@@ -22,6 +22,18 @@ alone does not make Session Zero active: at least one qualifying source must be 
 Present-day trading capabilities are never projected backward. These are deterministic temporal
 primitives, not Discovery State, Fair Value, Confidence, Gap, or a trading signal.
 
+Historical resolution uses only official Bitget evidence whose symbol scope and effective range
+cover the timestamp. When an announcement says support is available “now” without a distinct
+effective time, its displayed publication time is used as a conservative lower bound. A dated
+addition proves the post-boundary capability but does not prove any pre-boundary mode or closure.
+Explicit addition batches outrank contemporaneous status enumerations, which outrank general
+rules; symbol-scoped suspensions outrank schedules. Contradictory equal-precedence outcomes,
+unscoped notices, holidays qualified with “may”, and unsupported periods remain `UNKNOWN`.
+
+Current Bitget `weekendTradable` and session payloads are current observations, not historical
+facts. They may corroborate present behavior but do not participate in historical resolution.
+Missing candles likewise never serve as evidence of a source opening or closure.
+
 No predictive hypothesis is tested and no performance metric is reported in this phase.
 
 Historical coverage uses a predeclared 60-day minimum total period and preserves the locked

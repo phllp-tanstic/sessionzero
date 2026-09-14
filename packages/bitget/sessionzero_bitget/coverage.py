@@ -19,7 +19,7 @@ from .errors import BitgetProviderError
 from .history import HistoryPaginationError, fetch_bounded_history
 from .quality import INTERVAL_DURATIONS
 
-COVERAGE_TRANSFORMATION_VERSION = "reality_historical_coverage.v1"
+COVERAGE_TRANSFORMATION_VERSION = "reality_historical_coverage.v2"
 MINIMUM_TOTAL_HISTORY_DAYS = 60
 MINIMUM_OOS_DAYS = 30
 Clock = Callable[[], datetime]

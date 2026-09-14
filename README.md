@@ -26,6 +26,11 @@ observed, session-aware data could support the locked minimum 60-day validation 
 Unknown source-session intervals remain explicit. More than 20 symbols requires the deliberate
 `--full-universe` switch, and the command is rate-paced, retry-bounded, and one-shot.
 
+Historical Bitget source availability comes only from version-controlled, effective-dated official
+evidence. Dated symbol batches outrank general rules, conflicts remain explicit, and current
+`stock-info` session metadata is never projected backward. The current evidence remains too sparse
+for an automatic 1,173-symbol scan.
+
 Price discovery for the market session that did not exist before 24/7 equities.
 
 When the U.S. cash market closes, tokenized equities keep trading while new information continues
