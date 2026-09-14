@@ -32,9 +32,7 @@ def upgrade() -> None:
         "source_session_evidence_version",
         "git_commit",
     ):
-        op.add_column(
-            "historical_coverage_profiles", sa.Column(name, sa.String(64), nullable=True)
-        )
+        op.add_column("historical_coverage_profiles", sa.Column(name, sa.String(64), nullable=True))
 
     count_columns = (
         "expected_open_interval_count",

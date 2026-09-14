@@ -202,9 +202,7 @@ def test_holiday_unknown_does_not_override_duration_and_oos_sufficiency() -> Non
         source_session_unknown_interval_count=72,
         observed_while_source_session_unknown_count=0,
         holiday_ambiguous_interval_count=72,
-        holiday_ambiguous_timestamps=tuple(
-            START + timedelta(hours=index) for index in range(72)
-        ),
+        holiday_ambiguous_timestamps=tuple(START + timedelta(hours=index) for index in range(72)),
     )
     result = build_coverage_member(
         _member("RAUSDT"),

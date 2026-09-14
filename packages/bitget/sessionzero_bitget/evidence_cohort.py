@@ -26,9 +26,7 @@ EVIDENCE_COHORT_EVALUATION_END = datetime(2026, 9, 13, 20, tzinfo=UTC)
 
 
 def _hash(value: object) -> str:
-    encoded = json.dumps(
-        value, sort_keys=True, separators=(",", ":"), ensure_ascii=True
-    ).encode()
+    encoded = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()
     return hashlib.sha256(encoded).hexdigest()
 
 

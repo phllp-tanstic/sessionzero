@@ -104,9 +104,7 @@ def main() -> None:
             for member in profile.members
         )
         expected_open = sum(member.expected_open_interval_count for member in profile.members)
-        observed_open = sum(
-            member.observed_while_expected_open_count for member in profile.members
-        )
+        observed_open = sum(member.observed_while_expected_open_count for member in profile.members)
         missing_open = sum(member.missing_while_expected_open for member in profile.members)
         unknown = sum(member.source_session_unknown_interval_count for member in profile.members)
         total_grid = sum(
@@ -125,9 +123,7 @@ def main() -> None:
                 "structural_quality_status_counts": dict(
                     sorted((str(key), value) for key, value in structural_statuses.items())
                 ),
-                "sufficient_history_count": statuses.get(
-                    "SUFFICIENT_MINIMUM_HISTORY", 0
-                ),
+                "sufficient_history_count": statuses.get("SUFFICIENT_MINIMUM_HISTORY", 0),
                 "expected_open_interval_count": expected_open,
                 "observed_while_expected_open_count": observed_open,
                 "missing_while_expected_open": missing_open,

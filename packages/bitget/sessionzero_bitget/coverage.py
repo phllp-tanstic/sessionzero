@@ -140,9 +140,7 @@ def build_coverage_member(
         )
     )
     observed_unknown = (
-        0
-        if quality is None
-        else getattr(quality, "observed_while_source_session_unknown_count", 0)
+        0 if quality is None else getattr(quality, "observed_while_source_session_unknown_count", 0)
     )
     holiday_ambiguous = (
         0 if quality is None else getattr(quality, "holiday_ambiguous_interval_count", 0)
@@ -161,8 +159,7 @@ def build_coverage_member(
         observed_start is not None and observed_start < final_oos_window_start
     )
     oos_observation_present = (
-        observed_end is not None
-        and final_oos_window_start <= observed_end < evaluation_end_utc
+        observed_end is not None and final_oos_window_start <= observed_end < evaluation_end_utc
     )
     meets_duration_requirement = duration_days >= MINIMUM_TOTAL_HISTORY_DAYS
     final_oos_feasible = (
@@ -208,9 +205,7 @@ def build_coverage_member(
         quality_status=None if quality_status is None else quality_status.value,
         structural_quality_status=structural_quality_status,
         provider_boundary_spillover_count=(
-            0
-            if quality is None
-            else getattr(quality, "provider_boundary_spillover_count", 0)
+            0 if quality is None else getattr(quality, "provider_boundary_spillover_count", 0)
         ),
         meets_duration_requirement=meets_duration_requirement,
         final_oos_window_start=final_oos_window_start,

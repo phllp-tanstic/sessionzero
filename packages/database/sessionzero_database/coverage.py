@@ -124,8 +124,7 @@ def persist_historical_coverage_profile(engine: Engine, profile: HistoricalCover
                             "profile_version": profile.profile_version,
                             **member.model_dump(mode="python", exclude={"coverage_status"}),
                             "holiday_ambiguous_timestamps": [
-                                value.isoformat()
-                                for value in member.holiday_ambiguous_timestamps
+                                value.isoformat() for value in member.holiday_ambiguous_timestamps
                             ],
                             "observed_duration_days": Decimal(
                                 f"{member.observed_duration_days:.6f}"

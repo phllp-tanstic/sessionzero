@@ -98,14 +98,10 @@ def evaluate_candle_quality(
         if current.candle.event_time < previous.candle.event_time
     ]
     provider_boundary_spillover = [
-        item.candle.event_time
-        for item in unique
-        if item.candle.event_time < requested_start
+        item.candle.event_time for item in unique if item.candle.event_time < requested_start
     ]
     out_of_range_leakage = [
-        item.candle.event_time
-        for item in unique
-        if item.candle.event_time >= requested_end
+        item.candle.event_time for item in unique if item.candle.event_time >= requested_end
     ]
     outside = provider_boundary_spillover + out_of_range_leakage
     accepted = sorted(

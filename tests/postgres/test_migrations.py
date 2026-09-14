@@ -41,8 +41,7 @@ def test_upgrade_downgrade_and_restore(alembic_config: Config) -> None:
         }
         assert "records_available_for_requested_window" in manifest_columns
         profile_columns = {
-            column["name"]
-            for column in inspect(engine).get_columns("historical_coverage_profiles")
+            column["name"] for column in inspect(engine).get_columns("historical_coverage_profiles")
         }
         assert {
             "evaluation_scope",
@@ -52,8 +51,7 @@ def test_upgrade_downgrade_and_restore(alembic_config: Config) -> None:
             "git_commit",
         } <= profile_columns
         coverage_columns = {
-            column["name"]
-            for column in inspect(engine).get_columns("historical_coverage_members")
+            column["name"] for column in inspect(engine).get_columns("historical_coverage_members")
         }
         assert {
             "expected_open_interval_count",
