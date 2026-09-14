@@ -45,6 +45,14 @@ class SourceSessionResolutionStatus(StrEnum):
     CONFLICT = "CONFLICT"
 
 
+class SourceSessionAmbiguityKind(StrEnum):
+    NO_EVIDENCE = "NO_EVIDENCE"
+    CONFLICT = "CONFLICT"
+    HOLIDAY_QUALIFIED = "HOLIDAY_QUALIFIED"
+    WEEKEND_SCOPE = "WEEKEND_SCOPE"
+    IMPRECISE_SCHEDULE = "IMPRECISE_SCHEDULE"
+
+
 class SessionZeroState(StrEnum):
     ACTIVE = "ACTIVE"
     INACTIVE = "INACTIVE"
@@ -175,6 +183,7 @@ class SourceSessionAssessment(BaseModel):
     evidence_urls: tuple[str, ...] = ()
     transformation_version: str | None = None
     resolution_status: SourceSessionResolutionStatus = SourceSessionResolutionStatus.NO_EVIDENCE
+    ambiguity_kind: SourceSessionAmbiguityKind | None = None
     reason: str
 
 

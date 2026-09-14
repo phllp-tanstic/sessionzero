@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from decimal import Decimal
 from enum import StrEnum
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -13,6 +14,46 @@ class CoverageStatus(StrEnum):
     DATA_QUALITY_FAILURE = "DATA_QUALITY_FAILURE"
     HISTORY_UNAVAILABLE = "HISTORY_UNAVAILABLE"
     UNKNOWN = "UNKNOWN"
+
+
+class CoverageEvaluationScope(StrEnum):
+    CANONICAL_SUBSET = "CANONICAL_SUBSET"
+    EVIDENCE_QUALIFIED_COHORT = "EVIDENCE_QUALIFIED_COHORT"
+
+
+class EvidenceQualifiedCohortMember(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    symbol: str
+    native_ticker: str
+    source_session_evidence_ids: tuple[str, ...]
+
+
+class EvidenceQualifiedCohort(BaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    cohort_version: str = Field(pattern=r"^[0-9a-f]{64}$")
+    derivation_version: str
+    universe_version: str = Field(pattern=r"^[0-9a-f]{64}$")
+    source_session_evidence_version: str
+    interval: str
+    evaluation_start: datetime
+    evaluation_end: datetime
+    members: tuple[EvidenceQualifiedCohortMember, ...]
+
+    @field_validator("evaluation_start", "evaluation_end")
+    @classmethod
+    def validate_times(cls, value: datetime) -> datetime:
+        return _utc(value)
+
+    @model_validator(mode="after")
+    def validate_members(self) -> EvidenceQualifiedCohort:
+        symbols = tuple(member.symbol for member in self.members)
+        if not symbols or symbols != tuple(sorted(symbols)) or len(symbols) != len(set(symbols)):
+            raise ValueError("cohort members must be non-empty, unique, canonical symbol order")
+        if self.evaluation_end <= self.evaluation_start:
+            raise ValueError("cohort evaluation range must be increasing")
+        return self
 
 
 def _utc(value: datetime) -> datetime:
@@ -39,6 +80,19 @@ class HistoricalCoverageMember(BaseModel):
     expected_intervals_where_session_known: int = Field(ge=0)
     missing_while_expected_open: int = Field(ge=0)
     source_session_unknown_count: int = Field(ge=0)
+    expected_open_interval_count: int = Field(default=0, ge=0)
+    observed_while_expected_open_count: int = Field(default=0, ge=0)
+    expected_closed_interval_count: int = Field(default=0, ge=0)
+    observed_while_expected_closed_count: int = Field(default=0, ge=0)
+    source_session_unknown_interval_count: int = Field(default=0, ge=0)
+    observed_while_source_session_unknown_count: int = Field(default=0, ge=0)
+    holiday_ambiguous_interval_count: int = Field(default=0, ge=0)
+    holiday_ambiguous_timestamps: tuple[datetime, ...] = ()
+    observed_over_known_expected: Decimal | None = Field(default=None, ge=0)
+    missing_over_known_expected: Decimal | None = Field(default=None, ge=0)
+    unknown_fraction: Decimal = Field(default=Decimal(0), ge=0, le=1)
+    left_censored: bool = False
+    source_session_evidence_ids: tuple[str, ...] = ()
     quality_status: str | None = None
     coverage_status: CoverageStatus
     minimum_total_history_days: int = Field(default=60, ge=1)
@@ -61,6 +115,11 @@ class HistoricalCoverageMember(BaseModel):
     def validate_times(cls, value: datetime | None) -> datetime | None:
         return None if value is None else _utc(value)
 
+    @field_validator("holiday_ambiguous_timestamps")
+    @classmethod
+    def validate_holiday_times(cls, values: tuple[datetime, ...]) -> tuple[datetime, ...]:
+        return tuple(_utc(value) for value in values)
+
     @model_validator(mode="after")
     def validate_evidence(self) -> HistoricalCoverageMember:
         if self.evaluation_end <= self.evaluation_start:
@@ -79,6 +138,18 @@ class HistoricalCoverageMember(BaseModel):
             and self.latest_observed_event_time < self.earliest_observed_event_time
         ):
             raise ValueError("observed coverage bounds are reversed")
+        if self.expected_intervals_where_session_known != (
+            self.expected_open_interval_count + self.expected_closed_interval_count
+        ):
+            raise ValueError("known-session count must equal open plus closed intervals")
+        if self.observed_while_expected_open_count > self.expected_open_interval_count:
+            raise ValueError("observed expected-open count exceeds its denominator")
+        if self.missing_while_expected_open > self.expected_open_interval_count:
+            raise ValueError("missing expected-open count exceeds its denominator")
+        if self.holiday_ambiguous_interval_count > self.source_session_unknown_interval_count:
+            raise ValueError("holiday ambiguity must be a subset of unknown intervals")
+        if len(self.holiday_ambiguous_timestamps) != self.holiday_ambiguous_interval_count:
+            raise ValueError("holiday ambiguity count must match its timestamp evidence")
         return self
 
 
@@ -92,6 +163,11 @@ class HistoricalCoverageProfile(BaseModel):
     evaluation_start: datetime
     evaluation_end: datetime
     generated_at: datetime
+    evaluation_scope: CoverageEvaluationScope = CoverageEvaluationScope.CANONICAL_SUBSET
+    cohort_version: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
+    cohort_derivation_version: str | None = None
+    source_session_evidence_version: str | None = None
+    git_commit: str | None = None
     minimum_total_history_days: int = Field(default=60, ge=1)
     minimum_oos_days: int = Field(default=30, ge=1)
     members: tuple[HistoricalCoverageMember, ...]
@@ -110,4 +186,13 @@ class HistoricalCoverageProfile(BaseModel):
             raise ValueError("coverage members must link to the profile universe")
         if any(member.interval != self.interval for member in self.members):
             raise ValueError("coverage members must use the profile interval")
+        if self.evaluation_scope == CoverageEvaluationScope.EVIDENCE_QUALIFIED_COHORT and not all(
+            (
+                self.cohort_version,
+                self.cohort_derivation_version,
+                self.source_session_evidence_version,
+                self.git_commit,
+            )
+        ):
+            raise ValueError("evidence-qualified profiles require complete lineage versions")
         return self

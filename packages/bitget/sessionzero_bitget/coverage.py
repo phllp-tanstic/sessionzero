@@ -4,9 +4,11 @@ import hashlib
 import json
 from collections.abc import Callable, Sequence
 from datetime import UTC, datetime
+from decimal import Decimal
 
 from sessionzero_market_data import CuratedBitgetSourceSessionProvider, SourceSessionProvider
 from sessionzero_schemas import (
+    CoverageEvaluationScope,
     CoverageStatus,
     HistoricalCoverageMember,
     HistoricalCoverageProfile,
@@ -19,7 +21,7 @@ from .errors import BitgetProviderError
 from .history import HistoryPaginationError, fetch_bounded_history
 from .quality import INTERVAL_DURATIONS
 
-COVERAGE_TRANSFORMATION_VERSION = "reality_historical_coverage.v2"
+COVERAGE_TRANSFORMATION_VERSION = "reality_historical_coverage.v3"
 MINIMUM_TOTAL_HISTORY_DAYS = 60
 MINIMUM_OOS_DAYS = 30
 Clock = Callable[[], datetime]
@@ -86,6 +88,7 @@ def build_coverage_member(
     quality: object | None,
     telemetry: RequestTelemetry | None = None,
     failure_code: str | None = None,
+    source_session_evidence_ids: tuple[str, ...] = (),
 ) -> HistoricalCoverageMember:
     if member.native_ticker is None:
         raise ValueError("coverage profiling requires an explicit native ticker mapping")
@@ -100,12 +103,44 @@ def build_coverage_member(
         ).total_seconds() / 86_400
     quality_status = None if quality is None else quality.quality_status
     missing = 0 if quality is None else quality.missing_count
-    unknown = 0 if quality is None else quality.source_session_unknown_count
-    known_expected = (
+    expected_open = (
         0
         if quality is None
-        else quality.records_unique + quality.missing_count + quality.expected_source_closure_count
+        else getattr(quality, "expected_open_interval_count", quality.records_unique + missing)
     )
+    observed_open = (
+        0
+        if quality is None
+        else getattr(quality, "observed_while_expected_open_count", quality.records_unique)
+    )
+    expected_closed = (
+        0 if quality is None else getattr(quality, "expected_closed_interval_count", 0)
+    )
+    observed_closed = (
+        0 if quality is None else getattr(quality, "observed_while_expected_closed_count", 0)
+    )
+    unknown = (
+        0
+        if quality is None
+        else getattr(
+            quality, "source_session_unknown_interval_count", quality.source_session_unknown_count
+        )
+    )
+    observed_unknown = (
+        0
+        if quality is None
+        else getattr(quality, "observed_while_source_session_unknown_count", 0)
+    )
+    holiday_ambiguous = (
+        0 if quality is None else getattr(quality, "holiday_ambiguous_interval_count", 0)
+    )
+    holiday_ambiguous_timestamps = (
+        () if quality is None else getattr(quality, "holiday_ambiguous_timestamps", ())
+    )
+    total_intervals = expected_open + expected_closed + unknown
+    observed_ratio = None if expected_open == 0 else Decimal(observed_open) / expected_open
+    missing_ratio = None if expected_open == 0 else Decimal(missing) / expected_open
+    unknown_fraction = Decimal(0) if total_intervals == 0 else Decimal(unknown) / total_intervals
     status = coverage_status_for(
         observed_record_count=observed_count,
         observed_duration_days=duration_days,
@@ -125,9 +160,22 @@ def build_coverage_member(
         latest_observed_event_time=observed_end,
         observed_duration_days=duration_days,
         observed_record_count=observed_count,
-        expected_intervals_where_session_known=known_expected,
+        expected_intervals_where_session_known=expected_open + expected_closed,
         missing_while_expected_open=missing,
         source_session_unknown_count=unknown,
+        expected_open_interval_count=expected_open,
+        observed_while_expected_open_count=observed_open,
+        expected_closed_interval_count=expected_closed,
+        observed_while_expected_closed_count=observed_closed,
+        source_session_unknown_interval_count=unknown,
+        observed_while_source_session_unknown_count=observed_unknown,
+        holiday_ambiguous_interval_count=holiday_ambiguous,
+        holiday_ambiguous_timestamps=holiday_ambiguous_timestamps,
+        observed_over_known_expected=observed_ratio,
+        missing_over_known_expected=missing_ratio,
+        unknown_fraction=unknown_fraction,
+        left_censored=observed_start == _as_utc(evaluation_start, "evaluation_start"),
+        source_session_evidence_ids=source_session_evidence_ids,
         quality_status=None if quality_status is None else quality_status.value,
         coverage_status=status,
         request_count=telemetry.request_count,
@@ -145,6 +193,7 @@ def _profile_version(
     evaluation_start: datetime,
     evaluation_end: datetime,
     members: tuple[HistoricalCoverageMember, ...],
+    lineage: dict[str, str | None],
 ) -> str:
     normalized_members = []
     for member in members:
@@ -164,6 +213,7 @@ def _profile_version(
             "evaluation_start": _as_utc(evaluation_start, "evaluation_start").isoformat(),
             "evaluation_end": _as_utc(evaluation_end, "evaluation_end").isoformat(),
             "transformation_version": COVERAGE_TRANSFORMATION_VERSION,
+            "lineage": lineage,
             "members": normalized_members,
         }
     )
@@ -177,11 +227,23 @@ def build_coverage_profile(
     evaluation_end: datetime,
     generated_at: datetime,
     members: Sequence[HistoricalCoverageMember],
+    evaluation_scope: CoverageEvaluationScope = CoverageEvaluationScope.CANONICAL_SUBSET,
+    cohort_version: str | None = None,
+    cohort_derivation_version: str | None = None,
+    source_session_evidence_version: str | None = None,
+    git_commit: str | None = None,
 ) -> HistoricalCoverageProfile:
     normalized = tuple(sorted(members, key=lambda item: item.symbol))
+    lineage = {
+        "evaluation_scope": evaluation_scope.value,
+        "cohort_version": cohort_version,
+        "cohort_derivation_version": cohort_derivation_version,
+        "source_session_evidence_version": source_session_evidence_version,
+        "git_commit": git_commit,
+    }
     return HistoricalCoverageProfile(
         profile_version=_profile_version(
-            universe_version, interval, evaluation_start, evaluation_end, normalized
+            universe_version, interval, evaluation_start, evaluation_end, normalized, lineage
         ),
         universe_version=universe_version,
         interval=interval,
@@ -189,6 +251,11 @@ def build_coverage_profile(
         evaluation_start=_as_utc(evaluation_start, "evaluation_start"),
         evaluation_end=_as_utc(evaluation_end, "evaluation_end"),
         generated_at=_as_utc(generated_at, "generated_at"),
+        evaluation_scope=evaluation_scope,
+        cohort_version=cohort_version,
+        cohort_derivation_version=cohort_derivation_version,
+        source_session_evidence_version=source_session_evidence_version,
+        git_commit=git_commit,
         members=normalized,
     )
 
@@ -207,6 +274,12 @@ def profile_reality_coverage(
     allow_full_universe: bool = False,
     source_session_provider: SourceSessionProvider | None = None,
     clock: Clock = _utc_now,
+    evaluation_scope: CoverageEvaluationScope = CoverageEvaluationScope.CANONICAL_SUBSET,
+    cohort_version: str | None = None,
+    cohort_derivation_version: str | None = None,
+    source_session_evidence_version: str | None = None,
+    git_commit: str | None = None,
+    source_session_evidence_ids: dict[str, tuple[str, ...]] | None = None,
 ) -> HistoricalCoverageProfile:
     eligible = tuple(member for member in universe_members if member.technically_eligible)
     if subset_size < 1 or subset_size > len(eligible):
@@ -249,6 +322,9 @@ def profile_reality_coverage(
                 quality=quality,
                 telemetry=_telemetry_delta(before, client.request_telemetry),
                 failure_code=failure_code,
+                source_session_evidence_ids=(source_session_evidence_ids or {}).get(
+                    member.reality_symbol, ()
+                ),
             )
         )
     return build_coverage_profile(
@@ -258,4 +334,9 @@ def profile_reality_coverage(
         evaluation_end=evaluation_end,
         generated_at=clock(),
         members=results,
+        evaluation_scope=evaluation_scope,
+        cohort_version=cohort_version,
+        cohort_derivation_version=cohort_derivation_version,
+        source_session_evidence_version=source_session_evidence_version,
+        git_commit=git_commit,
     )

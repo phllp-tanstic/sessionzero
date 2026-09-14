@@ -104,6 +104,11 @@ def persist_historical_coverage_profile(engine: Engine, profile: HistoricalCover
                 evaluation_start=profile.evaluation_start,
                 evaluation_end=profile.evaluation_end,
                 generated_at=profile.generated_at,
+                evaluation_scope=profile.evaluation_scope.value,
+                cohort_version=profile.cohort_version,
+                cohort_derivation_version=profile.cohort_derivation_version,
+                source_session_evidence_version=profile.source_session_evidence_version,
+                git_commit=profile.git_commit,
                 minimum_total_history_days=profile.minimum_total_history_days,
                 minimum_oos_days=profile.minimum_oos_days,
             )
@@ -118,6 +123,10 @@ def persist_historical_coverage_profile(engine: Engine, profile: HistoricalCover
                         {
                             "profile_version": profile.profile_version,
                             **member.model_dump(mode="python", exclude={"coverage_status"}),
+                            "holiday_ambiguous_timestamps": [
+                                value.isoformat()
+                                for value in member.holiday_ambiguous_timestamps
+                            ],
                             "observed_duration_days": Decimal(
                                 f"{member.observed_duration_days:.6f}"
                             ),

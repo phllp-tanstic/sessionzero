@@ -1,4 +1,11 @@
-from .coverage import CoverageStatus, HistoricalCoverageMember, HistoricalCoverageProfile
+from .coverage import (
+    CoverageEvaluationScope,
+    CoverageStatus,
+    EvidenceQualifiedCohort,
+    EvidenceQualifiedCohortMember,
+    HistoricalCoverageMember,
+    HistoricalCoverageProfile,
+)
 from .market import (
     CapabilityStatus,
     MarketCandle,
@@ -33,8 +40,11 @@ from .universe import (
 __all__ = [
     "CandleQualityReport",
     "CapabilityStatus",
+    "CoverageEvaluationScope",
     "CoverageStatus",
     "DividendRecord",
+    "EvidenceQualifiedCohort",
+    "EvidenceQualifiedCohortMember",
     "HistoricalCoverageMember",
     "HistoricalCoverageProfile",
     "HistoricalIngestionManifest",

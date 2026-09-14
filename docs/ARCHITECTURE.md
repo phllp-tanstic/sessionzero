@@ -113,12 +113,34 @@ order, and evaluates exact observations in a fixed UTC window through the existi
 quality boundaries. It does not write candles or duplicate manifest storage. The root profile and
 per-symbol results are content-addressed and idempotent; operational timestamps and retry counters
 do not perturb logical identity. The source-evidence expansion changes classification semantics,
-so profiler output is versioned as `reality_historical_coverage.v2`.
+so the evidence-qualified profiler output is versioned as `reality_historical_coverage.v3`.
+
+The evidence-qualified audit derives its cohort from explicit, effective-dated, symbol-scoped
+schedule records that cover the entire locked window. Membership also requires presence in the
+accepted universe, a native ticker mapping, and no conflict at any evidence-resolution segment.
+The derivation never reads a handwritten production list. Its content address binds the universe,
+source-evidence and derivation versions, window, interval, and canonical members. The audit then
+reuses the existing history client, pagination, normalization, and quality evaluator for every
+derived member.
+
+Coverage v3 classifies every expected hourly boundary, including observed boundaries, as known
+open, known closed, or source unknown. Known-open observations and missing intervals share the
+same explicit denominator; unknown fractions use the complete interval grid. Holiday-qualified
+unknown timestamps are retained in full, and an observed start equal to the evaluation start is
+stored as left-censored rather than interpreted as launch time.
 
 The profiler defaults to 10 serial symbols, rejects more than 20 unless `--full-universe` is
 explicit, caps pages/retries, paces requests at no more than the documented 20 requests/second,
 honors numeric `Retry-After`, and records requests, retries, and rate-limit responses. There is no
 daemon, scheduler, or infinite polling.
+
+Durable lineage is complete from accepted universe through cohort evidence and coverage summary:
+profile rows retain the universe, cohort, evidence, transformation, window, interval, and Git
+versions, while member rows retain evidence IDs, request telemetry, normalized quality counts, and
+coverage decisions. The audit itself remains read-only and therefore does not persist its fetched
+request envelopes, raw candle arrays, or normalized candle rows. That request/raw/normalized-to-
+profile linkage is intentionally documented as broken rather than falsely inferred; the normal
+ingestion workflow remains the only writer of raw and normalized market observations.
 
 ## Native-equity provider gate
 

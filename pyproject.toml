@@ -32,6 +32,7 @@ sessionzero-ingest-bitget-history = "sessionzero_database.cli:main"
 sessionzero-ingest-bitget-reference = "sessionzero_database.reference_cli:main"
 sessionzero-build-reality-manifest = "sessionzero_database.universe_cli:main"
 sessionzero-profile-reality-coverage = "sessionzero_database.coverage_cli:main"
+sessionzero-audit-evidence-coverage = "sessionzero_database.evidence_coverage_cli:main"
 sessionzero-collector = "sessionzero_collector.main:main"
 
 [tool.setuptools.packages.find]

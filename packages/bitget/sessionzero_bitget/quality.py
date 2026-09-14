@@ -7,7 +7,11 @@ from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 from itertools import pairwise
 
-from sessionzero_market_data import SourceAvailabilityState, SourceSessionProvider
+from sessionzero_market_data import (
+    SourceAvailabilityState,
+    SourceSessionAmbiguityKind,
+    SourceSessionProvider,
+)
 from sessionzero_schemas import (
     CandleQualityReport,
     QualityIssue,
@@ -126,22 +130,40 @@ def evaluate_candle_quality(
 
     event_times = [item.candle.event_time for item in accepted]
     expected = _expected_times(requested_start, requested_end, step)
-    absent = sorted(set(expected).difference(event_times))
+    event_time_set = set(event_times)
     missing: list[datetime] = []
     expected_closures: list[datetime] = []
     unknown_sessions: list[datetime] = []
-    for timestamp in absent:
-        availability = (
-            SourceAvailabilityState.UNKNOWN
+    expected_open: list[datetime] = []
+    expected_closed: list[datetime] = []
+    all_unknown_sessions: list[datetime] = []
+    holiday_ambiguous: list[datetime] = []
+    for timestamp in expected:
+        assessment = (
+            None
             if source_session_provider is None
-            else source_session_provider.session_at(symbol, timestamp).availability
+            else source_session_provider.session_at(symbol, timestamp)
+        )
+        availability = (
+            SourceAvailabilityState.UNKNOWN if assessment is None else assessment.availability
         )
         if availability == SourceAvailabilityState.EXPECTED_OPEN:
-            missing.append(timestamp)
+            expected_open.append(timestamp)
+            if timestamp not in event_time_set:
+                missing.append(timestamp)
         elif availability == SourceAvailabilityState.EXPECTED_CLOSED:
-            expected_closures.append(timestamp)
+            expected_closed.append(timestamp)
+            if timestamp not in event_time_set:
+                expected_closures.append(timestamp)
         else:
-            unknown_sessions.append(timestamp)
+            all_unknown_sessions.append(timestamp)
+            if timestamp not in event_time_set:
+                unknown_sessions.append(timestamp)
+            if (
+                assessment is not None
+                and assessment.ambiguity_kind == SourceSessionAmbiguityKind.HOLIDAY_QUALIFIED
+            ):
+                holiday_ambiguous.append(timestamp)
     unexpected_spacing = [
         current
         for previous, current in pairwise(event_times)
@@ -201,6 +223,16 @@ def evaluate_candle_quality(
         expected_source_closure_examples=tuple(expected_closures[:MAX_ISSUE_EXAMPLES]),
         source_session_unknown_count=len(unknown_sessions),
         source_session_unknown_examples=tuple(unknown_sessions[:MAX_ISSUE_EXAMPLES]),
+        expected_open_interval_count=len(expected_open),
+        observed_while_expected_open_count=len(event_time_set.intersection(expected_open)),
+        expected_closed_interval_count=len(expected_closed),
+        observed_while_expected_closed_count=len(event_time_set.intersection(expected_closed)),
+        source_session_unknown_interval_count=len(all_unknown_sessions),
+        observed_while_source_session_unknown_count=len(
+            event_time_set.intersection(all_unknown_sessions)
+        ),
+        holiday_ambiguous_interval_count=len(holiday_ambiguous),
+        holiday_ambiguous_timestamps=tuple(holiday_ambiguous),
         duplicate_count=len(duplicate_times) + overlap_duplicate_count,
         out_of_order_count=len(out_of_order),
         unexpected_spacing_count=len(unexpected_spacing),

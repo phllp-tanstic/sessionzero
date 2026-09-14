@@ -177,3 +177,19 @@ dated symbol-addition batches outrank dated status lists, which outrank general 
 newer effective evidence wins within the same class. Equal-precedence evidence with different
 outcomes resolves to typed `CONFLICT` and `UNKNOWN`. Ambiguous notices remain retained provenance
 but cannot become wildcard closures. This policy is versioned as `bitget_source_sessions.v2`.
+
+## ADR-017 — Audit only full-window evidence-qualified Reality histories
+
+Status: **ACCEPTED**
+
+The expanded Reality coverage audit uses a machine-derived cohort, never a manually maintained
+production list. Qualification requires membership in the selected persisted universe, a native
+ticker mapping, explicit verified symbol evidence covering the entire locked 90-day window, and
+no source-evidence conflict. Partial evidence does not qualify even when later current metadata
+suggests the same session mode.
+
+Coverage semantics classify the complete hourly grid. Known-open ratios exclude all unknown
+intervals, holiday-qualified ambiguity remains explicit, and bounded starts remain left-censored.
+The result reuses historical coverage persistence and is versioned as
+`reality_historical_coverage.v3`. This audit does not authorize native-equity implementation,
+alpha metrics, signal research, backtesting, or Phase 2 work.

@@ -6,6 +6,7 @@ from importlib.resources import files
 from .calendar import NEW_YORK, XnysTradingCalendar
 from .models import (
     SourceAvailabilityState,
+    SourceSessionAmbiguityKind,
     SourceSessionAssessment,
     SourceSessionCapability,
     SourceSessionCapabilityKind,
@@ -159,6 +160,7 @@ class CuratedBitgetSourceSessionProvider:
                 session_mode=SourceSessionMode.UNKNOWN,
                 transformation_version=self.transformation_version,
                 resolution_status=resolution,
+                ambiguity_kind=SourceSessionAmbiguityKind.NO_EVIDENCE,
                 reason="no cited historical evidence covers this symbol and timestamp",
             )
         if resolution == SourceSessionResolutionStatus.CONFLICT:
@@ -171,6 +173,7 @@ class CuratedBitgetSourceSessionProvider:
                 evidence_urls=evidence_urls,
                 transformation_version=self.transformation_version,
                 resolution_status=resolution,
+                ambiguity_kind=SourceSessionAmbiguityKind.CONFLICT,
                 reason="highest-precedence historical evidence has conflicting outcomes",
             )
         capability = winners[0]
@@ -196,6 +199,7 @@ class CuratedBitgetSourceSessionProvider:
                 return SourceSessionAssessment(
                     **common,
                     availability=SourceAvailabilityState.UNKNOWN,
+                    ambiguity_kind=SourceSessionAmbiguityKind.HOLIDAY_QUALIFIED,
                     reason="official weekend evidence says holiday opening may be postponed",
                 )
             return SourceSessionAssessment(
@@ -210,12 +214,14 @@ class CuratedBitgetSourceSessionProvider:
                 return SourceSessionAssessment(
                     **common,
                     availability=SourceAvailabilityState.UNKNOWN,
+                    ambiguity_kind=SourceSessionAmbiguityKind.HOLIDAY_QUALIFIED,
                     reason="official 24/5 guidance says holiday access may be limited",
                 )
             if local.weekday() >= 5:
                 return SourceSessionAssessment(
                     **common,
                     availability=SourceAvailabilityState.UNKNOWN,
+                    ambiguity_kind=SourceSessionAmbiguityKind.WEEKEND_SCOPE,
                     reason="general 24/5 evidence does not prove symbol-level weekend closure",
                 )
             return SourceSessionAssessment(
@@ -226,5 +232,6 @@ class CuratedBitgetSourceSessionProvider:
         return SourceSessionAssessment(
             **common,
             availability=SourceAvailabilityState.UNKNOWN,
+            ambiguity_kind=SourceSessionAmbiguityKind.IMPRECISE_SCHEDULE,
             reason="evidence does not establish precise expected availability",
         )

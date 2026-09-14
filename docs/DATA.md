@@ -593,3 +593,33 @@ Quality validation occurs before persistence. `FAIL` datasets are returned as st
 and do not enter the raw/normalized transaction. `PASS` and `WARN` datasets persist through the
 accepted transaction and idempotency contract. Migration `20260912_02` adds nullable request start,
 request end, interval, page count, and quality status to ingestion runs while preserving older rows.
+
+## Evidence-qualified coverage audit
+
+`sessionzero-audit-evidence-coverage` has an immutable `1H` evaluation window of
+`[2026-06-15T20:00:00Z, 2026-09-13T20:00:00Z)`. It derives membership from the version-controlled
+source-session evidence dataset joined to a persisted universe snapshot. A member must have an
+explicit native mapping and a verified, enumerated schedule record covering the full half-open
+window; any equal-precedence conflict excludes it. Partial-window, wildcard, ambiguous-scope, and
+present-day-only records cannot qualify a member.
+
+For each of the 2,160 hourly boundaries, the quality evaluator classifies source availability even
+when a candle was observed. The stored counts and ratios are:
+
+- `observed_over_known_expected = observed_while_expected_open_count /
+  expected_open_interval_count`;
+- `missing_over_known_expected = missing_while_expected_open /
+  expected_open_interval_count`;
+- `unknown_fraction = source_session_unknown_interval_count / 2160`.
+
+A zero known-open denominator yields `null`, not zero. Unknown hours never enter either known-open
+ratio. Full holiday-ambiguous timestamp lists are stored per member. `left_censored=true` means the
+first observed candle equals the audit boundary and proves only “at least this much bounded
+history.” It is not a launch-date estimate.
+
+Migration `20260914_06` extends the existing historical coverage profile/member tables; it does not
+create a parallel candle store. Profile identity binds cohort, universe, source-evidence,
+transformation and Git versions plus the fixed window and canonical logical results. Operational
+timestamps and retry telemetry remain outside content identity. Because profiling is read-only,
+request envelopes and raw/normalized observations are not durably joined to a profile; this is an
+explicit lineage gap. Run normal ingestion when durable candle-level lineage is required.

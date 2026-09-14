@@ -93,6 +93,27 @@
 - Migration `20260913_05` and all 11 PostgreSQL integration tests passed against an isolated local
   PostgreSQL instance. The 80 non-live/non-PostgreSQL tests also passed.
 
+### Evidence-qualified 21-symbol audit — 2026-09-14
+
+- Cohort `a69d8c42...4176f32` was derived from the persisted 1,173-member universe
+  `e0580746...81bd06` and `bitget_source_sessions.v2`; no production symbol list was used.
+- The immutable `1H` window was `[2026-06-15T20:00:00Z, 2026-09-13T20:00:00Z)`. All 21
+  machine-qualified members were evaluated in 404 requests with zero retries and zero rate-limit
+  responses.
+- Every member had 72 holiday-qualified unknown hourly boundaries: local dates Juneteenth,
+  Independence Day observed, and Labor Day. Total unknown/holiday-ambiguous intervals were 1,512.
+- Aggregate known-open evidence was 43,848 intervals: 38,228 observed and 5,620 missing. The exact
+  aggregate ratios were 0.871829958 observed/known-open, 0.128170042 missing/known-open, and
+  0.033333333 unknown/full-grid.
+- Coverage status counts were 19 `SOURCE_SESSION_TOO_UNKNOWN`, two `DATA_QUALITY_FAILURE`, and zero
+  in every other status. AVGO had five and META nine provider rows before the fixed left boundary,
+  triggering the existing boundary-spillover quality failure. All 21 bounded histories were
+  left-censored; duration median/max was 90 days and minimum was 88.166667 days.
+- The profile is persisted under `reality_historical_coverage.v3`. Universe-to-evidence and
+  evidence-to-quality/coverage lineage is durable. Request envelopes and raw/normalized candle rows
+  remain in-memory in this read-only profiler and are not durably joined to the profile; do not
+  claim complete candle-level audit lineage.
+
 ### Bitget-native capability matrix
 
 | Capability | Status | Endpoint / evidence | Operational consequence |
@@ -152,6 +173,7 @@
 - Read-only/optional-persistence CLI: `sessionzero-ingest-bitget-reference`.
 - Snapshot/manifest CLI: `sessionzero-build-reality-manifest`.
 - Coverage-profile CLI: `sessionzero-profile-reality-coverage`.
+- Evidence-qualified audit CLI: `sessionzero-audit-evidence-coverage`.
 - Migration CLI: `alembic upgrade head`.
 
 ## Required env vars
@@ -163,7 +185,7 @@
 
 ## Test counts
 
-- 80 deterministic non-live/non-PostgreSQL tests.
+- 85 deterministic non-live/non-PostgreSQL tests.
 - 11 direct PostgreSQL integration tests.
 - 4 opt-in live Bitget tests.
 
@@ -173,10 +195,12 @@
 
 ## Latest commit
 
-`feat(data): expand historical Reality session evidence` (local; not pushed).
+`feat(data): audit evidence-qualified Reality coverage` (local; not pushed).
 
 ## Next exact task
 
-Find additional official, dated Bitget batch/launch/suspension records—especially before June 12
-and for the remaining 1,076 symbols—before reconsidering a full coverage scan. Do not infer omitted
-symbols or pre-announcement modes. Native Stock+ access/licensing remains independently gated.
+Resolve holiday availability for the 21-member evidence-qualified cohort from explicit official
+Bitget evidence, and investigate the known-open missing intervals plus AVGO/META boundary spillover
+without changing the fixed audit window. Do not expand to 1,173 symbols or begin research while
+every cohort member remains conservatively non-sufficient. Native Stock+ access/licensing remains
+independently gated.
