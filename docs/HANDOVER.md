@@ -2,7 +2,7 @@
 
 ## Current phase
 
-`PHASE 1 — DATA PLANE (NATIVE EQUITY PROVIDER ACCESS GATED)`
+`PHASE 1 — DATA PLANE (STOCK+ ACCOUNT ACCESS GATED)`
 
 ## Completed
 
@@ -55,6 +55,12 @@
   clipped one older row, confirming that the SessionZero pagination cursor is correct.
 
 ## Failed
+
+- Stock+ authenticated read-only verification on `2026-09-15` could not start because no complete
+  `BITGET_API_KEY`/`BITGET_SECRET_KEY`/`BITGET_PASSPHRASE` set was present in the environment.
+  Unauthenticated static and history controls both returned `40006 Invalid ACCESS_KEY`. Account
+  entitlement, native rows, June coverage, adjustment behavior, and session reconstruction remain
+  unverified. Bitget's direct hackathon-use authorization clears only the hackathon-use question.
 
 - The RMRNA comparison still fails quality because Bitget history contains only two candle records
   in the verified-open two-day window. This is a confirmed provider-history gap, not a proven feed
@@ -199,8 +205,8 @@
 ## Required env vars
 
 - `DATABASE_URL`: required for migrations, persistence, and PostgreSQL tests.
-- A native-provider API key and an account/license authorizing the intended use are required before
-  native-equity implementation or live verification; no variable name is committed until selection.
+- `BITGET_API_KEY`, `BITGET_SECRET_KEY`, and `BITGET_PASSPHRASE`: required together for the isolated
+  Stock+ read-only verifier; values must never be committed or printed.
 - Existing public Bitget and web/API settings remain in `.env.example`.
 
 ## Test counts
@@ -219,7 +225,7 @@
 
 ## Next exact task
 
-Resolve the native-equity access and licensing gate for a technically suitable historical OHLC
-source, beginning with the outstanding Bitget Stock+ clarification. Do not start modeling merely
-because the 21 Reality histories meet duration/OOS feasibility; complete native-leg availability,
-point-in-time mapping, and rights must be established first.
+Export the three Bitget credentials into the verification process environment and run the isolated
+Stock+ read-only verifier. Do not start provider implementation or modeling until static metadata,
+bounded historical candles, June coverage, direction/adjustment behavior, and regular-session
+reconstruction are verified.

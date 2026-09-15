@@ -210,3 +210,18 @@ within the final segment. No candle-density threshold exists because none is loc
 required. `SUFFICIENT_MINIMUM_HISTORY` therefore means only structurally valid Reality data meets
 the duration and OOS feasibility requirements. It does not mean future research eligibility,
 strategy readiness, alpha selection, or complete native-plus-Reality data.
+
+## ADR-019 — Separate Stock+ hackathon-use approval from runtime entitlement
+
+Status: **ACCEPTED — ACCOUNT ACCESS GATED**
+
+Bitget directly confirmed that available Bitget stock-market data may be used for this hackathon,
+so `STOCKPLUS_HACKATHON_USE` is `AVAILABLE`. This narrow determination does not imply broader
+commercial display or redistribution rights.
+
+Stock+ native-equity market data remains a runtime gate until successful signed, read-only
+responses prove the user's account/API entitlement. Verification uses an isolated environment-only
+script, sends no writes, persists no provider data, and stops on the first static-endpoint access
+failure. No `NativeEquityProvider`, schema, migration, backfill, modeling, or research-universe
+change is authorized by this decision. Raw provider values and the requested adjustment enum must
+remain explicit if access is later proven.

@@ -344,6 +344,38 @@ Stock+ Level 1 is described as available after account opening, Level 2 requires
 and official institutional material says Stock+ permissions/KYC and, for some feeds, whitelisting
 may apply. Therefore Bitget does not remove the existing licensing gate for a public product.
 
+## Stock+ read-only access re-verification — 2026-09-15
+
+Bitget directly confirmed that available Bitget stock-market data may be used for this hackathon.
+This changes `STOCKPLUS_HACKATHON_USE` to **AVAILABLE** only; it does not establish broader
+commercial display or redistribution rights.
+
+The current official Stock+ contract documents all three required endpoints with `Stock+ Market
+Data (read-only)` permission and signed UTA v3 headers:
+
+| Endpoint | Contract verified |
+|---|---|
+| `GET /api/v3/stockplus/market/static` | `ticker.region` symbols such as `AAPL.US`; up to 500 symbols; 10 requests/s/UID and at most five concurrent requests; response `data.list` includes symbol, exchange, currency, lot size, share/fundamental, derivative, and board metadata. |
+| `GET /api/v3/stockplus/market/candlestick` | Periods `Min_1`, `Min_2`, `Min_3`, `Min_5`, `Min_10`, `Min_15`, `Min_20`, `Min_30`, `Min_45`, `Min_60`, `Min_120`, `Min_180`, `Min_240`, `Day`, `Week`, `Month`, `Quarter`, `Year`; required count up to 1,000; required adjustment; optional `Intraday`, `Pre`, `Post`, or `Overnight`; only the most recent 1,000 candles. |
+| `GET /api/v3/stockplus/market/history-candlestick` | Same periods/count/adjustment/session filters; optional Unix-seconds `time`; `forward=false` (default) queries backward and `forward=true` queries forward; response rows contain OHLC, volume, turnover, Unix-seconds timestamp, and trade session. |
+
+Authentication requires `ACCESS-KEY`, `ACCESS-SIGN`, `ACCESS-TIMESTAMP`, and
+`ACCESS-PASSPHRASE`. The documented GET signature is Base64(HMAC-SHA256(secret,
+`timestamp + "GET" + requestPath + "?" + queryString`)). Credentials remain environment-only.
+
+The adjustment enum is documented as `NoAdjust` and `ForwardAdjust`, but the current page does not
+define the price transformation mathematically. No semantic equivalence to a vendor's
+split-adjustment policy is assumed until authenticated runtime comparison is possible.
+
+Runtime on 2026-09-15 found no complete Bitget credential set in the process environment. One
+unauthenticated `static` control and one unauthenticated `history-candlestick` control both returned
+provider code `40006`, message `Invalid ACCESS_KEY`; neither was retried. Consequently account/API
+entitlement is **GATED**, and no Stock+ security row, candle, timestamp behavior, ordering,
+boundary direction, adjustment comparison, June 2026 coverage, or cash-session reconstruction was
+claimed. The isolated `scripts/verify_bitget_stockplus.py` verifier is ready to perform at most
+nine signed GET requests after the three credential environment variables are supplied. It writes
+nothing and stops after the first static auth/entitlement failure.
+
 ## Official documentation reviewed
 
 | Capability | Official documentation URL | Documented endpoint | Documented access | Observed access | Observed UTC timestamp | Notes |

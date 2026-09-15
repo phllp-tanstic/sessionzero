@@ -22,9 +22,11 @@ read-only. Technical access does not grant display, redistribution, or quantitat
 - Alembic, rather than application startup, controls schema changes.
 - Foreign keys, check constraints, and database uniqueness enforce core integrity independently of
   application duplicate checks.
-- Native-equity provider credentials are absent. Provider selection fails closed until secrets are
-  environment-managed and the account's non-display, derived-work, public-display, and
-  redistribution permissions are documented. A free/developer plan is not assumed to grant them.
+- Native-equity provider credentials are absent. The isolated Stock+ verifier reads the Bitget key,
+  secret, and passphrase from environment variables only, never prints headers/signatures, sends
+  signed GET requests only, persists nothing, and stops on its first static-endpoint access error.
+  Bitget has authorized available stock-market data for this hackathon; broader public display and
+  redistribution rights remain unproven and are not inferred from that determination.
 
 ## Data rules
 
