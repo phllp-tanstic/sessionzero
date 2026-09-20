@@ -2,9 +2,37 @@
 
 ## Current phase
 
-`PHASE 1 — DATA PLANE EXIT MET (PRIVATE HISTORICAL DATASET; PUBLIC RIGHTS GATED)`
+`PHASE 2 — RESEARCH BASELINES`
 
-## Phase 1 exit dataset — 2026-09-20 (current)
+## Phase 2 Task 1 — current
+
+- Frozen protocol and four naive baseline implementations exist. No Fair Value, Discovery State,
+  Confidence, Conviction, strategy, frontend or execution work was added.
+- **Final OOS remains untouched by performance evaluation.** It begins 2026-08-14 at 20:00 UTC.
+  CLI and library reject its evaluation before archive access; v1 has no bypass flag.
+- The accepted Phase 1 dataset, cohort, calendar, prices and manifests are unchanged. Research
+  verifies exact identities/checksums and reads private archives offline without database writes.
+- Development and validation diagnostics cover all 21 symbols, 420 and 462 candidate observations.
+  Full results, exclusions, shared-sample metrics and age distributions are generated privately.
+  See [protocol](RESEARCH_PROTOCOL.md), [status](BACKTEST.md) and
+  [verification receipt](../research/experiments/verification.json).
+- **Acceptance gate NOT PASSED:** original price availability/revision history remains unverified.
+  Model-feature eligibility rejects these prices; retrospective comparisons are ESTIMATED, never
+  BACKTESTED or final evidence. No task acceptance commit was created.
+- Verified: 26 new deterministic research tests; 182 non-live/non-PostgreSQL tests pass. Ruff
+  format/check pass. PostgreSQL and live suites were not rerun for this offline-only addition.
+- New command: `.venv/bin/python -m research.baselines --partition DEVELOPMENT` (or VALIDATION).
+  No environment variables or internet required; retained private Phase 1 archives are required.
+  Reports and records are mode 0600 under `.local-data/research/experiments/`.
+- Outstanding: independent historical availability/revision evidence, historical identity continuity,
+  measured staleness and execution assumptions, and separate rights clarification. Public-derived
+  rights remain unverified; no push or deployment.
+- Next exact task: close the as-known price-availability evidence gap (or establish a separate
+  prospective capture dataset) before claiming a leak-free benchmark or building Fair Value.
+
+The Phase 1 section below remains the accepted historical data-plane record.
+
+## Phase 1 exit dataset — 2026-09-20 (accepted historical record)
 
 - Phase 1 dataset exit gate: **YES**. No Phase 2 model, feature matrix, returns, or backtest exists.
 - Dataset version: `e6d06eae4813cacf24f0087e38025e31aff1013a7a9de03a5e1be0266dec7020`.
@@ -302,7 +330,7 @@ is preferred are superseded by this section and ADR-021.
   Stock+ read-only verifier; values must never be committed or printed.
 - Existing public Bitget and web/API settings remain in `.env.example`.
 
-## Test counts
+## Phase 1 test counts (historical)
 
 - 156 deterministic non-live/non-PostgreSQL tests.
 - 21 PostgreSQL integration/migration tests.
@@ -312,13 +340,13 @@ is preferred are superseded by this section and ADR-021.
 
 `NOT DEPLOYED`
 
-## Latest commit
+## Phase 1 acceptance commit (unchanged)
 
 `feat(data): build reproducible Phase 1 target dataset` is the acceptance commit for this handover;
 resolve its hash with `git log -1`. Build base: `5cfd574`; exact source hashes are in the dataset
 manifest, avoiding a self-referential commit hash. Nothing is pushed in this task.
 
-## Next exact task
+## Previous next task (superseded by current section)
 
 Define the Phase 2 baseline research protocol and explicit point-in-time availability/eligibility
 policy against the frozen dataset, preserving the final OOS boundary and all missingness. Resolve

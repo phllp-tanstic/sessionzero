@@ -1,0 +1,140 @@
+{
+  "acceptance_limitation": "Cannot certify a leak-free as-known benchmark until original price availability/revision evidence exists.",
+  "cost_boundary": {
+    "capital_accounting": {
+      "claim_label": "TARGET",
+      "rule": "Explicit initial equity, cash, collateral, realized/unrealized PnL, funding and borrow; no implicit leverage.",
+      "value": null
+    },
+    "execution_delay": {
+      "claim_label": "TARGET",
+      "rule": "Strictly after decision and actual observable receipt; no fill at signal candle close.",
+      "value": null
+    },
+    "fees": {
+      "claim_label": "TARGET",
+      "rule": "Actual venue/product/account schedule at entry and exit, including funding/borrow if applicable; never assume zero.",
+      "value": null
+    },
+    "position_sizing": {
+      "claim_label": "TARGET",
+      "rule": "Freeze notional, per-name and total exposure caps before strategy research; no sizing in baseline metrics.",
+      "value": null
+    },
+    "slippage": {
+      "claim_label": "TARGET",
+      "rule": "Measured size-dependent adverse execution; stress scenarios frozen before strategy evaluation.",
+      "value": null
+    },
+    "spread": {
+      "claim_label": "TARGET",
+      "rule": "Measured executable bid/ask on both legs; unavailable depth prevents execution claims.",
+      "value": null
+    },
+    "trade_rejection": {
+      "claim_label": "TARGET",
+      "rule": "Reject stale, closed, unavailable, insufficient-liquidity, permission or balance failures; count all.",
+      "value": null
+    }
+  },
+  "dataset_identity": {
+    "calendar_version": "631de3a894ae0cc9d960be8af9051b9433c5fdbed35438b5ddcc816e9145bb57",
+    "cohort_version": "a69d8c427abac466e8b4088f109e55640bc9e5172011ec6b70919b1874176f32",
+    "git_commit": "5cfd574d8501a8ac307890bf3eef434d7f8597be",
+    "native_target_version": "f41e4d01de8cfbffda55a7642bb5b1b2b7456792b3748b09bbc312250d5a0421",
+    "requested_window": [
+      "2026-06-15T20:00:00+00:00",
+      "2026-09-13T20:00:00+00:00"
+    ],
+    "session_evidence_content_version": "a5491fb26ffeab7dda857df48dd0be3504cea55a3978788b2b1507c33c646e3f",
+    "session_evidence_version": "bitget_source_sessions.v2",
+    "source_code_version": "b0045e5b70cf4dfd80d47136617c72dfd052bd9a66a341b5f030ce834628aaa1",
+    "universe_version": "e0580746df9d0581bbd629e0a07dde94ce6ff04e973718fb8a1c3a103e81bd06"
+  },
+  "dataset_manifest_sha256": "92bab1b252c86c763794d3d33311515465b0a87800476c533b116fb4dc6270a8",
+  "dataset_version": "e6d06eae4813cacf24f0087e38025e31aff1013a7a9de03a5e1be0266dec7020",
+  "decision": {
+    "frequency": "ONE_PER_SYMBOL_PER_XNYS_SESSION",
+    "minutes_before_regular_open": 60,
+    "reason": "Fixed one-hour operational lead; independent of observed errors; completed hourly bars only."
+  },
+  "diagnostic_permission": {
+    "assumption": "Archived raw price revisions stand in for contemporaneous values; original availability is NOT proven. No model feature export; not BACKTESTED or final evidence.",
+    "claim_label": "ESTIMATED",
+    "mode": "RETROSPECTIVE_EVENT_TIME_DIAGNOSTIC"
+  },
+  "eligibility": {
+    "archive_retrieval_metadata": {
+      "model_eligible": false,
+      "role": "RESEARCH_ONLY_NOT_MODEL_ELIGIBLE"
+    },
+    "calendar_schedule": {
+      "condition": "Scheduled calendar only; not realized halts.",
+      "model_eligible": true,
+      "role": "AVAILABLE_AT_DECISION_TIME"
+    },
+    "corporate_actions": {
+      "model_eligible": false,
+      "role": "UNKNOWN_AVAILABILITY"
+    },
+    "current_mapping_and_universe": {
+      "model_eligible": false,
+      "role": "RESEARCH_ONLY_NOT_MODEL_ELIGIBLE"
+    },
+    "events_cross_asset_funding_depth_fx": {
+      "model_eligible": false,
+      "role": "UNKNOWN_AVAILABILITY"
+    },
+    "future_or_incomplete_candles": {
+      "model_eligible": false,
+      "role": "FUTURE_OUTCOME"
+    },
+    "next_native_open": {
+      "model_eligible": false,
+      "role": "FUTURE_OUTCOME"
+    },
+    "previous_native_close": {
+      "model_eligible": false,
+      "role": "UNKNOWN_AVAILABILITY"
+    },
+    "reality_ohlcv": {
+      "model_eligible": false,
+      "role": "UNKNOWN_AVAILABILITY"
+    },
+    "source_session_evidence": {
+      "condition": "Explicit symbol scope, publication <= decision, effective range; UNKNOWN excluded.",
+      "model_eligible": true,
+      "role": "AVAILABLE_AT_DECISION_TIME"
+    }
+  },
+  "feature_set_version": "retrospective_baseline_inputs.v1",
+  "final_oos_guard": "No FINAL_OOS support in v1 CLI or library; future separately reviewed runner required.",
+  "missing_policy": "No interpolation or synthetic prices. Missing exact anchor disables transfer/blend; missing decision mark disables mark/transfer/blend. Missing native boundary disables all. Unknown source segments disable Reality candidates. All-symbol scope and common-sample comparison.",
+  "parameters": {
+    "blend_weight": 0.5,
+    "decision_lag_seconds": 3600,
+    "mark_currency_assumption": "1 USDT = 1 USD; ESTIMATED, unverified conversion; mark is candle close, not executable quote",
+    "reality_bar_seconds": 3600,
+    "reference_anchor": "EXACT_REALITY_BAR_COMPLETION_AT_PREVIOUS_CASH_CLOSE",
+    "staleness_exclusion_policy": "TBD; measure age; do not optimize. Never select before previous cash close or across source UNKNOWN/CLOSED.",
+    "staleness_exclusion_seconds": null
+  },
+  "protocol_version": "baseline_protocol.v1",
+  "split_assignment": "Decision and target minute completion must both be inside partition; purge cross-boundary outcomes; no fitting in v1.",
+  "split_version": "chronological_30_30_30.v1",
+  "splits": {
+    "DEVELOPMENT": [
+      "2026-06-15T20:00:00Z",
+      "2026-07-15T20:00:00Z"
+    ],
+    "FINAL_OOS": [
+      "2026-08-14T20:00:00Z",
+      "2026-09-13T20:00:00Z"
+    ],
+    "VALIDATION": [
+      "2026-07-15T20:00:00Z",
+      "2026-08-14T20:00:00Z"
+    ]
+  },
+  "target_version": "raw_reopen_return.v1"
+}

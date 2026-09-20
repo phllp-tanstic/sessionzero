@@ -1,0 +1,39 @@
+{
+  "acceptance_gate": "NOT_PASSED_ORIGINAL_PRICE_AVAILABILITY_UNVERIFIED",
+  "claim_label": "OBSERVED",
+  "cli_oos_rejection_exit_code": 2,
+  "commit_created": false,
+  "dataset_version": "e6d06eae4813cacf24f0087e38025e31aff1013a7a9de03a5e1be0266dec7020",
+  "final_oos_evaluated": false,
+  "metric_claim_label": "ESTIMATED",
+  "protocol_sha256": "dd76ecabe2386e207608d155ff6f53b5fafa7deba305910bdcc0905f5e11c6ba",
+  "runs": [
+    {
+      "candidate_observations": 420,
+      "deterministic_repeat": "PASSED",
+      "experiment_id": "c2dc9b93c6d0c3e8683586456d6c2fe87ec1649a1bb418e0be847ab4bf1cf393",
+      "partition": "DEVELOPMENT",
+      "private_result_path": ".local-data/research/experiments/c2dc9b93c6d0c3e8683586456d6c2fe87ec1649a1bb418e0be847ab4bf1cf393/result.json",
+      "records_sha256": "d3594e54c39356641d9db622b0afb9f5236f26adb4a9d0fd6269bb5b1d91af7e",
+      "result_sha256": "fe16ea0f4f9a623f91a578b45c6ee614e4ccfe54b62e2df0c235d2487b69c855"
+    },
+    {
+      "candidate_observations": 462,
+      "deterministic_repeat": "PASSED",
+      "experiment_id": "dd16b995c5dd35f8a0715e283d8c70f36b99db1259dd977421bfaab15ad3ea12",
+      "partition": "VALIDATION",
+      "private_result_path": ".local-data/research/experiments/dd16b995c5dd35f8a0715e283d8c70f36b99db1259dd977421bfaab15ad3ea12/result.json",
+      "records_sha256": "2cbc3f28bba494e0b56427d0c52610e6a45d3f1e309ff0134a3b9a4375629af7",
+      "result_sha256": "6fbbda7a8bcd653ec3f1912fec20017d5786a9c579c831acde47c9d15e232983"
+    }
+  ],
+  "tests": {
+    "deselected_postgres_and_live": 26,
+    "git_diff_check": "PASSED",
+    "new_research_tests": 26,
+    "offline_suite_passed": 182,
+    "ruff_check": "PASSED",
+    "ruff_format": "PASSED"
+  },
+  "verified_at": "2026-09-20T21:22:42.602961+00:00"
+}

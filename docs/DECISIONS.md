@@ -1,5 +1,32 @@
 # Architecture Decision Records
 
+## ADR-023 — Frozen naive baseline contract with protected final OOS
+
+Date: 2026-09-20. Status: IMPLEMENTED; STRICT AS-KNOWN BENCHMARK ACCEPTANCE BLOCKED.
+
+Bind research to the exact accepted manifest and private archive checksums. Freeze equal calendar
+30-day development/validation splits before the accepted final 30-day OOS, one scheduled-open-minus-
+60-minute decision per symbol/session, raw first-minute-open / previous-minute-close return, and
+previous-close, Reality mark, return-transfer and fixed 50/50 shrinkage baselines. No fitting,
+performance-dependent membership, synthetic prices or trading costs in prediction metrics.
+
+The price archive cannot prove original availability or immutable historical revisions. Keep those
+fields UNKNOWN_AVAILABILITY and forbidden to model features. A separate, explicit retrospective
+comparison may run as ESTIMATED diagnostics only; it cannot satisfy the blueprint's as-known
+BACKTESTED claim. Unknown-publication actions remain excluded. Future opens are outcome-only.
+
+Both CLI and library reject FINAL_OOS before archive access. Partition outcome purging, closed-bar
+alignment and a separate scalar prediction interface guard temporal leakage. Source-unknown paths
+and absent exact anchors produce declared observation exclusions; all 21 names remain in scope.
+Staleness is measured with an explicit TBD cutoff; costs are TARGET requirements pending empirical
+values and a separately frozen execution contract. No strategy or Fair Value is authorized here.
+
+All experiment versions remain privately retained and reproducible by code/content hashes. This
+user-authorized research supersedes earlier no-research sequencing statements, but does not change
+the accepted dataset or resolve availability/licensing gaps. The conditional acceptance commit is
+withheld; no push or deployment. [Full protocol](RESEARCH_PROTOCOL.md).
+
+
 ## ADR-022 — Fixed, privately reproducible Phase 1 observation/outcome dataset
 
 Date: 2026-09-20. Status: accepted for the user-authorized fixed 21-member backfill.

@@ -44,6 +44,7 @@ where = ["packages/bitget", "packages/schemas", "packages/config", "packages/dat
 sessionzero_market_data = ["data/*.json"]
 
 [tool.pytest.ini_options]
+pythonpath = ["."]
 addopts = "-ra"
 testpaths = ["tests"]
 markers = [
