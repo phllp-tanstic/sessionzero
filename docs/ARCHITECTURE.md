@@ -1,5 +1,19 @@
 # Architecture
 
+## Prospective point-in-time capture — current
+
+`sessionzero-capture-decision` is a one-iteration worker suitable for a remote container. It is
+invoked shortly before a declared XNYS-open-minus-60-minute decision, fetches the latest completed
+Reality candle and exact preceding native close, and atomically writes immutable PostgreSQL
+evidence plus `decision_snapshot.v1`. The collector has no scheduler and no local archive fallback.
+
+Observation versions are content-addressed separately from retrieval evidence. An identical
+refetch retains another response but reuses its canonical version; corrected values append a new
+version. Database triggers reject UPDATE/DELETE. Snapshots bind only versions ingested by decision
+time plus calendar, mapping, source-session, dataset, collector and Git identities. The outcome
+type is absent and `contains_future_outcome=false` is database constrained. See
+[POINT_IN_TIME_INTEGRITY.md](POINT_IN_TIME_INTEGRITY.md).
+
 ## Reproducible Phase 1 dataset — current
 
 `sessionzero_database.dataset_cli` is the one-shot build/restore boundary. Tracked

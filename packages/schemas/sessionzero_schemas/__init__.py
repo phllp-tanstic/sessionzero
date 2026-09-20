@@ -1,3 +1,12 @@
+from .capture import (
+    CAPTURE_TRANSFORMATION_VERSION,
+    SNAPSHOT_TRANSFORMATION_VERSION,
+    DecisionTimeSnapshot,
+    ProspectiveRetrieval,
+    RevisionIntegrityStatus,
+    build_decision_snapshot,
+    canonical_digest,
+)
 from .coverage import (
     CoverageEvaluationScope,
     CoverageStatus,
@@ -44,10 +53,13 @@ from .universe import (
 )
 
 __all__ = [
+    "CAPTURE_TRANSFORMATION_VERSION",
+    "SNAPSHOT_TRANSFORMATION_VERSION",
     "CandleQualityReport",
     "CapabilityStatus",
     "CoverageEvaluationScope",
     "CoverageStatus",
+    "DecisionTimeSnapshot",
     "DividendRecord",
     "EvidenceQualifiedCohort",
     "EvidenceQualifiedCohortMember",
@@ -62,6 +74,7 @@ __all__ = [
     "MarketSessionWindow",
     "MarketTicker",
     "PointInTimeAvailability",
+    "ProspectiveRetrieval",
     "ProviderCapability",
     "QualityIssue",
     "QualitySeverity",
@@ -70,6 +83,7 @@ __all__ = [
     "RealitySymbolMapping",
     "RealityUniverseSnapshot",
     "ReferenceActionType",
+    "RevisionIntegrityStatus",
     "ShareCapitalChange",
     "SourceSessionMetadata",
     "SplitRecord",
@@ -78,4 +92,6 @@ __all__ = [
     "UniverseEligibilityReason",
     "UniverseMappingStatus",
     "UniverseMember",
+    "build_decision_snapshot",
+    "canonical_digest",
 ]

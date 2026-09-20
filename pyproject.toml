@@ -27,6 +27,7 @@ dev = [
 
 [project.scripts]
 sessionzero-build-phase1-dataset = "sessionzero_database.dataset_cli:main"
+sessionzero-capture-decision = "sessionzero_database.capture_cli:main"
 sessionzero-verify-native-equity = "sessionzero_database.native_cli:main"
 sessionzero-verify-bitget = "sessionzero_bitget.verify:main"
 sessionzero-export-bitget-history = "sessionzero_bitget.export:main"

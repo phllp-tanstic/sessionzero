@@ -1,3 +1,4 @@
+from .capture import persist_point_in_time_capture
 from .coverage import (
     AcceptedUniverse,
     load_accepted_universe,
@@ -61,5 +62,6 @@ __all__ = [
     "load_accepted_universe",
     "persist_historical_coverage_profile",
     "persist_historical_manifest",
+    "persist_point_in_time_capture",
     "persist_universe_snapshot",
 ]

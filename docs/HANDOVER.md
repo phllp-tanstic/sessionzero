@@ -4,7 +4,38 @@
 
 `PHASE 2 — RESEARCH BASELINES`
 
-## Phase 2 Task 1 — current
+## Historical availability / revision integrity — current
+
+- Acceptance decision: **B. RETROSPECTIVE_POINT_IN_TIME_NOT_VERIFIABLE_PROSPECTIVE_CAPTURE_READY**.
+  Official Bitget docs do not establish historical candle revision/version/as-known semantics;
+  Alpaca documents late bar updates plus trade corrections/cancellations. Frozen baseline prices
+  remain RETROSPECTIVE_ONLY and metrics remain ESTIMATED, not BACKTESTED.
+- A 2026-09-20 DEVELOPMENT-only refetch compared three rows per provider. All six were identical;
+  changed/missing/new/timestamp/OHLC-change counts were zero. This OBSERVED sample is not an
+  immutability proof. [Evidence and architecture](POINT_IN_TIME_INTEGRITY.md).
+- `point_in_time_capture.v1` and migration `20260920_10` provide append-only capture runs,
+  canonical observation versions, every raw retrieval and deterministic `decision_snapshot.v1`.
+  Same observations deduplicate versions; revisions append; PostgreSQL triggers reject mutation.
+- One remote-ready iteration: `.venv/bin/sessionzero-capture-decision --decision-timestamp <UTC>`.
+  It requires PostgreSQL and Alpaca credentials, runs only inside the pre-decision window, admits
+  only evidence ingested by the decision, and captures all 21 names by default. No scheduler or
+  deployment exists. Remote images inject `SESSIONZERO_GIT_COMMIT`.
+- Decision snapshots include Reality marks, previous native closes, point-in-time source evidence,
+  calendar, mapping and capture/dataset identities. Next native open cannot enter the schema and
+  remains FUTURE_OUTCOME. PROSPECTIVELY_SAFE describes evidence integrity, not performance.
+- **Final OOS remains untouched by performance evaluation.** Existing CLI/library guards are
+  unchanged. The capture command rejects historical invocation outside its live pre-decision
+  window, including the frozen OOS dates.
+- Verification: 194 secret-free non-live/non-PostgreSQL tests and 24 PostgreSQL tests pass; Ruff,
+  formatting, migration upgrade/downgrade/restore and diff checks pass. Six authorized read-only
+  provider refetches passed. No live prospective snapshot was created because no current decision
+  window occurred during this task.
+- No Fair Value, Discovery State, threshold optimization, strategy Sharpe, deployment, or push.
+  Public derived-output rights remain unverified.
+- Next exact task: deploy/schedule only after explicit authorization, then accumulate sufficient
+  immutable prospective decisions and append outcome versions under a separately frozen contract.
+
+## Phase 2 Task 1 — accepted research infrastructure
 
 - Frozen protocol and four naive baseline implementations exist. No Fair Value, Discovery State,
   Confidence, Conviction, strategy, frontend or execution work was added.
@@ -16,19 +47,17 @@
   Full results, exclusions, shared-sample metrics and age distributions are generated privately.
   See [protocol](RESEARCH_PROTOCOL.md), [status](BACKTEST.md) and
   [verification receipt](../research/experiments/verification.json).
-- **Acceptance gate NOT PASSED:** original price availability/revision history remains unverified.
+- Original price availability/revision history remains unverified; ADR-024 resolves this with a
+  separate prospective path rather than upgrading the retrospective claims.
   Model-feature eligibility rejects these prices; retrospective comparisons are ESTIMATED, never
-  BACKTESTED or final evidence. No task acceptance commit was created.
-- Verified: 26 new deterministic research tests; 182 non-live/non-PostgreSQL tests pass. Ruff
-  format/check pass. PostgreSQL and live suites were not rerun for this offline-only addition.
+  BACKTESTED or final evidence. The accepted baseline infrastructure commit is `b73ac7e`.
+- Historical verification at acceptance: 26 new deterministic research tests and 182
+  non-live/non-PostgreSQL tests passed.
 - New command: `.venv/bin/python -m research.baselines --partition DEVELOPMENT` (or VALIDATION).
   No environment variables or internet required; retained private Phase 1 archives are required.
   Reports and records are mode 0600 under `.local-data/research/experiments/`.
-- Outstanding: independent historical availability/revision evidence, historical identity continuity,
-  measured staleness and execution assumptions, and separate rights clarification. Public-derived
-  rights remain unverified; no push or deployment.
-- Next exact task: close the as-known price-availability evidence gap (or establish a separate
-  prospective capture dataset) before claiming a leak-free benchmark or building Fair Value.
+- Outstanding from this frozen slice: historical identity continuity, measured staleness and
+  execution assumptions, and separate rights clarification.
 
 The Phase 1 section below remains the accepted historical data-plane record.
 
@@ -319,6 +348,7 @@ is preferred are superseded by this section and ADR-021.
 - Evidence-qualified audit CLI: `sessionzero-audit-evidence-coverage`.
 - Private native CLI: `sessionzero-verify-native-equity` (or the documented Python module).
 - Dataset build/restore CLI: `sessionzero-build-phase1-dataset` (or Python module above).
+- Prospective decision capture CLI: `sessionzero-capture-decision`.
 - Migration CLI: `alembic upgrade head`.
 
 ## Required env vars
@@ -326,9 +356,17 @@ is preferred are superseded by this section and ADR-021.
 - `DATABASE_URL`: required for migrations, persistence, and PostgreSQL tests.
 - `NATIVE_EQUITY_PROVIDER=alpaca`, `ALPACA_API_KEY`, `ALPACA_SECRET_KEY`: required for native
   verification. Source the local ignored environment file without displaying it.
+- `SESSIONZERO_GIT_COMMIT`: required for prospective capture in remote images without `.git`;
+  local capture instead verifies a clean tree and resolves `HEAD`.
 - `BITGET_API_KEY`, `BITGET_SECRET_KEY`, and `BITGET_PASSPHRASE`: required together for the isolated
   Stock+ read-only verifier; values must never be committed or printed.
 - Existing public Bitget and web/API settings remain in `.env.example`.
+
+## Current test counts
+
+- 193 deterministic non-live/non-PostgreSQL tests.
+- 24 PostgreSQL integration/migration tests.
+- Five opt-in live provider tests remain separate.
 
 ## Phase 1 test counts (historical)
 
@@ -345,6 +383,10 @@ is preferred are superseded by this section and ADR-021.
 `feat(data): build reproducible Phase 1 target dataset` is the acceptance commit for this handover;
 resolve its hash with `git log -1`. Build base: `5cfd574`; exact source hashes are in the dataset
 manifest, avoiding a self-referential commit hash. Nothing is pushed in this task.
+
+The current integrity implementation is committed separately as
+`feat(research): add point-in-time capture integrity`; resolve its hash with `git log -1` after
+acceptance. It is not pushed.
 
 ## Previous next task (superseded by current section)
 

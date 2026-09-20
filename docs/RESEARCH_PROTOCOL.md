@@ -5,6 +5,12 @@ evaluation. Phase 1 is accepted and unchanged. This task implements the protocol
 benchmark machinery; **the strict leak-free benchmark acceptance gate is NOT PASSED** because
 original historical availability and revision history of price inputs are unverified.
 
+The later revision-integrity audit resolved this gate as decision B:
+**RETROSPECTIVE_POINT_IN_TIME_NOT_VERIFIABLE_PROSPECTIVE_CAPTURE_READY**. It does not change this
+frozen v1 protocol, its splits or its results. Current diagnostics remain RETROSPECTIVE ESTIMATED.
+The separate `point_in_time_capture.v1` / `decision_snapshot.v1` path can accumulate PROSPECTIVE
+OBSERVED evidence for a future experiment. See [the integrity report](POINT_IN_TIME_INTEGRITY.md).
+
 The machine contract is [baseline-v1.json](../research/protocols/baseline-v1.json), pinned by SHA-256
 in [the runner](../research/baselines.py). Changing the contract requires an explicitly new version,
 not editing v1 after viewing errors. Dataset identity resolves through `datasets/phase1/latest.json`

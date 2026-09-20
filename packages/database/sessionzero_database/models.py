@@ -704,3 +704,106 @@ class Phase1DatasetReality(Base):
     next_open_role: Mapped[str] = mapped_column(String(32), nullable=False)
     previous_close_role: Mapped[str] = mapped_column(String(64), nullable=False)
     reality_role: Mapped[str] = mapped_column(String(64), nullable=False)
+
+
+class PointInTimeCaptureRun(Base):
+    __tablename__ = "point_in_time_capture_runs"
+    __table_args__ = (
+        CheckConstraint("status = 'SUCCEEDED'", name="ck_pit_capture_success"),
+        CheckConstraint("started_at <= completed_at", name="ck_pit_capture_time_order"),
+        CheckConstraint("symbol_count > 0", name="ck_pit_capture_symbol_count"),
+    )
+    capture_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    decision_timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    collector_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    git_commit: Mapped[str] = mapped_column(String(64), nullable=False)
+    dataset_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    calendar_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    mapping_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    source_session_evidence_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    capture_version: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    symbol_count: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class PointInTimeObservationVersion(Base):
+    __tablename__ = "point_in_time_observation_versions"
+    __table_args__ = (
+        UniqueConstraint(
+            "logical_key_hash", "canonical_hash", name="uq_pit_logical_content_version"
+        ),
+        CheckConstraint("role = 'FEATURE'", name="ck_pit_observation_feature_only"),
+        CheckConstraint(
+            "field_name IN ('REALITY_DECISION_MARK','PREVIOUS_NATIVE_CLOSE')",
+            name="ck_pit_observation_field",
+        ),
+        CheckConstraint(
+            "first_ingestion_time >= first_request_time", name="ck_pit_observation_time_order"
+        ),
+    )
+    version_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    logical_key_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    canonical_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    source: Mapped[str] = mapped_column(String(32), nullable=False)
+    symbol: Mapped[str] = mapped_column(String(64), nullable=False)
+    endpoint: Mapped[str] = mapped_column(String(255), nullable=False)
+    field_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    role: Mapped[str] = mapped_column(String(16), nullable=False)
+    event_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    canonical_value: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    collector_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    git_commit: Mapped[str] = mapped_column(String(64), nullable=False)
+    first_request_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    first_ingestion_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class PointInTimeRetrieval(Base):
+    __tablename__ = "point_in_time_retrievals"
+    __table_args__ = (
+        CheckConstraint("ingestion_time >= request_time", name="ck_pit_retrieval_time_order"),
+    )
+    retrieval_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    capture_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("point_in_time_capture_runs.capture_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    version_hash: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("point_in_time_observation_versions.version_hash", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    request_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    ingestion_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    provider_identifiers: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    raw_response: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+
+
+class DecisionTimeSnapshotRow(Base):
+    __tablename__ = "decision_time_snapshots"
+    __table_args__ = (
+        CheckConstraint(
+            "contains_future_outcome = false", name="ck_decision_snapshot_no_future_outcome"
+        ),
+    )
+    snapshot_version: Mapped[str] = mapped_column(String(64), primary_key=True)
+    capture_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("point_in_time_capture_runs.capture_id", ondelete="RESTRICT"),
+        nullable=False,
+        unique=True,
+    )
+    transformation_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    decision_timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    reality_observation_versions: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+    previous_close_versions: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+    source_session_evidence: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    source_session_evidence_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    calendar_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    mapping_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    dataset_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    capture_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    contains_future_outcome: Mapped[bool] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

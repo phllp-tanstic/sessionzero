@@ -1,5 +1,25 @@
 # Methodology
 
+## Revision-integrity decision — current
+
+Official provider evidence and bounded refetches do not establish an as-known historical price
+database. The accepted classification is
+`RETROSPECTIVE_POINT_IN_TIME_NOT_VERIFIABLE_PROSPECTIVE_CAPTURE_READY`. See the
+[integrity report](POINT_IN_TIME_INTEGRITY.md). Phase 1 and existing baseline results remain
+**RETROSPECTIVE ESTIMATED**; they are not BACKTESTED. Six unchanged refetches are **OBSERVED** and
+do not prove immutability.
+
+`point_in_time_capture.v1` can create **PROSPECTIVE OBSERVED** evidence. It runs only immediately
+before a declared decision, records provider responses before that decision, retains corrections
+as new versions and freezes `decision_snapshot.v1`. A prospective snapshot contains Reality marks,
+previous native closes, source-session evidence, calendar/mapping/dataset/capture versions, and no
+future outcome. `PROSPECTIVELY_SAFE` describes the evidence record, not predictive performance.
+
+**BACKTESTED** is reserved for a separately frozen evaluation over a sufficient prospective
+history plus later outcome versions. No current result meets that definition. `FIRST_1M_BAR_OPEN`
+remains outcome-only: revision risk affects label stability, while revision risk in Reality marks
+or previous closes affects feature point-in-time integrity.
+
 ## Phase 2 baseline protocol — current
 
 The [frozen research protocol](RESEARCH_PROTOCOL.md) and machine-readable

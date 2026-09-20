@@ -1,0 +1,92 @@
+{
+  "acceptance_decision": "RETROSPECTIVE_POINT_IN_TIME_NOT_VERIFIABLE_PROSPECTIVE_CAPTURE_READY",
+  "artifact_version": "historical_availability_integrity.v1",
+  "final_oos_performance_accessed": false,
+  "inputs": [
+    {
+      "endpoint": "GET /api/v3/market/history-candles",
+      "event_timestamp": "candle interval start; usable only after interval completion",
+      "field": "hourly market candle close selected as Reality decision mark",
+      "provider": "Bitget UTA Reality",
+      "retrieval_timestamp": "local ingestion time plus provider requestTime retained",
+      "role": "FEATURE",
+      "statuses": [
+        "REVISION_POLICY_UNKNOWN",
+        "RETROSPECTIVE_ONLY"
+      ]
+    },
+    {
+      "endpoint": "GET /v2/stocks/{symbol}/bars?feed=sip&adjustment=raw&asof=-&timeframe=1Min",
+      "event_timestamp": "final regular-session minute start",
+      "field": "LAST_1M_BAR_CLOSE",
+      "provider": "Alpaca Market Data SIP",
+      "retrieval_timestamp": "response ingestion time retained",
+      "role": "FEATURE",
+      "statuses": [
+        "REVISION_POSSIBLE",
+        "RETROSPECTIVE_ONLY"
+      ]
+    },
+    {
+      "endpoint": "GET /v2/stocks/{symbol}/bars?feed=sip&adjustment=raw&asof=-&timeframe=1Min",
+      "event_timestamp": "first regular-session minute start",
+      "field": "FIRST_1M_BAR_OPEN",
+      "provider": "Alpaca Market Data SIP",
+      "retrieval_timestamp": "response ingestion time retained",
+      "role": "FUTURE_OUTCOME",
+      "statuses": [
+        "REVISION_POSSIBLE",
+        "RETROSPECTIVE_ONLY"
+      ]
+    }
+  ],
+  "official_evidence": [
+    {
+      "as_known_snapshots_documented": false,
+      "corporate_action_restatement": "not documented for this endpoint",
+      "historical_database_versioning_documented": false,
+      "historical_revisions_documented": false,
+      "late_trades_or_corrections_documented": false,
+      "publication_latency_documented": false,
+      "provider": "Bitget",
+      "retrieved_date": "2026-09-20",
+      "status": "REVISION_POLICY_UNKNOWN",
+      "url": "https://www.bitget.com/docs/catalog/market/market-data"
+    },
+    {
+      "as_known_snapshots_documented": false,
+      "corporate_action_restatement": "raw bars disable split/dividend/spin-off adjustment",
+      "historical_database_versioning_documented": false,
+      "historical_revisions_documented": "historical endpoint has no version/as-known selector",
+      "late_trades_or_corrections_documented": true,
+      "publication_latency_documented": "historical access may be delayed 15 minutes by entitlement",
+      "provider": "Alpaca",
+      "retrieved_date": "2026-09-20",
+      "status": "REVISION_POSSIBLE",
+      "urls": [
+        "https://docs.alpaca.markets/us/reference/stockbarsingle-1",
+        "https://docs.alpaca.markets/us/docs/real-time-stock-pricing-data",
+        "https://docs.alpaca.markets/us/docs/market-data-faq"
+      ]
+    }
+  ],
+  "prospective_contract": {
+    "capture_status": "PROSPECTIVELY_SAFE",
+    "collector_version": "point_in_time_capture.v1",
+    "decision_snapshot_version": "decision_snapshot.v1",
+    "immutable_database_triggers": true,
+    "next_native_open_excluded": true,
+    "retrospective_certification": false
+  },
+  "runtime_comparison": {
+    "changed_rows": 0,
+    "identical_rows": 6,
+    "missing_rows": 0,
+    "new_rows": 0,
+    "ohlc_changes": 0,
+    "retrieved_at": "2026-09-20T21:40:17.429370+00:00",
+    "rows_compared": 6,
+    "scope": "DEVELOPMENT_ONLY",
+    "timestamp_changes": 0
+  }
+}

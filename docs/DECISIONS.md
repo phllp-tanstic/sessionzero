@@ -1,5 +1,28 @@
 # Architecture Decision Records
 
+## ADR-024 — Historical prices remain retrospective; capture future decisions immutably
+
+Date: 2026-09-20. Status: ACCEPTED — PROSPECTIVE CAPTURE READY.
+
+Decision B is selected: `RETROSPECTIVE_POINT_IN_TIME_NOT_VERIFIABLE_PROSPECTIVE_CAPTURE_READY`.
+Bitget's official Reality history contract supplies no historical revision/version/as-known
+guarantee. Alpaca explicitly documents late-trade bar updates, corrected trades and canceled/error
+trades; raw adjustment does not freeze those revisions. Six bounded DEVELOPMENT refetches matched
+the archive but cannot prove historical immutability. Reality marks and previous native closes stay
+RETROSPECTIVE_ONLY. Next native opens stay FUTURE_OUTCOME; their revision risk concerns label
+stability, not historical feature leakage.
+
+Migration `20260920_10` adds append-only capture runs, canonical observation versions, every raw
+retrieval and deterministic decision snapshots. Identical content reuses a version; corrections
+append. Database triggers reject UPDATE/DELETE. Capture is valid only in a predeclared pre-decision
+window and only evidence ingested by the decision enters the snapshot. Future opens cannot be
+represented in the snapshot schema or database constraints. The one-shot command is remotely
+deployable and scheduler-free. `PROSPECTIVELY_SAFE` applies to captured evidence, not alpha or a
+backtest. [Evidence and contract](POINT_IN_TIME_INTEGRITY.md).
+
+This does not change the cohort, splits, final OOS or existing diagnostic labels. No Fair Value,
+strategy, deployment or push is authorized by this decision.
+
 ## ADR-023 — Frozen naive baseline contract with protected final OOS
 
 Date: 2026-09-20. Status: IMPLEMENTED; STRICT AS-KNOWN BENCHMARK ACCEPTANCE BLOCKED.

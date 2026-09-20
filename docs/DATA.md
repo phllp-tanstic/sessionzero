@@ -1,5 +1,29 @@
 # Data Verification
 
+## Point-in-time availability and prospective capture — 2026-09-20
+
+Decision: **RETROSPECTIVE_POINT_IN_TIME_NOT_VERIFIABLE_PROSPECTIVE_CAPTURE_READY**.
+The [full integrity report](POINT_IN_TIME_INTEGRITY.md) identifies the only three price inputs used
+by the baselines, their endpoints, event/retrieval timestamps and feature/outcome roles. Bitget
+does not document historical candle revision/version/as-known semantics. Alpaca documents late
+bar updates, trade corrections and cancel/error messages; `raw` controls corporate-action
+adjustment and does not imply an immutable trade aggregate. Frozen Reality and previous-close
+features therefore remain `RETROSPECTIVE_ONLY`; native next open remains `FUTURE_OUTCOME` with
+revision-sensitive label stability.
+
+A bounded DEVELOPMENT-only repeat retrieved three Bitget and three Alpaca rows. All six matched;
+zero changed, missing, new, timestamp-changed or OHLC-changed rows were observed. This is OBSERVED
+sample evidence, never an immutability proof. The price-free result and official evidence matrix
+are tracked in [availability-v1.json](../research/integrity/availability-v1.json).
+
+Migration `20260920_10` and `sessionzero-capture-decision` implement prospective immutable evidence.
+Every provider response, safe provider identifier, request/ingestion/event time, canonical value,
+content hash, collector version and Git commit is retained. Same-content refetches reuse a version
+while retaining a new retrieval; changed content appends. Database UPDATE/DELETE triggers enforce
+immutability. A deterministic decision snapshot admits only Reality marks and previous closes
+ingested by the decision time; future opens are structurally excluded. Nothing is deployed or
+scheduled.
+
 ## Phase 1 full dataset — 2026-09-20 (current)
 
 [Full dataset/backfill report](PHASE1_DATASET.md). The immutable evaluation window remains
