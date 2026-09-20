@@ -225,3 +225,55 @@ script, sends no writes, persists no provider data, and stops on the first stati
 failure. No `NativeEquityProvider`, schema, migration, backfill, modeling, or research-universe
 change is authorized by this decision. Raw provider values and the requested adjustment enum must
 remain explicit if access is later proven.
+
+## ADR-020 — Resolve narrow native-target rights without waiting for Stock+
+
+Status: **NEEDS_DIRECT_PROVIDER_CONFIRMATION — NO PROVIDER SELECTED**
+
+The 2026-09-18 [provider selection V2](NATIVE_EQUITY_PROVIDER_SELECTION_V2.md) reviews only Alpaca,
+Massive and Twelve Data for historical native session targets plus public derived outputs.
+Current Alpaca documentation allows historical SIP queries on Basic outside the latest 15 minutes;
+this supersedes ADR-011's Basic/IEX-only technical rationale. Massive Basic now includes minute
+aggregates, but its individual terms and business §6.1(j) require appropriate strategy/derived-value
+licensing. Twelve Data's historical minute-feed scope and public derived-data entitlement remain
+unresolved. All three are GATED for the complete SessionZero use.
+
+Alpaca is the first provider to ask for written project-specific storage, research/backtesting,
+replay and public derived-output permission, including the minimum plan and retention conditions.
+It is a clarification target, not a selected adapter. No support message was sent.
+
+WHAT changes: Stock+ access is no longer a prerequisite for investigating the external native leg.
+WHY: the user reports unavailable Stock+ entitlement and an adjusted-daily-only Bitget MCP runtime.
+EVIDENCE/RISK: these operational facts are user-supplied; official external documentation supports
+candidate capability but not complete project clearance or verified cohort/session extraction.
+PRIOR WORK affected: only the next-task sequence and earlier provider-assessment rationale change.
+The accepted cohort, Reality ingestion, mapping, actions, source sessions and calendar remain intact.
+Blueprint section 22 already permits an external provider, so no architecture change is adopted.
+ADR-011's licensing gate remains; no implementation, target calculation, or Phase 2 is authorized.
+
+## ADR-021 — Alpaca technical candidate for private historical cash targets
+
+Status: **ACCEPTED FOR PRIVATE EVALUATION — BOUNDED RUNTIME VERIFIED** (2026-09-19).
+
+WHAT: implement Alpaca behind provider-neutral `NativeEquityProvider`, with raw historical SIP
+minute observations, XNYS boundary extraction, and append-only PostgreSQL provenance.
+WHY: the user reports unavailable Stock+ entitlement and a Bitget MCP native surface lacking
+intraday/session-specific cash data. EVIDENCE: current official Alpaca documentation supports
+Basic historical SIP outside the latest 15 minutes, minute granularity, and raw adjustment;
+[contract and sources](ALPACA_NATIVE_EQUITY.md). The exact accepted cohort hash and bounded authenticated runtime gate passed: three pilots,
+21/21 availability, and 25/25 deterministic session rows; no full backfill.
+
+The user's current instruction supersedes ADR-011/020's requirement to finish licensing before
+private implementation. Private/local integration may proceed with rights **PROVISIONAL**; public
+raw display is **NOT APPROVED**, public derived-output rights **UNVERIFIED**. No public deployment.
+
+Use `FIRST_1M_BAR_OPEN` / `LAST_1M_BAR_CLOSE`, explicitly distinct from auction prices. A missing
+boundary minute has no target. Alpaca documents separate auction data, which remains unverified;
+we do not claim minute OHLC proves official auction values. This explicit observable contract
+supersedes selection V2's auction-only extraction gate under the current task authorization.
+
+PRIOR WORK: Bitget stays primary for Reality data, accepted mappings/cohort, session evidence,
+corporate actions, and hackathon tooling. No alternate mapping authority or cohort replacement.
+RISK: complete historical coverage, original historical availability, ticker identity history,
+and rights remain unresolved. Corrections append content versions; no silent overwrite or as-known claim.
+No modeling, features, returns, backtests, BOATS integration, push, or deployment is authorized.

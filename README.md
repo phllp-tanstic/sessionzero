@@ -1,5 +1,13 @@
 # SessionZero
 
+## Private native-equity evaluation (Phase 1)
+
+Alpaca is implemented behind `NativeEquityProvider` for explicit raw historical SIP minute
+observations and XNYS boundary targets. Bounded runtime acceptance passed for the three pilot symbols, all 21 accepted members,
+and 25 deterministic session rows. Private research rights are provisional; public raw display is not
+approved and public derived-output rights remain unverified. No Alpaca data is exposed by the API.
+See [contract, target definitions, migration, and verification command](docs/ALPACA_NATIVE_EQUITY.md).
+
 Inspect public Reality reference metadata with
 `sessionzero-ingest-bitget-reference [--symbol RAAPLUSDT]`; add `--persist` only with an approved
 PostgreSQL `DATABASE_URL`. This is supplemental mapping/corporate-action evidence, not native-stock
@@ -40,7 +48,7 @@ uncertainty and execution costs.
 
 ## Current status
 
-`PHASE 1 — DATA PLANE (NATIVE EQUITY PROVIDER ACCESS GATED)`
+`PHASE 1 — DATA PLANE (ALPACA BOUNDED RUNTIME VERIFIED; PUBLIC RIGHTS GATED)`
 
 - **BUILT:** the Phase 0 adapter/export/API/web foundation plus Alembic migrations, PostgreSQL raw
   observation and normalized-candle persistence, ingestion-run audit metadata, and a one-shot
@@ -49,11 +57,11 @@ uncertainty and execution costs.
   Reality historical-coverage profiles linked to accepted universe snapshots.
 - **VERIFIED:** unauthenticated instrument, ticker, current-candle, and historical-candle access on
   2026-09-12. Reality depth and platform fills are gated.
-- **GATED:** native-equity implementation. Massive is the preferred technical candidate, but no
-  provider credential or project-appropriate non-display/public-product license is present. Alpaca
-  Basic's IEX-only feed is insufficient as the reference close; Twelve Data also requires resolved
-  tier and licensing terms. No speculative adapter or fixture-backed live claim was added.
-- **PLANNED:** broader ingestion, collectors, and all quantitative layers after this gate clears.
+- **VERIFIED:** Alpaca historical SIP/raw minute adapter, exact XNYS boundary extraction,
+  PostgreSQL raw retention/versioned idempotency, AAPL/NVDA/TSLA pagination, all 21 accepted
+  native mappings/availability, and 25 deterministic target rows. No official-auction claim.
+- **GATED:** public Alpaca raw display and derived-product licensing. Private use is provisional.
+- **PLANNED:** broader ingestion and collectors; no full native backfill or modeling in this task.
 - **NOT BUILT:** fair value, state, confidence, gap, conviction, backtesting, and execution.
 
 The locked eventual pipeline is `SENSE → FAIR VALUE → STATE → GAP → CONVICTION → EXECUTE`.

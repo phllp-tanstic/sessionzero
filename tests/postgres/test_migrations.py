@@ -18,6 +18,8 @@ def test_upgrade_downgrade_and_restore(alembic_config: Config) -> None:
     try:
         assert set(inspect(engine).get_table_names()) >= {
             "alembic_version",
+            "raw_native_equity_observations",
+            "normalized_native_equity_candles",
             "ingestion_runs",
             "raw_market_observations",
             "normalized_market_candles",
@@ -73,7 +75,7 @@ def test_upgrade_downgrade_and_restore(alembic_config: Config) -> None:
         } <= coverage_columns
         with engine.connect() as connection:
             assert connection.scalar(text("SELECT version_num FROM alembic_version")) == (
-                "20260914_07"
+                "20260919_08"
             )
         command.downgrade(alembic_config, "20260912_01")
         legacy_run_id = uuid.uuid4()

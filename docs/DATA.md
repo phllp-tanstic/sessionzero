@@ -1,5 +1,29 @@
 # Data Verification
 
+## Alpaca private implementation — 2026-09-19 (current)
+
+The user has selected Alpaca as the technical implementation candidate and authorized private/local
+integration, superseding V2's implementation sequencing only. Public rights remain unverified.
+The [implementation contract](ALPACA_NATIVE_EQUITY.md) records the current official single-symbol
+bars API, SIP/raw requests, exact XNYS minute boundaries, provenance, migration, and bounded verifier.
+The exact accepted cohort hash was reproduced; authenticated raw SIP verification passed for
+AAPL/NVDA/TSLA, all 21 members, and 25 deterministic session rows. Older dated findings below are historical and do not describe the new adapter's availability.
+
+## Native target provider selection V2 — 2026-09-18
+
+The current documentation-only decision is **NEEDS_DIRECT_PROVIDER_CONFIRMATION**; see the
+[complete technical, rights, authority, PIT, cost and decision matrices](NATIVE_EQUITY_PROVIDER_SELECTION_V2.md).
+The first clarification target is Alpaca, not a selected provider. Its official FAQ permits
+historical SIP queries on Basic when the end is at least 15 minutes old, correcting the older
+Basic/IEX-only assessment below. Massive's current Basic plan also lists minute aggregates.
+Twelve Data separately claims full-volume historical/EOD coverage; whether this fully describes
+the required minute series remains unverified. All project usage-rights gates remain explicit.
+
+Earlier dated reviews below remain historical evidence. No native observations were fetched,
+no all-21 native coverage was verified, and no provider adapter or target was implemented in V2.
+The user's current Bitget MCP/Stock+ operational findings are recorded in the V2 report as supplied
+facts; another Stock+ reply is no longer a prerequisite for external-provider investigation.
+
 Status labels in this document mean `BUILT`, `VERIFIED`, `PLANNED`, `BLOCKED`, or `UNVERIFIED`.
 All runtime observations below were unauthenticated and read-only. They are dated in the relevant
 section; the initial capability verification was made on 2026-09-12.

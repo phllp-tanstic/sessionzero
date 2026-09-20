@@ -16,6 +16,7 @@ from .models import (
     SourceSessionMode,
     SourceSessionResolutionStatus,
 )
+from .native import NativeEquityProvider
 from .session_zero import classify_session_zero
 from .source_sessions import (
     SOURCE_SESSION_TRANSFORMATION_VERSION,
@@ -28,6 +29,7 @@ __all__ = [
     "SOURCE_SESSION_TRANSFORMATION_VERSION",
     "CashSessionContext",
     "CuratedBitgetSourceSessionProvider",
+    "NativeEquityProvider",
     "SessionZeroContext",
     "SessionZeroState",
     "SourceAvailabilityState",

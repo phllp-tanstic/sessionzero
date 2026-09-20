@@ -26,6 +26,7 @@ dev = [
 ]
 
 [project.scripts]
+sessionzero-verify-native-equity = "sessionzero_database.native_cli:main"
 sessionzero-verify-bitget = "sessionzero_bitget.verify:main"
 sessionzero-export-bitget-history = "sessionzero_bitget.export:main"
 sessionzero-ingest-bitget-history = "sessionzero_database.cli:main"

@@ -1,5 +1,15 @@
 # Architecture
 
+## Alpaca implementation — current Phase 1 state
+
+The earlier native-provider implementation gate below is superseded for private/local work by
+ADR-021. `NativeEquityProvider` now separates native instrument/candle/session/health concepts
+from the Alpaca adapter. Existing Bitget mappings, actions, and source-session evidence remain
+primary. XNYS supplies exact date-based sessions. Migration `20260919_08` adds raw native pages
+and immutable normalized candle versions. The CLI consumes the accepted persisted universe and
+existing cohort derivation; no research or public route consumes native prices.
+See [full architecture and contract](ALPACA_NATIVE_EQUITY.md). Bounded runtime acceptance passed; see the linked verification results.
+
 `BitgetReferenceDataProvider` is a narrow public, read-only boundary beside the candle client. It
 uses explicit `stock-info.code` mappings and normalizes supplemental actions plus Bitget
 source-session metadata. It neither implements `NativeEquityProvider` nor changes
@@ -150,20 +160,18 @@ request envelopes, raw candle arrays, or normalized candle rows. That request/ra
 profile linkage is intentionally documented as broken rather than falsely inferred; the normal
 ingestion workflow remains the only writer of raw and normalized market observations.
 
-## Native-equity provider gate
+## Native-equity provider boundary
 
-`NativeEquityProvider` remains a required generic boundary, but no concrete adapter exists.
-Official provider and licensing review on 2026-09-13 found Massive to be the strongest technical
-candidate; access is gated by absent credentials and unresolved non-display/business/public-product
-rights. No provider-specific schema, persistence table, mapping, or fallback was introduced.
-
-When access clears, the adapter must sit beside (not inside) the Bitget package, preserve raw
-responses separately from normalized U.S. session observations, use the existing XNYS calendar for
-session boundaries, expose honest capabilities, and fail closed. Native daily bars must not be
-written to `normalized_market_candles`, whose identity and semantics are Bitget interval candles.
+`NativeEquityProvider` is implemented with an Alpaca adapter beside the Bitget package. XNYS
+supplies exact regular-session boundaries. Native raw pages and normalized immutable versions
+have separate provider-neutral tables; they do not enter Bitget `normalized_market_candles`.
+The private verifier can reload the accepted persisted universe or reverify its cohort identity
+from official membership evidence plus live Bitget mappings without writing a replacement snapshot.
+The public API has no native-price path. Bounded runtime acceptance passed; full history,
+historical as-known availability, and public-product rights remain separate work.
 
 ## Planned after this narrow Phase 1 slice
 
-Persistent collection loops, an authorized native-equity price provider, complete historical Bitget rollout
-coverage, API expansion, and research remain unbuilt. No queue, cache, scheduler, orchestration
+Persistent collection loops, complete native/Reality historical coverage, API expansion, and
+research remain unbuilt. No queue, cache, scheduler, orchestration
 system, ML stack, or deployment workflow has been introduced.

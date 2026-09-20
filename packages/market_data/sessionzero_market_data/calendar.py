@@ -51,6 +51,12 @@ class XnysTradingCalendar:
     def _previous_session(self, value: date) -> date:
         return self._calendar.previous_session(pd.Timestamp(value)).date()
 
+    def session_on(self, session_date: date) -> CashSessionContext:
+        """Return an exact scheduled session; never move a holiday to another date."""
+        if not self._is_session(session_date):
+            raise ValueError("requested date is not an XNYS session")
+        return self.session_at(self._session_open(session_date))
+
     def session_at(self, timestamp: datetime) -> CashSessionContext:
         timestamp = _utc(timestamp)
         local_date = timestamp.astimezone(NEW_YORK).date()

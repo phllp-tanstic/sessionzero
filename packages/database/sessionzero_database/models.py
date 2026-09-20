@@ -513,3 +513,75 @@ class HistoricalCoverageMemberRow(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
+
+
+class RawNativeEquityObservation(Base):
+    __tablename__ = "raw_native_equity_observations"
+    __table_args__ = (
+        UniqueConstraint("run_id", "page_index", name="uq_native_raw_run_page"),
+        CheckConstraint("requested_end > requested_start", name="ck_native_raw_bounds"),
+    )
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    run_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ingestion_runs.run_id", ondelete="RESTRICT"), nullable=False
+    )
+    page_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    source: Mapped[str] = mapped_column(String(64), nullable=False)
+    native_ticker: Mapped[str] = mapped_column(String(64), nullable=False)
+    reality_symbol: Mapped[str] = mapped_column(String(64), nullable=False)
+    universe_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    cohort_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    endpoint: Mapped[str] = mapped_column(String(255), nullable=False)
+    request_params: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    response_headers: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    response_body: Mapped[str] = mapped_column(String, nullable=False)
+    requested_start: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    requested_end: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    ingestion_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class NormalizedNativeEquityCandle(Base):
+    __tablename__ = "normalized_native_equity_candles"
+    __table_args__ = (
+        UniqueConstraint(
+            "source",
+            "native_ticker",
+            "interval",
+            "event_time",
+            "feed",
+            "adjustment",
+            "content_version",
+            name="uq_native_candle_version",
+        ),
+        CheckConstraint(
+            "low > 0 AND low <= open AND low <= close AND high >= open "
+            "AND high >= close AND volume >= 0 AND trade_count >= 0",
+            name="ck_native_candle_values",
+        ),
+        CheckConstraint(
+            "interval = '1Min' AND adjustment = 'raw'", name="ck_native_candle_contract"
+        ),
+    )
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    raw_observation_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("raw_native_equity_observations.id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    source: Mapped[str] = mapped_column(String(64), nullable=False)
+    native_ticker: Mapped[str] = mapped_column(String(64), nullable=False)
+    interval: Mapped[str] = mapped_column(String(16), nullable=False)
+    feed: Mapped[str] = mapped_column(String(32), nullable=False)
+    adjustment: Mapped[str] = mapped_column(String(32), nullable=False)
+    event_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    session_date: Mapped[date] = mapped_column(Date, nullable=False)
+    ingestion_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    content_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    transformation_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    open: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
+    high: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
+    low: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
+    close: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
+    volume: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
+    trade_count: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    vwap: Mapped[Decimal | None] = mapped_column(Numeric)

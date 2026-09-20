@@ -1,5 +1,19 @@
 # Methodology
 
+## Native minute-boundary observations — current Phase 1 contract
+
+The current task permits the explicit observable definitions `FIRST_1M_BAR_OPEN` and
+`LAST_1M_BAR_CLOSE`. The existing XNYS calendar supplies the scheduled open and close; only the
+exact first or final regular minute qualifies. Missing boundary minutes remain missing. These
+prices are not official auction prints or every-condition first/last SIP trades. Alpaca's separate
+auction endpoint exists but its runtime semantics have not been verified here. This supersedes
+older statements below that no adapter exists, without authorizing models or returns.
+
+[Full target and point-in-time contract](ALPACA_NATIVE_EQUITY.md): preserve unadjusted values and
+all observed content versions; retrieval is not original historical availability. No corrected
+close may silently become a prediction-time feature. Native target construction is private data
+verification only; bounded runtime acceptance passed, with no auction-price equivalence claim.
+
 Corporate-action evidence is supplemental. Event, announcement, effective, publication, and
 ingestion times are distinct. Records with `availability_time_status=UNKNOWN` must not be
 retroactively introduced into point-in-time research. This layer records splits but does not
@@ -57,15 +71,13 @@ identity, online status, explicit native mapping, supported interval, and observ
 The bounded verification subset is the first N eligible symbols after canonical sorting. Failures
 remain in the manifest and the subset is never changed to improve its appearance. Future research
 must reference `universe_version`, `manifest_version`, `transformation_version`, and `git_commit`;
-these Reality-side identities do not imply a complete dataset while native-equity observations are
-gated.
+these identities do not imply a complete dataset: native verification is bounded and full
+historical coverage remains unbuilt.
 
-The 2026-09-13 native-equity provider gate did not authorize a reference dataset. Provider
-documentation, free plans, or test fixtures cannot substitute for credentials and rights covering
-non-display quantitative use. Consequently no native close/open target, split-adjusted series,
-provider-integrated symbol mapping, or overlapping historical slice exists, and no future U.S.
-open has entered a feature dataset. The separately verified public Bitget Reality-to-ticker
-mapping is reference metadata only and has not entered a model or provider adapter.
+The earlier 2026-09-13 native provider gate was superseded for private implementation by ADR-021.
+Live native minute-boundary observations now exist with Bitget mapping lineage. They are neither
+split-adjusted series nor a historical as-known feature dataset. No future open has entered any
+feature dataset. Public licensing remains unresolved independently of technical verification.
 
 ## Locked future methodology
 

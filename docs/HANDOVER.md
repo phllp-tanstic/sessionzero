@@ -2,7 +2,60 @@
 
 ## Current phase
 
-`PHASE 1 — DATA PLANE (STOCK+ ACCOUNT ACCESS GATED)`
+`PHASE 1 — DATA PLANE (ALPACA BOUNDED RUNTIME VERIFIED; PUBLIC RIGHTS GATED)`
+
+## Alpaca implementation — 2026-09-19 UTC (current)
+
+- Private/local Alpaca integration is implemented and its bounded runtime gate passed. Public raw
+  display remains NOT APPROVED; public derived-output rights UNVERIFIED; private research rights
+  PROVISIONAL. ADR-021 supersedes V2's licensing-before-implementation sequence only.
+- Built provider-neutral `NativeEquityProvider`, explicit historical SIP/raw adapter, exact XNYS
+  boundaries, migration `20260919_08`, append-only raw/normalized persistence, and bounded private
+  CLI. [Full contract/results](ALPACA_NATIVE_EQUITY.md). Targets are FIRST_1M_BAR_OPEN /
+  LAST_1M_BAR_CLOSE, never asserted auction prices.
+- Derived membership from `bitget.2026-06-12.weekend-batch-21`, resolved all 21 tickers through
+  live Bitget metadata, and reproduced the exact accepted cohort hash:
+  `a69d8c427abac466e8b4088f109e55640bc9e5172011ec6b70919b1874176f32`.
+  The owner-supplied original universe reference is
+  `e0580746df9d0581bbd629e0a07dde94ce6ff04e973718fb8a1c3a103e81bd06`.
+  No replacement universe snapshot was created or relabeled.
+- Credentials were sourced from ignored `.env.alpaca.local`; values were not printed or copied.
+  Live run began `2026-09-19T20:12:35.798747Z`. AAPL/NVDA/TSLA each returned five 1Min SIP/raw
+  bars across three pages. All 21 boundary availability checks and all 25 target rows passed.
+- Target symbols: AAOI/AAPL/AMD/AMZN/ASTS. Session dates: June 16, July 9, July 30, August 20,
+  September 11. Each includes same-session open/close plus next-session open, including the
+  September 11→14 weekend transition. Prices remain only in private reports/database.
+- Main run: 126 requests, no retries/throttles, all 126 request IDs present, reported limit 200/min.
+  Live AAPL repeat: three new raw pages, zero duplicate normalized versions. Final evidence totals:
+  121 runs, 129 raw pages, 119 normalized versions, zero universe snapshots.
+- Private ignored artifacts: `native-mapping-verification.json`, `native-equity-verification.json`,
+  `native-equity-target-pairs.json`, and `native-equity-repeat-summary.json`, under `artifacts/`.
+  Reports containing raw prices are mode 0600. Do not commit or publish them.
+- Verified: 136 deterministic tests, 15 PostgreSQL tests, Ruff lint/format, and diff hygiene.
+  The new opt-in Alpaca pytest remains skipped; the production CLI performed the full live test.
+- Local PostgreSQL cluster: `/tmp/sessionzero-native-test-pg`, loopback port 55439. Separate
+  `sessionzero_native_test` and `sessionzero_native_verification` databases; not durable production.
+- No full backfill, modeling, returns, BOATS integration, push, public output, or deployment.
+
+Earlier dated sections below remain historical evidence. Claims that no adapter exists or Massive
+is preferred are superseded by this section and ADR-021.
+
+## Native target provider selection V2 — 2026-09-18
+
+- Documentation-only review: [full report](NATIVE_EQUITY_PROVIDER_SELECTION_V2.md).
+- Decision: **NEEDS_DIRECT_PROVIDER_CONFIRMATION**. The next action is an Alpaca licensing
+  clarification for retained historical SIP research and public derived-only hackathon outputs.
+  The question is drafted in report section 13; no message was sent and no provider was selected.
+- Current Alpaca documentation permits historical SIP on Basic when `end` is at least 15 minutes
+  old. Earlier statements equating all Basic history with IEX are superseded; public-product and
+  retention rights remain unresolved. Massive now lists minute aggregates on Basic, but its
+  individual and business terms still require the appropriate strategy/derived-value license.
+- Per the user's current operational report, Bitget MCP is available but degraded to adjusted
+  daily native bars, and Stock+ entitlement is unavailable in the account UI. Do not wait on
+  another Bitget reply. These task facts were not reverified with runtime calls in this review.
+- The accepted 21-member cohort, window, and Reality sufficiency result remain unchanged.
+  No exact native cohort coverage, auction boundary extraction, or historical as-known data was
+  established. No implementation, migration, dependency, backtest, or Phase 2 work was performed.
 
 ## Completed
 
@@ -160,8 +213,8 @@
 
 ## Outstanding
 
-- Authorized native-equity price/reference data, broader historical capability coverage, backfills, continuous
-  collection/scheduling, cross-asset/event providers, models, backtesting, API expansion, and UI.
+- Full native-equity historical coverage, rights clarification, backfills, continuous collection,
+  cross-asset/event providers, models, backtesting, API expansion, and UI.
 
 ## Known constraints
 
@@ -177,10 +230,9 @@
   ingestion run.
 - `FAIL` datasets are rejected before the raw/normalized transaction; their machine report is not
   durably stored in this slice.
-- No native-equity price adapter, daemon, scheduler, managed database, or deployment exists.
-- Massive is the preferred technical candidate only. `RESEARCH_USE` is `GATED`, `PUBLIC_DISPLAY`
-  is `UNVERIFIED`, and `REDISTRIBUTION` is `GATED` until the applicable provider/order-form and
-  exchange rights are supplied and reviewed.
+- The native adapter has bounded verification only. No daemon, scheduler, managed database, or
+  deployment exists. Alpaca private use is provisional; public raw display is not approved and
+  public derived-output rights are unverified.
 - Bitget's public mapping, action, and session data do not make its Stock+ native-equity feed public.
   Stock+ is separately authenticated, eligibility/KYC and market-data permissions may apply, and
   reviewed terms do not establish SessionZero's public/non-display rights.
@@ -200,20 +252,23 @@
 - Snapshot/manifest CLI: `sessionzero-build-reality-manifest`.
 - Coverage-profile CLI: `sessionzero-profile-reality-coverage`.
 - Evidence-qualified audit CLI: `sessionzero-audit-evidence-coverage`.
+- Private native CLI: `sessionzero-verify-native-equity` (or the documented Python module).
 - Migration CLI: `alembic upgrade head`.
 
 ## Required env vars
 
 - `DATABASE_URL`: required for migrations, persistence, and PostgreSQL tests.
+- `NATIVE_EQUITY_PROVIDER=alpaca`, `ALPACA_API_KEY`, `ALPACA_SECRET_KEY`: required for native
+  verification. Source the local ignored environment file without displaying it.
 - `BITGET_API_KEY`, `BITGET_SECRET_KEY`, and `BITGET_PASSPHRASE`: required together for the isolated
   Stock+ read-only verifier; values must never be committed or printed.
 - Existing public Bitget and web/API settings remain in `.env.example`.
 
 ## Test counts
 
-- 90 deterministic non-live/non-PostgreSQL tests.
-- 11 direct PostgreSQL integration tests.
-- 4 opt-in live Bitget tests.
+- 136 deterministic non-live/non-PostgreSQL tests.
+- 15 PostgreSQL integration/migration tests.
+- 4 existing opt-in Bitget tests and 1 new opt-in Alpaca test.
 
 ## Deployment URLs
 
@@ -221,11 +276,13 @@
 
 ## Latest commit
 
-`fix(data): separate coverage validity from sufficiency` (local; not pushed).
+`feat(data): add Alpaca native equity provider` is the acceptance commit for this handover;
+resolve its hash with `git log -1`. Previous HEAD: `61f54bb`. Neither is pushed in this task.
 
 ## Next exact task
 
-Export the three Bitget credentials into the verification process environment and run the isolated
-Stock+ read-only verifier. Do not start provider implementation or modeling until static metadata,
-bounded historical candles, June coverage, direction/adjustment behavior, and regular-session
-reconstruction are verified.
+Plan the separately scoped native session-boundary backfill for the accepted 21-member Reality
+window, preserving FIRST_1M_BAR_OPEN / LAST_1M_BAR_CLOSE semantics, raw revisions, and an explicit
+historical-availability policy. Resolve written Alpaca research/retention/public-derived rights
+in parallel. This completed task does not authorize the full backfill, modeling, public output,
+push, or deployment.
