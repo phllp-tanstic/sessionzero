@@ -176,7 +176,7 @@ class AlpacaNativeEquityProvider:
         return result
 
     def _history(
-        self, instrument: NativeInstrument, start: datetime, end: datetime
+        self, instrument: NativeInstrument, start: datetime, end: datetime, *, request_page=None
     ) -> NativeHistory:
         endpoint = (
             "https://data.alpaca.markets/v2/stocks/"
@@ -198,7 +198,7 @@ class AlpacaNativeEquityProvider:
         previous: datetime | None = None
         clipped = 0
         for index in range(self.max_pages):
-            page = self._request(endpoint, params)
+            page = (request_page or self._request)(endpoint, params)
             pages.append(page)
             try:
                 payload = json.loads(
@@ -265,6 +265,23 @@ class AlpacaNativeEquityProvider:
             tokens.add(token)
             params["page_token"] = token
         raise NativeDataError("PAGINATION_PAGE_LIMIT")
+
+    def replay_history(self, history: NativeHistory) -> NativeHistory:
+        """Revalidate archived raw pages without authentication, network, or new ingestion times."""
+        pages = iter(history.pages)
+
+        def read_page(endpoint, params):
+            page = next(pages, None)
+            if page is None or page.endpoint != endpoint or page.params != params:
+                raise NativeDataError("ARCHIVED_REQUEST_LINEAGE_MISMATCH")
+            return page
+
+        replayed = self._history(
+            history.instrument, history.start, history.end, request_page=read_page
+        )
+        if replayed != history:
+            raise NativeDataError("ARCHIVED_RAW_NORMALIZED_MISMATCH")
+        return replayed
 
     def get_session_open(self, reality_symbol: str, session_date: date) -> NativeTarget:
         return session_target(self, self.calendar, reality_symbol, session_date, opening=True)

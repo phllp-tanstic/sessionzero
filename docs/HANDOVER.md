@@ -2,9 +2,46 @@
 
 ## Current phase
 
-`PHASE 1 — DATA PLANE (ALPACA BOUNDED RUNTIME VERIFIED; PUBLIC RIGHTS GATED)`
+`PHASE 1 — DATA PLANE EXIT MET (PRIVATE HISTORICAL DATASET; PUBLIC RIGHTS GATED)`
 
-## Alpaca implementation — 2026-09-19 UTC (current)
+## Phase 1 exit dataset — 2026-09-20 (current)
+
+- Phase 1 dataset exit gate: **YES**. No Phase 2 model, feature matrix, returns, or backtest exists.
+- Dataset version: `e6d06eae4813cacf24f0087e38025e31aff1013a7a9de03a5e1be0266dec7020`.
+  Resolve it through tracked `datasets/phase1/latest.json`; do not copy hashes from chat.
+- The accepted 21 members and full universe/cohort hashes live in `datasets/phase1/cohort.json`,
+  generated from retained evidence and accepted Bitget mapping provenance. Live and offline parser
+  verification reproduced the accepted cohort. No old universe snapshot was recreated.
+- Fixed window: `[2026-06-15T20:00:00Z, 2026-09-13T20:00:00Z)`; OOS begins August 14 at 20:00 UTC.
+  Native targets: all 1,281 evaluation pairs available over 61 XNYS sessions; 42 extra anchor pairs
+  cover June 15/September 14 without changing the window. All missing/failure/unknown counts zero.
+- Actual Reality data: 39,133 raw and normalized hourly rows, all structural PASS. There remain
+  5,620 known-open missing intervals and 1,512 source-unknown intervals. No gaps were filled.
+- Actual native data: 2,646 raw pages and normalized boundary minutes, 1,323 target rows. Alpaca:
+  2,646 requests, zero retries/429s; Bitget history: 404 requests, zero retries/429s. Source data
+  collection took 866.92 seconds after mapping verification, with three globally paced workers.
+- All 39,133 Reality rows join to previous-close and next-open target versions; 31,447 decision
+  times are outside cash hours. Unresolved joins and unavailable joined prices: zero.
+- Next opens are `FUTURE_OUTCOME`; previous closes and Reality observations retain unverified
+  historical-availability labels. Decision time is completed Reality bar time, never its start.
+- Migration `20260920_09` adds targets/manifests/link tables. The build and a fresh restore database
+  independently contain identical counts and dataset identity, with zero SQL lineage violations.
+  [Machine verification](../datasets/phase1/verification.json).
+- One command after setting `DATABASE_URL`:
+  `.venv/bin/python -m sessionzero_database.dataset_cli --restore`.
+  It applies migrations, uses tracked identity metadata, and restores private mode-0600 archives
+  under `.local-data/phase1/build-20260920/`. It needs no provider credentials or old database.
+  Preserve these private archives for exact recovery; do not commit or publicly upload them.
+- Tests: 177 non-live tests passed, including 21 PostgreSQL tests; five live tests deselected.
+  Ruff format/check, Alembic upgrade/current/check, and diff checks passed.
+- Public raw display remains NOT APPROVED; private research/retention remains PROVISIONAL and
+  public derived-output rights UNVERIFIED. No push or deployment.
+- Full contract, per-symbol counts, limitations, and commands: [PHASE1_DATASET.md](PHASE1_DATASET.md).
+
+The dated sections below describe prior gates and are superseded by this current dataset state
+where they say full history or candle-level dataset linkage is missing.
+
+## Alpaca implementation — 2026-09-19 UTC (historical)
 
 - Private/local Alpaca integration is implemented and its bounded runtime gate passed. Public raw
   display remains NOT APPROVED; public derived-output rights UNVERIFIED; private research rights
@@ -213,7 +250,7 @@ is preferred are superseded by this section and ADR-021.
 
 ## Outstanding
 
-- Full native-equity historical coverage, rights clarification, backfills, continuous collection,
+- Wider native-equity historical coverage, rights clarification, continuous collection,
   cross-asset/event providers, models, backtesting, API expansion, and UI.
 
 ## Known constraints
@@ -230,7 +267,7 @@ is preferred are superseded by this section and ADR-021.
   ingestion run.
 - `FAIL` datasets are rejected before the raw/normalized transaction; their machine report is not
   durably stored in this slice.
-- The native adapter has bounded verification only. No daemon, scheduler, managed database, or
+- The accepted cohort now has a full boundary-target dataset. No daemon, scheduler, managed database, or
   deployment exists. Alpaca private use is provisional; public raw display is not approved and
   public derived-output rights are unverified.
 - Bitget's public mapping, action, and session data do not make its Stock+ native-equity feed public.
@@ -253,6 +290,7 @@ is preferred are superseded by this section and ADR-021.
 - Coverage-profile CLI: `sessionzero-profile-reality-coverage`.
 - Evidence-qualified audit CLI: `sessionzero-audit-evidence-coverage`.
 - Private native CLI: `sessionzero-verify-native-equity` (or the documented Python module).
+- Dataset build/restore CLI: `sessionzero-build-phase1-dataset` (or Python module above).
 - Migration CLI: `alembic upgrade head`.
 
 ## Required env vars
@@ -266,8 +304,8 @@ is preferred are superseded by this section and ADR-021.
 
 ## Test counts
 
-- 136 deterministic non-live/non-PostgreSQL tests.
-- 15 PostgreSQL integration/migration tests.
+- 156 deterministic non-live/non-PostgreSQL tests.
+- 21 PostgreSQL integration/migration tests.
 - 4 existing opt-in Bitget tests and 1 new opt-in Alpaca test.
 
 ## Deployment URLs
@@ -276,13 +314,13 @@ is preferred are superseded by this section and ADR-021.
 
 ## Latest commit
 
-`feat(data): add Alpaca native equity provider` is the acceptance commit for this handover;
-resolve its hash with `git log -1`. Previous HEAD: `61f54bb`. Neither is pushed in this task.
+`feat(data): build reproducible Phase 1 target dataset` is the acceptance commit for this handover;
+resolve its hash with `git log -1`. Build base: `5cfd574`; exact source hashes are in the dataset
+manifest, avoiding a self-referential commit hash. Nothing is pushed in this task.
 
 ## Next exact task
 
-Plan the separately scoped native session-boundary backfill for the accepted 21-member Reality
-window, preserving FIRST_1M_BAR_OPEN / LAST_1M_BAR_CLOSE semantics, raw revisions, and an explicit
-historical-availability policy. Resolve written Alpaca research/retention/public-derived rights
-in parallel. This completed task does not authorize the full backfill, modeling, public output,
-push, or deployment.
+Define the Phase 2 baseline research protocol and explicit point-in-time availability/eligibility
+policy against the frozen dataset, preserving the final OOS boundary and all missingness. Resolve
+Alpaca research/retention/public-derived rights separately. Do not begin modeling, feature
+engineering, returns, public output, push, or deployment without the next task's authorization.

@@ -1,5 +1,26 @@
 # Methodology
 
+## Phase 1 dataset point-in-time policy — current
+
+The full fixed-window dataset is an event-time observation/outcome archive. Native prices remain
+unadjusted; no corporate-action restatement is applied. Actual retrieval timestamps are retained
+separately and are never replaced with historical event times. Original historical availability,
+original publication latency, and historically immutable provider values are not claimed.
+
+For each Reality 1H candle, the join decision timestamp is its start plus one hour: the completed
+candle's close cannot be known at its start. The calendar supplies the most recent cash close
+at or before that decision and the next cash open strictly after it. Database rows and manifests
+label next open `FUTURE_OUTCOME`, previous close `CONTEXT_AVAILABILITY_UNVERIFIED`, and the Reality
+observation `OBSERVED_HISTORY_NOT_AS_KNOWN`. These rows must not become contemporaneous features
+without a separately approved availability policy. No future-open target enters a feature frame.
+
+The evaluation window is unchanged. June 15 and September 14 are explicitly separate boundary
+anchors; they support joins at the edges and do not expand the evaluation or OOS window. The final
+30-day OOS interval begins `2026-08-14T20:00:00Z`. Availability inspection is a data-plane check,
+not model fitting or holdout-performance evaluation. Native missingness and Reality source-session
+unknowns remain explicit, with no imputation, density-based cohort changes, or strategy returns.
+See [the dataset contract](PHASE1_DATASET.md).
+
 ## Native minute-boundary observations — current Phase 1 contract
 
 The current task permits the explicit observable definitions `FIRST_1M_BAR_OPEN` and
@@ -71,8 +92,8 @@ identity, online status, explicit native mapping, supported interval, and observ
 The bounded verification subset is the first N eligible symbols after canonical sorting. Failures
 remain in the manifest and the subset is never changed to improve its appearance. Future research
 must reference `universe_version`, `manifest_version`, `transformation_version`, and `git_commit`;
-these identities do not imply a complete dataset: native verification is bounded and full
-historical coverage remains unbuilt.
+the accepted Phase 1 dataset now supplies durable candle/target linkage through `dataset_version`.
+This still does not establish historical as-known feature availability or research eligibility.
 
 The earlier 2026-09-13 native provider gate was superseded for private implementation by ADR-021.
 Live native minute-boundary observations now exist with Bitget mapping lineage. They are neither

@@ -40,7 +40,8 @@ def database_engine(migrated_engine: Engine) -> Iterator[Engine]:
     with migrated_engine.begin() as connection:
         connection.execute(
             text(
-                "TRUNCATE historical_coverage_members, historical_coverage_profiles, "
+                "TRUNCATE phase1_dataset_manifests, historical_coverage_members, "
+                "historical_coverage_profiles, "
                 "historical_ingestion_manifest_entries, "
                 "historical_ingestion_manifests, universe_discovery_observations, "
                 "universe_snapshot_members, universe_snapshots, "

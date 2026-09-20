@@ -1,0 +1,40 @@
+{
+  "databases": {
+    "sessionzero_phase1_dataset": {
+      "counts": {
+        "ingestion_runs": 2667,
+        "native_session_targets": 1323,
+        "normalized_market_candles": 39133,
+        "normalized_native_equity_candles": 2646,
+        "phase1_dataset_manifests": 1,
+        "phase1_dataset_reality": 39133,
+        "phase1_dataset_targets": 1323,
+        "raw_market_observations": 39133,
+        "raw_native_equity_observations": 2646,
+        "universe_snapshots": 0
+      },
+      "dataset_version": "e6d06eae4813cacf24f0087e38025e31aff1013a7a9de03a5e1be0266dec7020",
+      "join_violations": 0,
+      "target_violations": 0
+    },
+    "sessionzero_phase1_restore": {
+      "counts": {
+        "ingestion_runs": 2667,
+        "native_session_targets": 1323,
+        "normalized_market_candles": 39133,
+        "normalized_native_equity_candles": 2646,
+        "phase1_dataset_manifests": 1,
+        "phase1_dataset_reality": 39133,
+        "phase1_dataset_targets": 1323,
+        "raw_market_observations": 39133,
+        "raw_native_equity_observations": 2646,
+        "universe_snapshots": 0
+      },
+      "dataset_version": "e6d06eae4813cacf24f0087e38025e31aff1013a7a9de03a5e1be0266dec7020",
+      "join_violations": 0,
+      "target_violations": 0
+    }
+  },
+  "fresh_database_exact_restore": "PASS",
+  "verified_at": "2026-09-20T13:52:52.350611+00:00"
+}

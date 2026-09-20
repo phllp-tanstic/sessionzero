@@ -1,0 +1,356 @@
+{
+  "cohort": {
+    "cohort_version": "a69d8c427abac466e8b4088f109e55640bc9e5172011ec6b70919b1874176f32",
+    "derivation_version": "evidence_qualified_cohort.v1",
+    "evaluation_end": "2026-09-13T20:00:00Z",
+    "evaluation_start": "2026-06-15T20:00:00Z",
+    "interval": "1H",
+    "members": [
+      {
+        "native_ticker": "AAOI",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RAAOIUSDT"
+      },
+      {
+        "native_ticker": "AAPL",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RAAPLUSDT"
+      },
+      {
+        "native_ticker": "AMD",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RAMDUSDT"
+      },
+      {
+        "native_ticker": "AMZN",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RAMZNUSDT"
+      },
+      {
+        "native_ticker": "ASTS",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RASTSUSDT"
+      },
+      {
+        "native_ticker": "AVGO",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RAVGOUSDT"
+      },
+      {
+        "native_ticker": "DRAM",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RDRAMUSDT"
+      },
+      {
+        "native_ticker": "GOOGL",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RGOOGLUSDT"
+      },
+      {
+        "native_ticker": "INTC",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RINTCUSDT"
+      },
+      {
+        "native_ticker": "LITE",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RLITEUSDT"
+      },
+      {
+        "native_ticker": "META",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RMETAUSDT"
+      },
+      {
+        "native_ticker": "MRVL",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RMRVLUSDT"
+      },
+      {
+        "native_ticker": "MSFT",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RMSFTUSDT"
+      },
+      {
+        "native_ticker": "MU",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RMUUSDT"
+      },
+      {
+        "native_ticker": "NOK",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RNOKUSDT"
+      },
+      {
+        "native_ticker": "NVDA",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RNVDAUSDT"
+      },
+      {
+        "native_ticker": "RKLB",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RRKLBUSDT"
+      },
+      {
+        "native_ticker": "SNDK",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RSNDKUSDT"
+      },
+      {
+        "native_ticker": "SOXL",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RSOXLUSDT"
+      },
+      {
+        "native_ticker": "SPCX",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RSPCXUSDT"
+      },
+      {
+        "native_ticker": "TSLA",
+        "source_session_evidence_ids": [
+          "bitget.2026-06-12.weekend-batch-21"
+        ],
+        "symbol": "RTSLAUSDT"
+      }
+    ],
+    "source_session_evidence_version": "bitget_source_sessions.v2",
+    "universe_version": "e0580746df9d0581bbd629e0a07dde94ce6ff04e973718fb8a1c3a103e81bd06"
+  },
+  "evidence_id": "bitget.2026-06-12.weekend-batch-21",
+  "evidence_record_digest": "d422ac83438f31bcd681f4b1d651601fa41cb2e3cfd01a21517164818d0f4a59",
+  "mapping_source": "BitgetReferenceDataProvider.get_mapping / stock-info",
+  "mapping_verified_at": "2026-09-19T20:12:35.798747+00:00",
+  "mappings": [
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:21.748643Z",
+      "native_ticker": "AAOI",
+      "provider_record_key": "8ce2afba3c442ee468f7f30e77bb0e35dd3cf3a8823a1a830151114cc918b104",
+      "reality_symbol": "RAAOIUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:23.483329Z",
+      "native_ticker": "AAPL",
+      "provider_record_key": "fc28efe0181b5cff008d68add3a0868fee3c91d2becb6c43ef24695e417747e3",
+      "reality_symbol": "RAAPLUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:25.189623Z",
+      "native_ticker": "AMD",
+      "provider_record_key": "7eb88e8f4672d0ba6d67eff95ecc9fb7b66b73a3c7fdf4f221d6c0cc789e59b0",
+      "reality_symbol": "RAMDUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:26.870426Z",
+      "native_ticker": "AMZN",
+      "provider_record_key": "5e4145f105c82834acc8045bc3d97a3bc4d6a29dedd83e621429c950c03cf35d",
+      "reality_symbol": "RAMZNUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:28.544847Z",
+      "native_ticker": "ASTS",
+      "provider_record_key": "c2c0846147d0e4c071b3ff1f82c0be59a72acf22c143a74bc4c0201d36da0566",
+      "reality_symbol": "RASTSUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:30.226274Z",
+      "native_ticker": "AVGO",
+      "provider_record_key": "d23412463e817e0697a91cfdad557021d0ab43d155f3c4184d48af2fe12a28dd",
+      "reality_symbol": "RAVGOUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:31.980412Z",
+      "native_ticker": "DRAM",
+      "provider_record_key": "5d4ec861df80f2670b22c4a083e960a606874141a6a2d0c46eafffc89d120027",
+      "reality_symbol": "RDRAMUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:33.670946Z",
+      "native_ticker": "GOOGL",
+      "provider_record_key": "ef4ecf9bd8891faf03b20649b61734c9d7378aa4b97863c5444002485cd4a356",
+      "reality_symbol": "RGOOGLUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:36.144903Z",
+      "native_ticker": "INTC",
+      "provider_record_key": "730d40458801607683798a85ca5faa9ea3d07501aed46e7f9c9cb084dd27c73b",
+      "reality_symbol": "RINTCUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:37.761721Z",
+      "native_ticker": "LITE",
+      "provider_record_key": "d8771809e0dfbeb5695d96b45da1da993249741f2d9be0de72907cafe7b4e676",
+      "reality_symbol": "RLITEUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:39.509995Z",
+      "native_ticker": "META",
+      "provider_record_key": "9bbd66c72a89a3b3b121c3252a3afce0c2d9c3639946f85aac562936c9d400ed",
+      "reality_symbol": "RMETAUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:41.254887Z",
+      "native_ticker": "MRVL",
+      "provider_record_key": "db4d14db055985cc382a7f620ed9db73aa704b35ceca7de0f324ecf9ae894553",
+      "reality_symbol": "RMRVLUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:42.946412Z",
+      "native_ticker": "MSFT",
+      "provider_record_key": "b15d79e5bccf25db1ab4465a7588df5773384c254d57d985a578ca1f667ae676",
+      "reality_symbol": "RMSFTUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:44.617024Z",
+      "native_ticker": "MU",
+      "provider_record_key": "3fce830aed48bbc5601a134016022cf50a3d7812659b8bed9c4093f71679a19f",
+      "reality_symbol": "RMUUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:46.281520Z",
+      "native_ticker": "NOK",
+      "provider_record_key": "975856b62783fd65325dd4f1106f597d61ff36ad1e31f2989daa86911be7c44d",
+      "reality_symbol": "RNOKUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:48.126778Z",
+      "native_ticker": "NVDA",
+      "provider_record_key": "977aeec696f947a1ea863196d434eb6c41840dc13b0e0705271cf3fff6b59656",
+      "reality_symbol": "RNVDAUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:50.274644Z",
+      "native_ticker": "RKLB",
+      "provider_record_key": "b32943e13950c366df68ededae97e990b54bb5c53bd35ab54051d83115fa37ce",
+      "reality_symbol": "RRKLBUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:52.285836Z",
+      "native_ticker": "SNDK",
+      "provider_record_key": "da2e3aee8c110dd751ca5806160c1163eb7de21c1dafac2889b1ddbc49a8cdd9",
+      "reality_symbol": "RSNDKUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:53.969212Z",
+      "native_ticker": "SOXL",
+      "provider_record_key": "2c7c900c37cf587b76b566282f7b5d6fbd58edfb4f4ee14bbb84617511d7713a",
+      "reality_symbol": "RSOXLUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:55.572154Z",
+      "native_ticker": "SPCX",
+      "provider_record_key": "8d2a6c67b974624a9c882b0cd6b365b50258d3983f5e72042ceb2b4993f282c5",
+      "reality_symbol": "RSPCXUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    },
+    {
+      "endpoint": "/api/v3/reality/market/stock-info",
+      "ingestion_time": "2026-09-19T20:03:57.175596Z",
+      "native_ticker": "TSLA",
+      "provider_record_key": "1fcc9ccadf4ad7aa441204e0195718b7694ae2a5492e015426423614072eedb3",
+      "reality_symbol": "RTSLAUSDT",
+      "source": "bitget_uta_v3",
+      "source_version": "uta_v3"
+    }
+  ],
+  "original_universe_snapshot": "HISTORICAL_IDENTITY_REFERENCE_NOT_RECREATED"
+}

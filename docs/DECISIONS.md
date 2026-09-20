@@ -1,5 +1,27 @@
 # Architecture Decision Records
 
+## ADR-022 — Fixed, privately reproducible Phase 1 observation/outcome dataset
+
+Date: 2026-09-20. Status: accepted for the user-authorized fixed 21-member backfill.
+
+The build derives membership from retained machine-readable evidence and accepted Bitget mapping
+provenance. It preserves the original universe reference and reproduces the accepted cohort hash;
+it never invents a replacement snapshot. Tracked cohort/calendar/dataset manifests and private,
+checksum-addressed archives remove reliance on temporary database state or chat-supplied hashes.
+
+Every intersecting XNYS session has explicit exact-minute open/close target status. June 15 and
+September 14 are separate anchors, while evaluation and final OOS bounds remain locked. The
+provider-neutral target table references existing raw pages/normalized candles and preserves
+corrections as immutable versions. Logical identity excludes generation/retrieval times and DB
+surrogate IDs but binds observation content, definitions, evidence, calendar and build code.
+
+Reality candles are durably joined at their completed-bar timestamp. Next open is FUTURE_OUTCOME;
+previous close and Reality history carry unverified original-availability labels. This closes the
+technical Phase 1 dataset gate without claiming a point-in-time feature matrix, auction prices,
+public-data rights, model readiness, or any strategy result. Exact restore was demonstrated into
+a fresh database. Public raw prices remain unapproved, and no Phase 2 modeling is authorized by
+this decision. [Contract and evidence](PHASE1_DATASET.md).
+
 ## ADR-001 — Python is the quantitative source of truth
 
 Status: **ACCEPTED**

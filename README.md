@@ -1,5 +1,23 @@
 # SessionZero
 
+## Reproducible Phase 1 dataset
+
+The accepted 21-member historical dataset is built: 39,133 Reality hourly observations,
+1,281/1,281 native evaluation-session target pairs, and 42 boundary-anchor pairs. All observations
+join to exact XNYS targets. A fresh-database offline restore reproduced the same dataset version.
+No modeling has begun. [Dataset report and recovery instructions](docs/PHASE1_DATASET.md).
+
+With dependencies installed and `DATABASE_URL` exported, reproduce the retained dataset with:
+
+```bash
+.venv/bin/python -m sessionzero_database.dataset_cli --restore
+```
+
+The command loads tracked cohort/calendar/manifests and checksum-verified private archives under
+`.local-data/phase1/`; it needs no provider credentials or old database. To fetch a new observation
+version, export the Alpaca credentials and run the same command without `--restore`. Public raw
+display remains unapproved. Archive access and vendor retention rights remain private concerns.
+
 ## Private native-equity evaluation (Phase 1)
 
 Alpaca is implemented behind `NativeEquityProvider` for explicit raw historical SIP minute
@@ -48,7 +66,7 @@ uncertainty and execution costs.
 
 ## Current status
 
-`PHASE 1 — DATA PLANE (ALPACA BOUNDED RUNTIME VERIFIED; PUBLIC RIGHTS GATED)`
+`PHASE 1 — DATA PLANE EXIT MET (PRIVATE HISTORICAL DATASET; PUBLIC RIGHTS GATED)`
 
 - **BUILT:** the Phase 0 adapter/export/API/web foundation plus Alembic migrations, PostgreSQL raw
   observation and normalized-candle persistence, ingestion-run audit metadata, and a one-shot
@@ -61,7 +79,8 @@ uncertainty and execution costs.
   PostgreSQL raw retention/versioned idempotency, AAPL/NVDA/TSLA pagination, all 21 accepted
   native mappings/availability, and 25 deterministic target rows. No official-auction claim.
 - **GATED:** public Alpaca raw display and derived-product licensing. Private use is provisional.
-- **PLANNED:** broader ingestion and collectors; no full native backfill or modeling in this task.
+- **VERIFIED:** full 21-member target backfill, durable dataset identity, and exact offline restore.
+- **PLANNED:** broader ingestion and collectors; modeling has not begun.
 - **NOT BUILT:** fair value, state, confidence, gap, conviction, backtesting, and execution.
 
 The locked eventual pipeline is `SENSE → FAIR VALUE → STATE → GAP → CONVICTION → EXECUTE`.

@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 
 from sessionzero_market_data.native import NativeDataError, NativeHistory
-from sqlalchemy import Engine, insert, update
+from sqlalchemy import Engine, insert, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from .models import IngestionRun, NormalizedNativeEquityCandle, RawNativeEquityObservation
@@ -22,6 +22,13 @@ def _canonical(value: object) -> str:
         text = format(value, "f")
         return text.rstrip("0").rstrip(".") if "." in text else text
     return str(value)
+
+
+def native_candle_version(candle) -> str:
+    values = candle.model_dump(exclude={"page_index", "ingestion_time"})
+    return hashlib.sha256(
+        json.dumps({k: _canonical(v) for k, v in values.items()}, sort_keys=True).encode()
+    ).hexdigest()
 
 
 def persist_native_history(engine: Engine, history: NativeHistory) -> dict:
@@ -59,6 +66,7 @@ def persist_native_history(engine: Engine, history: NativeHistory) -> dict:
             )
         )
     written = 0
+    candle_refs = []
     try:
         with engine.begin() as connection:
             page_ids = []
@@ -87,8 +95,7 @@ def persist_native_history(engine: Engine, history: NativeHistory) -> dict:
                 )
             for candle in history.candles:
                 values = candle.model_dump(exclude={"page_index"})
-                identity = {k: _canonical(v) for k, v in values.items() if k != "ingestion_time"}
-                version = hashlib.sha256(json.dumps(identity, sort_keys=True).encode()).hexdigest()
+                version = native_candle_version(candle)
                 inserted = connection.scalar(
                     pg_insert(NormalizedNativeEquityCandle)
                     .values(
@@ -101,6 +108,18 @@ def persist_native_history(engine: Engine, history: NativeHistory) -> dict:
                     .returning(NormalizedNativeEquityCandle.id)
                 )
                 written += inserted is not None
+                normalized_id = inserted or connection.scalar(
+                    select(NormalizedNativeEquityCandle.id).where(
+                        NormalizedNativeEquityCandle.content_version == version,
+                        NormalizedNativeEquityCandle.source == candle.source,
+                        NormalizedNativeEquityCandle.native_ticker == candle.native_ticker,
+                        NormalizedNativeEquityCandle.event_time == candle.event_time,
+                        NormalizedNativeEquityCandle.interval == candle.interval,
+                        NormalizedNativeEquityCandle.feed == candle.feed,
+                        NormalizedNativeEquityCandle.adjustment == candle.adjustment,
+                    )
+                )
+                candle_refs.append({"normalized_id": normalized_id, "content_version": version})
             connection.execute(
                 update(IngestionRun)
                 .where(IngestionRun.run_id == run_id)
@@ -126,4 +145,6 @@ def persist_native_history(engine: Engine, history: NativeHistory) -> dict:
         "run_id": str(run_id),
         "raw_pages_written": len(history.pages),
         "normalized_versions_written": written,
+        "raw_page_ids": page_ids,
+        "candles": candle_refs,
     }

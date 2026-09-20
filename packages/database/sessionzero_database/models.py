@@ -585,3 +585,122 @@ class NormalizedNativeEquityCandle(Base):
     volume: Mapped[Decimal] = mapped_column(Numeric, nullable=False)
     trade_count: Mapped[int] = mapped_column(BigInteger, nullable=False)
     vwap: Mapped[Decimal | None] = mapped_column(Numeric)
+
+
+class NativeSessionTarget(Base):
+    """Immutable target versions; raw pages and minutes remain in their existing tables."""
+
+    __tablename__ = "native_session_targets"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('TARGET_AVAILABLE','OPEN_MISSING','CLOSE_MISSING','BOTH_MISSING',"
+            "'PROVIDER_FAILURE','STRUCTURAL_FAILURE','UNKNOWN')",
+            name="ck_session_target_status",
+        ),
+        CheckConstraint("adjustment = 'raw'", name="ck_session_target_raw"),
+        CheckConstraint("regular_close > regular_open", name="ck_session_target_bounds"),
+        UniqueConstraint(
+            "cohort_version",
+            "native_ticker",
+            "session_date",
+            "target_version",
+            name="uq_session_target_version",
+        ),
+    )
+    target_version: Mapped[str] = mapped_column(String(64), primary_key=True)
+    cohort_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    native_ticker: Mapped[str] = mapped_column(String(64), nullable=False)
+    session_date: Mapped[date] = mapped_column(Date, nullable=False)
+    source: Mapped[str] = mapped_column(String(64), nullable=False)
+    feed: Mapped[str] = mapped_column(String(32), nullable=False)
+    adjustment: Mapped[str] = mapped_column(String(32), nullable=False)
+    calendar_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    transformation_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    target_definition_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    regular_open: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    regular_close: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    open_observation_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    close_observation_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    open_target: Mapped[Decimal | None] = mapped_column(Numeric)
+    close_target: Mapped[Decimal | None] = mapped_column(Numeric)
+    open_raw_id: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("raw_native_equity_observations.id", ondelete="RESTRICT")
+    )
+    close_raw_id: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("raw_native_equity_observations.id", ondelete="RESTRICT")
+    )
+    open_candle_id: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("normalized_native_equity_candles.id", ondelete="RESTRICT")
+    )
+    close_candle_id: Mapped[int | None] = mapped_column(
+        BigInteger, ForeignKey("normalized_native_equity_candles.id", ondelete="RESTRICT")
+    )
+    open_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ingestion_runs.run_id", ondelete="RESTRICT")
+    )
+    close_run_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("ingestion_runs.run_id", ondelete="RESTRICT")
+    )
+    ingestion_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False)
+    provenance: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+
+
+class Phase1DatasetManifest(Base):
+    __tablename__ = "phase1_dataset_manifests"
+    dataset_version: Mapped[str] = mapped_column(String(64), primary_key=True)
+    manifest: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    generated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class Phase1DatasetTarget(Base):
+    __tablename__ = "phase1_dataset_targets"
+    dataset_version: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("phase1_dataset_manifests.dataset_version", ondelete="RESTRICT"),
+        primary_key=True,
+    )
+    reality_symbol: Mapped[str] = mapped_column(String(64), primary_key=True)
+    session_date: Mapped[date] = mapped_column(Date, primary_key=True)
+    target_version: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("native_session_targets.target_version", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    session_role: Mapped[str] = mapped_column(String(32), nullable=False)
+
+
+class Phase1DatasetReality(Base):
+    __tablename__ = "phase1_dataset_reality"
+    __table_args__ = (
+        CheckConstraint("next_open_role = 'FUTURE_OUTCOME'", name="ck_dataset_future_outcome"),
+    )
+    dataset_version: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("phase1_dataset_manifests.dataset_version", ondelete="RESTRICT"),
+        primary_key=True,
+    )
+    candle_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("normalized_market_candles.id", ondelete="RESTRICT"),
+        primary_key=True,
+    )
+    raw_observation_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("raw_market_observations.id", ondelete="RESTRICT"), nullable=False
+    )
+    native_ticker: Mapped[str] = mapped_column(String(64), nullable=False)
+    calendar_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    decision_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    previous_close_target_version: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("native_session_targets.target_version", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    next_open_target_version: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("native_session_targets.target_version", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    next_open_role: Mapped[str] = mapped_column(String(32), nullable=False)
+    previous_close_role: Mapped[str] = mapped_column(String(64), nullable=False)
+    reality_role: Mapped[str] = mapped_column(String(64), nullable=False)

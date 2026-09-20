@@ -1,5 +1,20 @@
 # Security and Data Integrity
 
+## Phase 1 dataset retention and recovery
+
+The authorized full backfill stores private source archives under ignored `.local-data/phase1/`.
+Archive files use mode 0600; collection directories use mode 0700. Tracked `datasets/phase1/`
+artifacts contain membership, schedules, content hashes, quality counts, and provenance metadata,
+not raw prices or credential values. Keep private archives with any authorized backup or machine
+migration; Git alone intentionally does not distribute licensed observations.
+
+Offline restore verifies file checksums, accepted mapping/cohort identity, pinned calendar and
+source-code identity, and raw-to-normalized native replay before publishing dataset linkage. It
+needs only `DATABASE_URL`, not Alpaca credentials. A separate empty-database restore drill passed.
+Database URLs and provider exception bodies are suppressed in CLI errors. No brokerage endpoints,
+public prices, deployment, or remote upload was added. Private retention/research remains subject
+to the existing provisional rights status; public raw display remains unapproved.
+
 ## Alpaca private/local evaluation — current authorization
 
 The current task authorizes authenticated read-only Alpaca market-data requests using only
@@ -52,7 +67,7 @@ under `tests/fixtures`; production packages do not import that path.
 
 ## Outstanding
 
-Managed-database TLS, least-privilege roles, backup/restore drills, retention, rate limiting,
+Managed-database TLS, least-privilege roles, off-machine backup operations, retention policy,
 central log redaction, and deployment security remain later work. The local verification database
 is disposable and trust-authenticated on loopback only. Native-equity vendor contracting and
 exchange entitlements are unresolved. No deployment exists.

@@ -1,5 +1,31 @@
 # Data Verification
 
+## Phase 1 full dataset — 2026-09-20 (current)
+
+[Full dataset/backfill report](PHASE1_DATASET.md). The immutable evaluation window remains
+`[2026-06-15T20:00:00Z, 2026-09-13T20:00:00Z)`, with final OOS beginning August 14 at 20:00 UTC.
+All 21 accepted members have durable Reality candle lineage and native targets: 39,133 hourly
+observations, 61 XNYS evaluation sessions × 21 = 1,281 available target pairs, plus 42 explicitly
+labeled boundary-anchor pairs for June 15 and September 14. All joins resolve.
+
+The raw native contract is SIP / `1Min` / `adjustment=raw`. Open means FIRST_1M_BAR_OPEN at
+`regular_open`; close means LAST_1M_BAR_CLOSE from `regular_close - 1 minute`. Observation time
+and actual retrieval time remain separate. Alpaca's inclusive end-minute responses remain in raw
+pages and are clipped by the existing half-open adapter; only the exact boundary minute qualifies.
+Native target status independently represents TARGET_AVAILABLE, OPEN_MISSING, CLOSE_MISSING,
+BOTH_MISSING, PROVIDER_FAILURE, STRUCTURAL_FAILURE, and UNKNOWN. No boundary substitution occurs.
+
+`native_session_targets` references raw pages, normalized minutes, ingestion runs, calendar,
+definitions, and transformation versions. Dataset links retain exact target versions and existing
+Reality raw/normalized IDs. Repeated content is idempotent, changed native content appends; a
+conflicting pre-existing canonical Reality candle stops materialization rather than silently
+overwriting or relabeling it. No second raw candle table was introduced.
+
+Tracked cohort/calendar/versioned manifests resolve identity without an old database. Exact
+restoration requires the checksum-verified private archives in `.local-data/phase1/`; a newly
+fetched provider revision may form a different dataset version. The original full universe
+snapshot is not reconstructed: its accepted version is explicitly a historical reference.
+
 ## Alpaca private implementation — 2026-09-19 (current)
 
 The user has selected Alpaca as the technical implementation candidate and authorized private/local

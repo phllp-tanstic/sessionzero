@@ -1,5 +1,31 @@
 # Architecture
 
+## Reproducible Phase 1 dataset — current
+
+`sessionzero_database.dataset_cli` is the one-shot build/restore boundary. Tracked
+`datasets/phase1/cohort.json` binds the accepted evidence-derived membership to the original
+universe reference; no replacement universe snapshot is created. The archived Bitget responses
+are replayed through `BitgetReferenceDataProvider`, and the accepted cohort hash must reproduce.
+`calendar.json` pins the XNYS provider version and exact session schedule.
+
+Live collection retains private source archives, globally paces three Alpaca workers at one
+request per 0.32 seconds, and uses the existing Bitget bounded-history path. Native archive replay
+uses the same Alpaca parser with no network or fabricated retrieval timestamps. Materialization
+reuses existing raw/normalized tables. Migration `20260920_09` adds immutable
+`native_session_targets`, `phase1_dataset_manifests`, `phase1_dataset_targets`, and
+`phase1_dataset_reality`. Foreign keys preserve both observation lineage and target joins.
+
+Target versions hash the cohort/calendar/contract and exact minute content or explicit failures.
+Unchanged targets reuse their first retained lineage; corrections append. Dataset versions bind
+the exact Reality member content, target versions, source evidence, code, and point-in-time roles.
+The versioned manifest and private archive checksums support fresh-database restore with the same
+logical identity. Raw prices remain outside tracked artifacts and public routes.
+
+The full dataset now closes the earlier candle-level audit linkage gap for the accepted cohort.
+Earlier read-only profiles and their limitations below remain historical records. See
+[the dataset report](PHASE1_DATASET.md) for exact counts, private archive requirements, and restore
+verification. This is an observation/outcome dataset, not an as-known feature dataset.
+
 ## Alpaca implementation — current Phase 1 state
 
 The earlier native-provider implementation gate below is superseded for private/local work by
@@ -167,11 +193,11 @@ supplies exact regular-session boundaries. Native raw pages and normalized immut
 have separate provider-neutral tables; they do not enter Bitget `normalized_market_candles`.
 The private verifier can reload the accepted persisted universe or reverify its cohort identity
 from official membership evidence plus live Bitget mappings without writing a replacement snapshot.
-The public API has no native-price path. Bounded runtime acceptance passed; full history,
-historical as-known availability, and public-product rights remain separate work.
+The public API has no native-price path. Full fixed-window boundary history now exists for the
+accepted cohort; historical as-known availability and public-product rights remain separate work.
 
 ## Planned after this narrow Phase 1 slice
 
-Persistent collection loops, complete native/Reality historical coverage, API expansion, and
+Persistent collection loops, wider-universe coverage, API expansion, and
 research remain unbuilt. No queue, cache, scheduler, orchestration
 system, ML stack, or deployment workflow has been introduced.
