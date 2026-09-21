@@ -1,8 +1,17 @@
 # Baseline experiments and backtest status
 
+## Day 2 Fair Value result
+
+The [generated Fair Value comparison and analysis](FAIR_VALUE.md) reports 357 development and
+462 validation matched observations for the development-selected robust displacement candidate.
+It does not convincingly beat the Reality mark on validation: raw MAE 3.188 vs 3.241, but bps MAE
+99.84 vs 98.27, raw RMSE 7.022 vs 7.004, median AE 1.343 vs 1.270. Direction is 88.10% vs
+87.66%. Classification is **RETROSPECTIVE ESTIMATED**; V1 selection is not justified. Private
+machine output contains all metrics and ablations; no strategy PnL or final OOS result exists.
+
 ## Remote capture status
 
-The worker and outcome-link pipeline are locally implemented but not deployed. No legitimate
+The worker and outcome-link pipeline are deployed (see HANDOVER). No legitimate
 prospective decision snapshot or outcome has yet been captured remotely. Existing retrospective
 baseline metrics remain ESTIMATED; no BACKTESTED claim or final-OOS strategy performance has been
 computed. A missed automatic capture remains missed rather than retroactively filled.

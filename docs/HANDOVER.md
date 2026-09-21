@@ -1,5 +1,28 @@
 # Handover
 
+## Day 2 Fair Value research — 2026-09-21
+
+- Phase: **PHASE 3 — FAIR VALUE RESEARCH**, not production model deployment. Decision:
+  **FAIR_VALUE_V1_NOT_YET_JUSTIFIED**. Four nested feature groups and two fixed linear estimators
+  were tested with development-only chronological selection. No final OOS access or strategy work.
+- The selected *research candidate* is Huber displacement (one feature, two coefficients). It
+  was fit on 357 eligible development rows; 462 validation rows were evaluated. Validation raw
+  MAE is 3.188 vs Reality mark 3.241, but bps MAE is 99.84 vs 98.27, RMSE is 7.022 vs 7.004 and
+  median AE is 1.343 vs 1.270. Results remain **RETROSPECTIVE ESTIMATED**.
+- The frozen baseline feature eligibility continues to reject unverified historical prices;
+  `model_eligible_observations=0`. The separate diagnostic lane never upgrades their point-in-time
+  status. [Feature architecture, metrics, ablations, limitations](FAIR_VALUE.md).
+- Deterministic non-live/non-PostgreSQL suite: 224 passed, 36 deselected after the new
+  10-case Fair Value test module. Ruff and diff hygiene passed. PostgreSQL/live tests were not
+  required for this offline research slice.
+- Reproduce privately without internet or credentials:
+  `.venv/bin/python -m research.fair_value`. Accepted dataset/cohort/splits and remote worker
+  remain unchanged. The prediction ledger excludes outcomes; experiment artifacts are append-only
+  mode 0600 and ignored by Git.
+- Next task: observe genuine prospective decisions and outcomes, verify backups/rights, accumulate
+  sufficient as-known evidence, then freeze a new evaluation before model promotion. Do not use
+  validation for iterative selection or inspect historical final OOS.
+
 ## Remote prospective capture worker — deployed 2026-09-21
 
 - Phase: **PHASE 2 — RESEARCH BASELINES**. Accepted integrity decision B remains in force.

@@ -1,5 +1,18 @@
 # Architecture Decision Records
 
+## ADR-026 — Fair Value research candidate not promoted
+
+Date: 2026-09-21. Status: **FAIR_VALUE_V1_NOT_YET_JUSTIFIED**.
+
+The user authorized Day 2 development/validation Fair Value research without changing the frozen
+dataset or point-in-time evidence policy. Eight low-dimensional ridge/robust-linear fits over four
+nested feature groups were evaluated; a chronological development-only fold selected robust
+displacement. On the identical validation sample, its small raw MAE gain over the Reality mark
+does not survive normalized MAE, RMSE or median AE. Preserve this negative/mixed result and do
+not select a production model from validation ablations. Archived prices remain
+UNKNOWN_AVAILABILITY; all diagnostics are RETROSPECTIVE ESTIMATED, not BACKTESTED. No final OOS,
+prospective worker change, State/Confidence, strategy, deployment or push. [Evidence](FAIR_VALUE.md).
+
 ## ADR-025 — Remote prospective worker and separate outcome linkage
 
 Date: 2026-09-21. Status: IMPLEMENTED LOCALLY; DEPLOYMENT NOT AUTHORIZED.

@@ -1,5 +1,14 @@
 # Methodology
 
+## Day 2 Fair Value retrospective diagnostic
+
+The [Fair Value report](FAIR_VALUE.md) documents the event-time feature pipeline, development-only
+blocked model selection, eight disciplined linear/group comparisons, private prediction contract,
+and validation results. Its candidate was not promoted: **FAIR_VALUE_V1_NOT_YET_JUSTIFIED**.
+The frozen baseline's `UNKNOWN_AVAILABILITY` model-feature gate is unchanged; historical prices
+are used only under an explicitly separate RETROSPECTIVE ESTIMATED diagnostic assumption.
+Final OOS, prospective capture semantics and accepted Phase 1 artifacts are untouched.
+
 ## Remote prospective claim boundary
 
 An automatic worker run is `PROSPECTIVE OBSERVED` only when its full 21-member decision capture
@@ -35,7 +44,8 @@ The [frozen research protocol](RESEARCH_PROTOCOL.md) and machine-readable
 [baseline-v1 contract](../research/protocols/baseline-v1.json) govern current work. The accepted
 Phase 1 archive is unchanged. Fixed 30/30/30-day chronological splits, one decision 60 minutes
 before each cash open, raw reopen return, and four deterministic naive baselines are implemented.
-Final OOS remains untouched. No tunable weights, strategy or Fair Value model exists.
+Final OOS remains untouched. The frozen baseline itself has no tunable weights or strategy;
+the separate Day 2 Fair Value research candidate is not a certified model.
 
 Historical native close and Reality price availability remain UNKNOWN, so the model-feature gate
 rejects them. Separate retrospective diagnostics are explicitly ESTIMATED, not BACKTESTED. Next
