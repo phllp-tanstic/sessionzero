@@ -1,8 +1,14 @@
 # Remote prospective worker deployment
 
-Status: **IMPLEMENTED LOCALLY; NOT DEPLOYED**. No Railway project, managed database, scheduler,
-service URL or first prospective snapshot exists yet. Deployment and secret provisioning require
-separate authorization. Do not run old decision timestamps or insert a synthetic success.
+Status: **DEPLOYED (verified 2026-09-21)** on Railway. Project `45af84eb-f48d-4b53-803c-b2b343994930`,
+production environment `e999badc-41fb-4fdf-8989-608fb7861383`, worker service
+`299dec01-5cc5-4c14-878a-aa43d4c8ad56`, built from `Dockerfile.worker` at commit `fce8697` as
+deployment `7937abef-fb0d-44ab-8abb-e7e3a7304919`, connected over private networking to a
+persistent PostgreSQL service. No public worker URL exists. The full verified deployment record,
+including runtime verification, missing-snapshot handling, and unverified backup state, is in
+`HANDOVER.md` ("Remote prospective capture worker — deployed 2026-09-21"); the sections below
+remain the service configuration contract for any future re-deployment. Do not run old decision
+timestamps or insert a synthetic success.
 
 ## Public web frontend — deployed (verified 2026-09-21)
 
