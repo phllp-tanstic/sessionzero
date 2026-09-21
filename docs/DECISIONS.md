@@ -1,5 +1,26 @@
 # Architecture Decision Records
 
+## ADR-030 — Freeze trajectory evidence contract; gate the second source
+
+Date: 2026-09-21. Status: **SPECIFICATION ACCEPTED FOR IMPLEMENTATION PLANNING; NOT DEPLOYED**.
+
+Six XNYS-relative slots (close+2h/+6h; open−6h/−3h/−2h/−1h) are the prospective trajectory
+capture target. T−30 is omitted at the current 1H cadence because it adds no new eligible
+completed bar. A feature at T requires bar completion, actual ingestion and source evidence
+strictly before the frozen slot cutoff. Raw envelopes and all corrected bar versions append;
+one outcome-free snapshot per symbol/slot freezes the selected as-ingested path. Missed slots
+stay missed. Existing T−60 snapshots remain valid `LEGACY_MARK_ONLY` evidence, not reconstructed
+trajectories. The current worker/PostgreSQL are extendable/sufficient in architecture, with new
+schema and scheduler work gated by migration, latency, capacity and backup verification.
+
+BOATS is the strongest *hypothesized* independent second continuous venue, but account/feed
+entitlement, 21-symbol overlap, PIT latency, storage/research/public-derived rights and
+prospective capture are unverified. Bitget Stock+, MCP native and stock-perpetual/index inputs
+do not currently pass the independent aligned-panel gate. Decision:
+`SOURCE_LEADERSHIP_SECOND_SOURCE_GATED`; leadership research remains blocked. No provider,
+worker, database, model, final-OOS, deployment or push change is authorized by this ADR.
+[Capture contract](TRAJECTORY_CAPTURE.md); [source gate](SOURCE_LEADERSHIP_GATE.md).
+
 ## ADR-029 — Redesign research around trajectories and latent dimensions, without promoting a model
 
 Date: 2026-09-21. Status: **RESEARCH ARCHITECTURE PROPOSED; NO PRODUCTION MODEL**.

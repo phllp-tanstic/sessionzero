@@ -1,5 +1,30 @@
 # Handover
 
+## Prospective trajectory capture contract + second-source gate — 2026-09-21
+
+- **Specification only**: six XNYS-relative nonredundant slots, strict completion/ingestion
+  cutoffs, append-only raw path bar versions, outcome-free per-symbol snapshots and explicit
+  per-slot failure states are frozen in [TRAJECTORY_CAPTURE.md](TRAJECTORY_CAPTURE.md). T−30 is
+  omitted at 1H cadence. The deployed T−60 `decision_snapshot.v1` remains valid
+  `LEGACY_MARK_ONLY` evidence and is not backfilled into a trajectory.
+- Decisions: `TRAJECTORY_CAPTURE_CONTRACT=READY_TO_IMPLEMENT` (contract, not deployment);
+  `CURRENT_WORKER=EXTENDABLE`; `CURRENT_POSTGRESQL=SUFFICIENT` architecturally, subject to
+  migration/capacity/backup verification; `SECOND_SOURCE=GATED`;
+  `SOURCE_LEADERSHIP_RESEARCH=BLOCKED`. [Candidate and rights gate](SOURCE_LEADERSHIP_GATE.md).
+- BOATS is the strongest independent-market hypothesis, **not** an approved feed. Account
+  entitlement, cohort/session overlap, PIT capture latency, mapping and project-specific
+  research/retention/public-derived rights are unverified. No credentials were requested.
+- Planning budget for 21 names: 126 Bitget path requests plus 21 native-close and 21 later
+  outcome requests per cash session before retries (168 total if T−60 evidence is reused);
+  ~30–100 MB/month primary DB growth is a rough planning range, not remote measurement.
+  Broader every-day cron would have up to 8,640 wakes per 30 days. Verify actual capacity,
+  billing and a restorable backup before any implementation/deployment authorization.
+- Worker code, cron, PostgreSQL schema, provider adapters, prospective captures, frontend,
+  models, cohort, target and final OOS **unchanged**. No deployment or push. Existing research
+  findings remain RETROSPECTIVE ESTIMATED. Next task: independent contract review and explicit
+  authorization for a bounded implementation/migration plan; separately confirm BOATS rights
+  and entitlement before any second-source technical probe.
+
 ## Root-cause research redesign — 2026-09-21
 
 - Research-only trajectory diagnostic on the same accepted pre-OOS archive. Seven calendar-relative

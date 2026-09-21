@@ -1,5 +1,14 @@
 # Methodology
 
+## Prospective trajectory evidence contract — frozen specification
+
+The [trajectory-capture contract](TRAJECTORY_CAPTURE.md) freezes six DST-safe XNYS-relative
+checkpoints, strict bar-completion and ingestion cutoffs, immutable path evidence, isolated
+future outcomes and honest missed-slot semantics. The [source-leadership gate](SOURCE_LEADERSHIP_GATE.md)
+requires a genuinely independent, timestamp-aligned, authorized second continuous market
+before testing leadership. These are future evidence rules, not a State/Fair Value model or a
+retrospective claim upgrade. The deployed T−60 collector and final OOS remain unchanged.
+
 ## Root-cause research redesign — trajectories, no new model
 
 The [pre-OOS trajectory audit](RESEARCH_REDESIGN.md) tests seven calendar-relative off-session

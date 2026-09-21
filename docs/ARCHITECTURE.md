@@ -1,5 +1,16 @@
 # Architecture
 
+## Proposed trajectory capture and second-source gate — specification only
+
+The [frozen trajectory-capture contract](TRAJECTORY_CAPTURE.md) specifies six nonredundant
+XNYS-relative slots, append-only raw path bars, per-slot status/snapshots and outcome-isolated
+links. It proposes extending the existing one-shot worker and PostgreSQL, **not** changing them
+in this task. Existing `decision_snapshot.v1` remains valid mark-only evidence at T−60. The
+[source gate](SOURCE_LEADERSHIP_GATE.md) rejects treating another API or composite index as an
+independent market; BOATS is the strongest candidate but account, PIT, cohort and rights gates
+remain open. No second provider or model is integrated. The older deployment-ready heading below
+is historical; the current worker is deployed as documented in DEPLOYMENT/HANDOVER.
+
 ## Remote prospective worker — deployment-ready, not deployed
 
 `services/worker/sessionzero_worker` adds one-shot Railway-compatible orchestration around the

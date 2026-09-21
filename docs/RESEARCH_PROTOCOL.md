@@ -1,5 +1,15 @@
 # Frozen baseline protocol v1
 
+## Prospective trajectory capture / source gate (future evidence contract)
+
+The [capture v1 specification](TRAJECTORY_CAPTURE.md) defines what later *as-ingested*
+trajectories may use: only bars completed strictly before a scheduled slot and retrieved,
+ingested and frozen before that slot, with source evidence already published and ingested.
+The [independent-source acceptance gate](SOURCE_LEADERSHIP_GATE.md) must pass before Dynamic
+Source Leadership research. These documents do not change `baseline_protocol.v1`, Fair Value
+V2's pre-OOS split, Discovery State V1's negative result or the protected final OOS. No new
+modeling experiment or provider integration was conducted.
+
 ## Research-redesign v1 diagnostic (not a replacement baseline protocol)
 
 The [versioned pre-OOS trajectory protocol](../research/protocols/research-redesign-v1.json)

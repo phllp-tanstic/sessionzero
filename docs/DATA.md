@@ -1,5 +1,16 @@
 # Data Verification
 
+## Proposed prospective trajectory data — no collection change
+
+[Trajectory capture v1](TRAJECTORY_CAPTURE.md) defines immutable per-bar Reality OHLCV,
+actual request/ingestion and completion times, six calendar-relative slots, source-evidence
+cutoffs, native previous close, outcome-free snapshots and explicit missed/partial statuses.
+It is a specification; the deployed worker still captures only the T−60 Reality mark and
+native close. The [second-source gate](SOURCE_LEADERSHIP_GATE.md) keeps BOATS, Stock+, MCP
+native data and stock-perpetual inputs outside the accepted aligned panel until independence,
+entitlement, PIT behavior, cohort coverage and rights are verified. No provider request or
+schema migration occurred in this task.
+
 ## Prospective remote collection
 
 The remote-ready worker uses the accepted 21-symbol cohort, original universe identity, cohort
