@@ -1,5 +1,30 @@
 # Handover
 
+## Fair Value V2 pre-OOS walk-forward — 2026-09-21
+
+- Phase: **PHASE 3 — FAIR VALUE RESEARCH**. Decision **FAIR_VALUE_V2_NOT_JUSTIFIED**;
+  no production model. V1's negative decision remains historical. The inspected former
+  validation is explicitly reclassified as pre-OOS development under
+  `fair_value_protocol.v2` / `pre_oos_expanding_blocks.v2`; V1's frozen split is not rewritten.
+- Accepted 21-member dataset and raw first-minute-open target, open-minus-60-minute decision,
+  prospective worker and final OOS are unchanged. Four expanding folds have 315/441/567/693
+  fit rows and 126 predictions each. 504 common walk-forward predictions are
+  **RETROSPECTIVE ESTIMATED**, not BACKTESTED; all fitted candidates lose to Reality mark on
+  normalized MAE/RMSE. [Method, diagnostics, generated receipt](FAIR_VALUE.md).
+- Private append-only report and outcome-free predictions are under
+  `.local-data/research/experiments/<experiment_id>/`; current pre-commit experiment ID is
+  `45c99ef96401443fd94cac5f17a834091c07e6d787a549b530432352b7a2afaa`.
+  Reproduce with `.venv/bin/python -m research.fair_value_v2`; source/commit changes create
+  another ID. No credentials, DB, network or final OOS selection are required.
+- The historical availability/revision gate remains unmet, `model_eligible_observations=0`.
+  Public derived-output rights remain unverified. No State/Confidence/Gap/Conviction, PnL,
+  Sharpe, deployment or push.
+- Verification: 231 deterministic non-live/non-PostgreSQL tests passed (36 deselected), Ruff
+  check/format and diff hygiene passed; the experiment reran identically. PostgreSQL and live
+  tests were not run for this offline research slice.
+- Next exact task: verify remote backup restore point and observe genuine prospective decision
+  and outcome linkage; accumulate enough as-known captures before a separately frozen evaluation.
+
 ## Day 2 Fair Value research — 2026-09-21
 
 - Phase: **PHASE 3 — FAIR VALUE RESEARCH**, not production model deployment. Decision:

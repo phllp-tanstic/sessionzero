@@ -1,5 +1,15 @@
 # Baseline experiments and backtest status
 
+## Fair Value V2 is not a strategy backtest
+
+Four pre-OOS expanding-window folds yield 504 matched retrospective predictions from
+819 eligible research rows. None of the three low-complexity fitted models beats the Reality
+mark on both bps MAE and RMSE. Decision: **FAIR_VALUE_V2_NOT_JUSTIFIED**. The old validation
+was already inspected, so V2 uses it only inside pre-OOS development, never as a fresh external
+holdout. Final OOS, transaction costs, PnL and Sharpe were not evaluated. All figures are
+RETROSPECTIVE ESTIMATED, not BACKTESTED. See [Fair Value](FAIR_VALUE.md) for generated artifact
+identity and reproduction.
+
 ## Day 2 Fair Value result
 
 The [generated Fair Value comparison and analysis](FAIR_VALUE.md) reports 357 development and

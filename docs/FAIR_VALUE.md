@@ -1,5 +1,59 @@
 # Fair Value V1 research — RETROSPECTIVE ESTIMATED
 
+## V2 pre-OOS walk-forward — RETROSPECTIVE ESTIMATED (2026-09-21)
+
+Decision: **FAIR_VALUE_V2_NOT_JUSTIFIED**. The former validation period was inspected in V1,
+so it is now development evidence, not pristine external validation. The versioned
+[`fair_value_protocol.v2`](../research/protocols/fair-value-v2.json) pools the first 60 calendar
+days only, retaining the historical Development/Validation records. The final OOS starts
+2026-08-14 20:00 UTC and remains unscored. The frozen V1 baseline contract, cohort, target,
+decision time and prospective worker are unchanged.
+
+The accepted dataset has 819 aligned pre-OOS diagnostic rows (21 names, 39 decisions). The
+expanding-window procedure fits on the first 15 decision dates (315 rows), then predicts six
+whole dates at a time in four nonoverlapping blocks of 126 observations. Fit sizes are
+315/441/567/693. Every training label has completed before its test decision; no shuffle or
+random split occurs. The 504 predictions span July 14–August 14 at 12:30 UTC, before the
+frozen boundary. No fit uses a held-out block or future outcome. All models share exactly the
+same rows and Reality-mark benchmark.
+
+Candidates: frozen Reality candle-close mark; pooled L2-regularized intercept and Reality
+return transfer; the same two-parameter transfer with fixed 12-step Huber IRLS; and a
+three-parameter symmetric hinge beyond a predeclared absolute 2% Reality move. The intercept
+is unpenalized, slope terms L2-penalized, and scaling is fit within each earlier fold. No
+symbol effects, cross-sectional features, tree, or conditionally selected features were tested.
+The pooled model applies unchanged to every symbol, including an unseen one.
+
+Generated private experiment `45c99ef96401443fd94cac5f17a834091c07e6d787a549b530432352b7a2afaa`
+reports Reality mark bps MAE/RMSE **98.78/143.45**; shrunk transfer **100.07/144.29**;
+robust transfer **99.64/144.21**; piecewise transfer **100.20/144.94**. The robust model
+has the smallest fitted errors, but still loses on both primary bps metrics. It improves
+11/21 symbols' MAE, is improved or within 1 bps for 12/21, and wins only one of four
+chronological folds. Its p90/p95 absolute bps errors are 231.11/310.10 versus mark
+231.09/318.95: the p95 improves, but p90 is effectively flat and core metrics worsen.
+No fitted model clears the predeclared 2% gain on *both* bps MAE and RMSE, majority stability,
+three-of-four folds, and nonworsening p95. No V2 fair-value model is promoted.
+
+Descriptive V1-failure investigation on the full 819-row pre-OOS research region finds
+Reality displacement-to-target slope 1.078 and intercept -16.69 bps. The mark's MAE rises
+from 56.54 bps at <50 bps displacement (171 rows) to 139.35 bps at >=200 bps (338 rows).
+Its conditional signed error is +47.98 bps for displacement <=-2% (152 rows) and -26.81
+bps for >=+2% (186 rows), suggestive of under-transfer of both large-move signs; these
+are descriptive associations, not a separately validated calibration or trading signal.
+The generated report retains per-symbol, off-session range-volatility and prior-session-move
+error bins, quantiles and transfer comparisons. These diagnostics did not drive a feature search.
+
+Reproduce offline, with private checksum-verified archives, via
+`.venv/bin/python -m research.fair_value_v2`. It produces append-only mode-0600
+`fair-value-v2-result.json` and outcome-free `fair-value-v2-predictions.json` under
+`.local-data/research/experiments/<experiment_id>/`. The experiment hash includes the exact
+protocol/code hashes and Git base commit, so editing source or committing creates a new ID.
+The private generated result, not this prose, is the authoritative table. Original historical
+price availability and revision history remain UNKNOWN; `model_eligible_observations=0`.
+No BACKTESTED performance, interval coverage, PnL or Sharpe claim is made.
+
+## Historical V1 record
+
 Decision: **FAIR_VALUE_V1_NOT_YET_JUSTIFIED**. The development-only procedure selected a
 two-parameter robust displacement model, but validation does not consistently outperform the
 strongest Reality baseline. No model is promoted to a production Fair Value engine. This is a

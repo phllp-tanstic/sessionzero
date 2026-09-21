@@ -1,5 +1,19 @@
 # Architecture Decision Records
 
+## ADR-027 — Version the inspected validation transition; do not promote Fair Value V2
+
+Date: 2026-09-21. Status: **FAIR_VALUE_V2_NOT_JUSTIFIED**.
+
+V1 inspected the original validation, so it is no longer pristine. Preserve its historical
+30/30/30 experiments and frozen `baseline_protocol.v1`, but use new `fair_value_protocol.v2`
+and `pre_oos_expanding_blocks.v2` for the combined first 60 days. The final 30-day OOS and
+accepted dataset/cohort/target/decision time are unchanged. Four chronological folds compared
+three fixed low-dimensional pooled transfer formulations to the Reality mark on identical
+samples. All three worsen bps MAE and RMSE. The best fitted candidate wins only one fold;
+no Fair Value model is promoted. Original archived prices remain UNKNOWN_AVAILABILITY, making
+the evidence RETROSPECTIVE ESTIMATED. No State, Confidence, strategy, prospective worker change,
+deployment or push. [Method and result](FAIR_VALUE.md).
+
 ## ADR-026 — Fair Value research candidate not promoted
 
 Date: 2026-09-21. Status: **FAIR_VALUE_V1_NOT_YET_JUSTIFIED**.

@@ -1,5 +1,17 @@
 # Methodology
 
+## Fair Value V2 research protocol
+
+The previously inspected V1 validation is now part of a combined 60-day pre-OOS research
+region under a new, explicit split identity. Four expanding-window blocks predict whole
+decision dates after fitting only on prior completed labels; no randomization, symbol-specific
+fits or OOS tuning is used. A small, fixed pooled transfer candidate set is compared on the
+same observations with the frozen Reality mark. Bps MAE/RMSE, cross-symbol stability,
+chronological consistency and p95 error govern promotion. None qualifies; see
+[generated-evidence summary](FAIR_VALUE.md). Both V1 and V2 remain RETROSPECTIVE ESTIMATED;
+the unknown historical availability gate, final OOS guard and prospective capture worker
+are unchanged. The historical 30/30/30 description below applies to V1 only.
+
 ## Day 2 Fair Value retrospective diagnostic
 
 The [Fair Value report](FAIR_VALUE.md) documents the event-time feature pipeline, development-only

@@ -1,0 +1,27 @@
+{
+  "protocol_version": "fair_value_protocol.v2",
+  "supersedes_for_future_fair_value_research": "baseline_protocol.v1 split usage only; baseline-v1.json is immutable",
+  "reason": "The original VALIDATION partition was inspected in Fair Value V1; it is no longer pristine external validation. Pool the first 60 days only for chronological internal research.",
+  "affected_experiments": ["fair_value_model.v1", "fair_value_model.v2"],
+  "historical_partitions": {
+    "DEVELOPMENT": ["2026-06-15T20:00:00Z", "2026-07-15T20:00:00Z"],
+    "VALIDATION": ["2026-07-15T20:00:00Z", "2026-08-14T20:00:00Z"]
+  },
+  "split_version": "pre_oos_expanding_blocks.v2",
+  "splits": {
+    "PRE_OOS_RESEARCH": ["2026-06-15T20:00:00Z", "2026-08-14T20:00:00Z"],
+    "FINAL_OOS": ["2026-08-14T20:00:00Z", "2026-09-13T20:00:00Z"]
+  },
+  "dataset_version": "e6d06eae4813cacf24f0087e38025e31aff1013a7a9de03a5e1be0266dec7020",
+  "target_version": "raw_reopen_return.v1",
+  "feature_set_version": "fair_value_displacement.v2",
+  "model_version": "fair_value_model.v2",
+  "baseline_protocol_sha256": "dd76ecabe2386e207608d155ff6f53b5fafa7deba305910bdcc0905f5e11c6ba",
+  "folds": {"initial_train_dates": 15, "test_dates_per_fold": 6, "minimum_train_rows": 100},
+  "candidates": ["REALITY_MARK", "SHRUNK_TRANSFER", "ROBUST_TRANSFER", "PIECEWISE_TRANSFER"],
+  "parameters": {"ridge_alpha": 1.0, "huber_delta": 1.5, "huber_iterations": 12, "piecewise_knot_absolute_return": 0.02},
+  "promotion": {"minimum_relative_bps_mae_gain": 0.02, "minimum_relative_bps_rmse_gain": 0.02, "neutral_symbol_mae_tolerance_bps": 1.0, "minimum_folds_improved_fraction": 0.75, "maximum_p95_delta_bps": 0.0},
+  "claim": "RETROSPECTIVE ESTIMATED",
+  "availability": "Archived native and Reality prices remain UNKNOWN_AVAILABILITY; diagnostic only, never certified as-known features.",
+  "guard": "FINAL_OOS is never a runner option; validate boundaries before archive access and exclude all data from 2026-08-14T20:00:00Z onward."
+}

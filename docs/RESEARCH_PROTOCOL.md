@@ -1,5 +1,21 @@
 # Frozen baseline protocol v1
 
+## Explicit Fair Value V2 protocol transition
+
+[`fair_value_protocol.v2`](../research/protocols/fair-value-v2.json) supersedes only the use of
+the old split for *future Fair Value research*. V1's `baseline_protocol.v1` and its immutable
+30/30/30 split, experiment records, dataset/target/decision identities and negative V1 decision
+remain historical facts. Its former VALIDATION (2026-07-15 20:00–2026-08-14 20:00 UTC) was
+inspected during Fair Value V1 and cannot be represented as pristine external validation again.
+V2 uses `PRE_OOS_RESEARCH` [2026-06-15 20:00, 2026-08-14 20:00) UTC with expanding chronological
+folds. `FINAL_OOS` [2026-08-14 20:00, 2026-09-13 20:00) UTC remains frozen and unsupported by
+the V2 runner. The protocol validates the historical union, baseline checksum, accepted dataset
+and eligibility status before archive access; the row builder additionally rejects an end beyond
+the final boundary. Outcome completion must precede the next fit's test decision. Details and
+generated evidence are in [Fair Value](FAIR_VALUE.md). This is RETROSPECTIVE ESTIMATED only.
+
+## Historical baseline v1 contract
+
 Current phase: **PHASE 2 — RESEARCH BASELINES**. Final OOS remains untouched by performance
 evaluation. Phase 1 is accepted and unchanged. This task implements the protocol and non-ML
 benchmark machinery; **the strict leak-free benchmark acceptance gate is NOT PASSED** because

@@ -121,6 +121,15 @@ def rows_for_partition(
     protocol: dict, manifest: dict, calendar: dict, partition: str
 ) -> list[dict]:
     bounds = b.partition_bounds(protocol, partition)  # fail before any archive access
+    return rows_for_bounds(manifest, calendar, bounds)
+
+
+def rows_for_bounds(
+    manifest: dict, calendar: dict, bounds: tuple[datetime, datetime]
+) -> list[dict]:
+    """Shared event-time extraction; callers must validate bounds before archive access."""
+    if bounds[1] > b.timestamp("2026-08-14T20:00:00Z") or bounds[0] >= bounds[1]:
+        raise ValueError("FINAL_OOS_LOCKED")
     provider = CuratedBitgetSourceSessionProvider()
     sessions = calendar["sessions"]
     selected = [
