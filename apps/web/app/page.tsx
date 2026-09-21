@@ -14,7 +14,7 @@ export default function Home() {
         <span className="text-base font-medium tracking-tight sm:text-lg">SessionZero</span>
       </Link>
 
-      <nav className="hidden items-center gap-8 text-sm font-medium text-zinc-700 md:flex">
+      <nav className="hidden items-center gap-8 text-sm font-medium text-zinc-700 lg:flex">
         <Link href="#platform" className="transition hover:text-zinc-950">Platform</Link>
         <Link href="#methodology" className="transition hover:text-zinc-950">
           Methodology
