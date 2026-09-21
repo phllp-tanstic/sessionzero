@@ -1,5 +1,15 @@
 # Data Verification
 
+## Prospective remote collection
+
+The remote-ready worker uses the accepted 21-symbol cohort, original universe identity, cohort
+hash and mapping. Decision snapshots retain only completed Reality decision marks and previous
+SIP/raw closes available by the exact XNYS-open-minus-60-minute decision. `FIRST_1M_BAR_OPEN`
+is collected later in `prospective_outcome_*` append-only tables; `decision_outcome_links` links
+versions without modifying the snapshot. Same canonical outcomes reuse versions, revisions append,
+and each distinct retrieval retains raw provider evidence. A missed decision is never backfilled
+as prospective. No remote capture has been performed yet. [Runbook](DEPLOYMENT.md).
+
 ## Point-in-time availability and prospective capture — 2026-09-20
 
 Decision: **RETROSPECTIVE_POINT_IN_TIME_NOT_VERIFIABLE_PROSPECTIVE_CAPTURE_READY**.

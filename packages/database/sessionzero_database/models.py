@@ -784,6 +784,7 @@ class PointInTimeRetrieval(Base):
 class DecisionTimeSnapshotRow(Base):
     __tablename__ = "decision_time_snapshots"
     __table_args__ = (
+        UniqueConstraint("decision_timestamp", name="uq_decision_snapshot_timestamp"),
         CheckConstraint(
             "contains_future_outcome = false", name="ck_decision_snapshot_no_future_outcome"
         ),
@@ -807,3 +808,149 @@ class DecisionTimeSnapshotRow(Base):
     capture_version: Mapped[str] = mapped_column(String(64), nullable=False)
     contains_future_outcome: Mapped[bool] = mapped_column(nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class ProspectiveWorkerRun(Base):
+    __tablename__ = "prospective_worker_runs"
+    __table_args__ = (
+        CheckConstraint("operation IN ('DECISION','OUTCOME','TICK')", name="ck_worker_operation"),
+        CheckConstraint(
+            "status IN ('SUCCEEDED','PARTIAL','FAILED','MISSED_DECISION_WINDOW',"
+            "'PROVIDER_UNAVAILABLE','DATABASE_FAILURE','IDENTITY_MISMATCH',"
+            "'SKIPPED_NO_ACTION')",
+            name="ck_worker_status",
+        ),
+        CheckConstraint("actual_start_time <= completed_at", name="ck_worker_time_order"),
+        CheckConstraint(
+            "symbols_expected >= 0 AND symbols_captured >= 0 AND "
+            "symbols_captured <= symbols_expected",
+            name="ck_worker_symbol_counts",
+        ),
+        CheckConstraint("outcome_links >= 0", name="ck_worker_outcome_links"),
+        Index("ix_worker_runs_latest", "actual_start_time"),
+    )
+    worker_run_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    operation: Mapped[str] = mapped_column(String(16), nullable=False)
+    decision_timestamp: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    scheduled_event_timestamp: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    actual_start_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    lateness_seconds: Mapped[Decimal | None] = mapped_column(Numeric())
+    status: Mapped[str] = mapped_column(String(32), nullable=False)
+    symbols_expected: Mapped[int] = mapped_column(Integer, nullable=False)
+    symbols_captured: Mapped[int] = mapped_column(Integer, nullable=False)
+    provider_status: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    snapshot_version: Mapped[str | None] = mapped_column(String(64))
+    outcome_links: Mapped[int] = mapped_column(Integer, nullable=False)
+    error_code: Mapped[str | None] = mapped_column(String(128))
+    git_commit: Mapped[str] = mapped_column(String(64), nullable=False)
+    universe_version: Mapped[str | None] = mapped_column(String(64))
+    cohort_version: Mapped[str | None] = mapped_column(String(64))
+    mapping_version: Mapped[str | None] = mapped_column(String(64))
+
+
+class ProspectiveOutcomeCaptureRun(Base):
+    __tablename__ = "prospective_outcome_capture_runs"
+    __table_args__ = (
+        CheckConstraint("status = 'SUCCEEDED'", name="ck_outcome_capture_success"),
+        CheckConstraint("started_at <= completed_at", name="ck_outcome_capture_time_order"),
+        CheckConstraint("decision_timestamp < scheduled_open", name="ck_outcome_after_decision"),
+        CheckConstraint("symbol_count > 0", name="ck_outcome_symbol_count"),
+    )
+    capture_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
+    snapshot_version: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("decision_time_snapshots.snapshot_version", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    decision_timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    scheduled_open: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    collector_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    git_commit: Mapped[str] = mapped_column(String(64), nullable=False)
+    capture_version: Mapped[str] = mapped_column(String(64), nullable=False, unique=True)
+    symbol_count: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class ProspectiveOutcomeVersion(Base):
+    __tablename__ = "prospective_outcome_versions"
+    __table_args__ = (
+        UniqueConstraint(
+            "logical_key_hash", "canonical_hash", name="uq_outcome_logical_content_version"
+        ),
+        CheckConstraint("field_name = 'FIRST_1M_BAR_OPEN'", name="ck_outcome_field"),
+        CheckConstraint("role = 'FUTURE_OUTCOME'", name="ck_outcome_role"),
+        CheckConstraint("decision_timestamp < event_time", name="ck_outcome_event_order"),
+        CheckConstraint(
+            "event_time <= first_request_time AND first_request_time <= first_ingestion_time",
+            name="ck_outcome_availability_order",
+        ),
+    )
+    version_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    logical_key_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    canonical_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    source: Mapped[str] = mapped_column(String(32), nullable=False)
+    reality_symbol: Mapped[str] = mapped_column(String(64), nullable=False)
+    native_ticker: Mapped[str] = mapped_column(String(32), nullable=False)
+    field_name: Mapped[str] = mapped_column(String(64), nullable=False)
+    role: Mapped[str] = mapped_column(String(32), nullable=False)
+    decision_timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    event_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    canonical_value: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    collector_version: Mapped[str] = mapped_column(String(64), nullable=False)
+    git_commit: Mapped[str] = mapped_column(String(64), nullable=False)
+    first_request_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    first_ingestion_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class ProspectiveOutcomeRetrievalRow(Base):
+    __tablename__ = "prospective_outcome_retrievals"
+    __table_args__ = (
+        CheckConstraint("request_time <= ingestion_time", name="ck_outcome_retrieval_order"),
+    )
+    retrieval_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    capture_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("prospective_outcome_capture_runs.capture_id", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    version_hash: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("prospective_outcome_versions.version_hash", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    request_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    ingestion_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    provider_identifiers: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    raw_response: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+
+
+class DecisionOutcomeLink(Base):
+    __tablename__ = "decision_outcome_links"
+    __table_args__ = (
+        UniqueConstraint(
+            "snapshot_version", "outcome_version_hash", name="uq_snapshot_outcome_version"
+        ),
+        Index(
+            "ix_decision_outcome_latest",
+            "snapshot_version",
+            "native_ticker",
+            "linked_at",
+        ),
+    )
+    link_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    snapshot_version: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("decision_time_snapshots.snapshot_version", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    outcome_version_hash: Mapped[str] = mapped_column(
+        String(64),
+        ForeignKey("prospective_outcome_versions.version_hash", ondelete="RESTRICT"),
+        nullable=False,
+    )
+    reality_symbol: Mapped[str] = mapped_column(String(64), nullable=False)
+    native_ticker: Mapped[str] = mapped_column(String(32), nullable=False)
+    linked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

@@ -70,7 +70,7 @@ def test_same_refetch_retains_raw_evidence_and_reuses_version(database_engine):
         assert (
             connection.scalar(select(func.count()).select_from(PointInTimeObservationVersion)) == 2
         )
-        assert connection.scalar(select(func.count()).select_from(DecisionTimeSnapshotRow)) == 2
+        assert connection.scalar(select(func.count()).select_from(DecisionTimeSnapshotRow)) == 1
 
 
 def test_provider_revision_appends_version(database_engine):

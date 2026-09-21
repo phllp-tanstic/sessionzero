@@ -1,5 +1,17 @@
 # Architecture
 
+## Remote prospective worker — deployment-ready, not deployed
+
+`services/worker/sessionzero_worker` adds one-shot Railway-compatible orchestration around the
+canonical `capture_iteration`. A UTC cron wakes every five minutes in a broad DST-safe window;
+`XnysTradingCalendar.session_on()` alone determines whether there is a cash session and computes
+the exact open-minus-60-minute decision. The worker reads the accepted cohort identity before
+provider use, persists run states in PostgreSQL, and never converts a late attempt into a
+prospective snapshot. A separate Alpaca SIP/raw outcome collector starts only after the next
+first-minute bar is old enough for the historical entitlement. Outcome versions and links append
+outside the immutable decision snapshot. The worker has no public data endpoint, local state,
+or machine dependency. [Deployment contract](DEPLOYMENT.md).
+
 ## Prospective point-in-time capture — current
 
 `sessionzero-capture-decision` is a one-iteration worker suitable for a remote container. It is

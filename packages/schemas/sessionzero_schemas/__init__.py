@@ -1,9 +1,12 @@
 from .capture import (
     CAPTURE_TRANSFORMATION_VERSION,
+    OUTCOME_TRANSFORMATION_VERSION,
     SNAPSHOT_TRANSFORMATION_VERSION,
     DecisionTimeSnapshot,
+    ProspectiveOutcomeRetrieval,
     ProspectiveRetrieval,
     RevisionIntegrityStatus,
+    WorkerRunStatus,
     build_decision_snapshot,
     canonical_digest,
 )
@@ -54,6 +57,7 @@ from .universe import (
 
 __all__ = [
     "CAPTURE_TRANSFORMATION_VERSION",
+    "OUTCOME_TRANSFORMATION_VERSION",
     "SNAPSHOT_TRANSFORMATION_VERSION",
     "CandleQualityReport",
     "CapabilityStatus",
@@ -74,6 +78,7 @@ __all__ = [
     "MarketSessionWindow",
     "MarketTicker",
     "PointInTimeAvailability",
+    "ProspectiveOutcomeRetrieval",
     "ProspectiveRetrieval",
     "ProviderCapability",
     "QualityIssue",
@@ -92,6 +97,7 @@ __all__ = [
     "UniverseEligibilityReason",
     "UniverseMappingStatus",
     "UniverseMember",
+    "WorkerRunStatus",
     "build_decision_snapshot",
     "canonical_digest",
 ]

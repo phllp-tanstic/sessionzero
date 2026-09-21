@@ -22,6 +22,7 @@ from .models import (
     UniverseSnapshotMemberRow,
     UniverseSnapshotRow,
 )
+from .outcome import capture_outcome_iteration, persist_prospective_outcomes
 from .persistence import (
     IngestionResult,
     ReferenceIngestionResult,
@@ -55,6 +56,7 @@ __all__ = [
     "UniverseDiscoveryObservationRow",
     "UniverseSnapshotMemberRow",
     "UniverseSnapshotRow",
+    "capture_outcome_iteration",
     "create_database_engine",
     "ingest_candle_observations",
     "ingest_manifest_subset",
@@ -63,5 +65,6 @@ __all__ = [
     "persist_historical_coverage_profile",
     "persist_historical_manifest",
     "persist_point_in_time_capture",
+    "persist_prospective_outcomes",
     "persist_universe_snapshot",
 ]

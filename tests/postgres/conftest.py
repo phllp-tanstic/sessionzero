@@ -40,7 +40,9 @@ def database_engine(migrated_engine: Engine) -> Iterator[Engine]:
     with migrated_engine.begin() as connection:
         connection.execute(
             text(
-                "TRUNCATE decision_time_snapshots, point_in_time_retrievals, "
+                "TRUNCATE decision_outcome_links, prospective_outcome_retrievals, "
+                "prospective_outcome_versions, prospective_outcome_capture_runs, "
+                "prospective_worker_runs, decision_time_snapshots, point_in_time_retrievals, "
                 "point_in_time_observation_versions, point_in_time_capture_runs, "
                 "phase1_dataset_manifests, historical_coverage_members, "
                 "historical_coverage_profiles, "

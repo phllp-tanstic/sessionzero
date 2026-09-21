@@ -1,5 +1,20 @@
 # Architecture Decision Records
 
+## ADR-025 — Remote prospective worker and separate outcome linkage
+
+Date: 2026-09-21. Status: IMPLEMENTED LOCALLY; DEPLOYMENT NOT AUTHORIZED.
+
+The blueprint suggests Railway or equivalent persistent Python containers with managed
+PostgreSQL, but does not lock a vendor. Choose a Railway-compatible one-shot cron container and
+private persistent PostgreSQL. This affects operations only; the accepted calendar, cohort,
+capture command and retrospective claim boundary remain unchanged. The worker derives the
+decision from XNYS rather than a fixed UTC cron, records immutable run states, and rejects late
+capture. Exactly one decision snapshot is allowed per timestamp; repeated evidence and later
+outcome corrections append separate versions. The SIP/raw first-minute open is collected after
+availability and linked outside the snapshot. Railway cron timing is approximate, so failure is
+explicit and never backfilled. Usage-based worker/database cost and vendor rights remain risks.
+[Runbook](DEPLOYMENT.md).
+
 ## ADR-024 — Historical prices remain retrospective; capture future decisions immutably
 
 Date: 2026-09-20. Status: ACCEPTED — PROSPECTIVE CAPTURE READY.

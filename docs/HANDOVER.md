@@ -1,5 +1,36 @@
 # Handover
 
+## Remote prospective capture worker — current 2026-09-21
+
+- Phase: **PHASE 2 — RESEARCH BASELINES**. Accepted integrity decision B remains in force.
+- Worker deployment: **NOT DEPLOYED**. `Dockerfile.worker` and
+  `sessionzero-prospective-worker tick` are locally implemented and remotely deployable on the
+  blueprint's Railway-compatible container target. No production service identifier or URL exists.
+- Remote DB: **NOT PROVISIONED**. Production requires private managed PostgreSQL with durable
+  storage, backup and environment-managed secrets. Local PostgreSQL verification is disposable.
+- Scheduler: **NOT CONFIGURED REMOTELY**. The documented UTC Railway wake cadence is
+  `*/5 12-14 * * 1-5`; `XnysTradingCalendar` selects actual XNYS sessions and exact
+  open-minus-60-minute decisions across DST. Holiday/weekend wakeups skip providers.
+- Migration head: `20260921_11`. New append-only tables record worker states, outcome captures,
+  outcome observation versions/retrievals and snapshot links. One decision snapshot per scheduled
+  timestamp; duplicates and revisions preserve auditable evidence without mutating the snapshot.
+- Latest prospective snapshot: **NONE**. Latest outcome status: **NONE**. No historical fake capture
+  was run. Final OOS strategy performance remains untouched.
+- Runtime health: `sessionzero-prospective-worker status` reports migration head, latest run,
+  stale flag, provider state, decision, symbol count and outcome links from PostgreSQL. Logs are
+  structured and secret-redacted. Database outage can only be logged until connectivity returns.
+- Required deployment environment: `DATABASE_URL`, `ALPACA_API_KEY`, `ALPACA_SECRET_KEY`,
+  `SESSIONZERO_GIT_COMMIT`, `NATIVE_EQUITY_PROVIDER=alpaca`, `SESSIONZERO_ENV=production`.
+  No secret values, provider raw prices or public worker URL belong in Git or public API.
+- Test counts: 204 secret-free non-live/non-PostgreSQL and 31 PostgreSQL tests pass; Ruff,
+  Alembic upgrade/current/check, web lint/typecheck/build and frozen-data diff checks pass.
+  Docker is unavailable locally, so the image was not built. Latest accepted commit before this
+  task: `f3c44f4`. Latest task commit: `feat(ops): add remote prospective capture worker`
+  (resolve its exact hash with `git log -1`). No push or deployment is authorized.
+- Next exact task: authorize remote provisioning/deployment, configure secrets/backups/cron,
+  verify migration and cohort identity remotely, then observe the first legitimate scheduled
+  capture and later outcome linkage. [Runbook](DEPLOYMENT.md).
+
 ## Current phase
 
 `PHASE 2 — RESEARCH BASELINES`

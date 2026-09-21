@@ -28,6 +28,12 @@ from .dataset_artifacts import load_cohort
 from .engine import create_database_engine, verify_database_connection
 
 
+class CaptureProviderFailure(RuntimeError):
+    def __init__(self, completed_symbols: int) -> None:
+        super().__init__("DECISION_PROVIDER_FAILURE")
+        self.completed_symbols = completed_symbols
+
+
 def utc(value: datetime, name: str) -> datetime:
     if value.tzinfo is None or value.utcoffset() is None:
         raise ValueError(f"{name} must be timezone-aware")
@@ -162,7 +168,7 @@ def _native_close_retrieval(
         ingestion_time=page.ingestion_time,
         provider_identifiers={
             key: value
-            for key, value in page.headers.items()
+            for key, value in page.response_headers.items()
             if key in {"x-request-id", "date", "x-ratelimit-limit", "x-ratelimit-remaining"}
         },
         raw_response=raw,
@@ -192,17 +198,20 @@ def capture_iteration(
         alpaca = AlpacaNativeEquityProvider(cohort)
         try:
             for symbol in sorted(symbols):
-                retrievals.append(
-                    _reality_retrieval(bitget, symbol=symbol, decision=decision, commit=commit)
-                )
-                retrievals.append(
-                    _native_close_retrieval(
-                        alpaca,
-                        symbol=members[symbol].native_ticker,
-                        close_time=session.previous_cash_close,
-                        commit=commit,
+                try:
+                    retrievals.append(
+                        _reality_retrieval(bitget, symbol=symbol, decision=decision, commit=commit)
                     )
-                )
+                    retrievals.append(
+                        _native_close_retrieval(
+                            alpaca,
+                            symbol=symbol,
+                            close_time=session.previous_cash_close,
+                            commit=commit,
+                        )
+                    )
+                except Exception:
+                    raise CaptureProviderFailure(len(retrievals) // 2) from None
         finally:
             alpaca.close()
     if any(item.ingestion_time > decision for item in retrievals):
@@ -243,6 +252,8 @@ def capture_iteration(
         dataset_version=dataset_version,
     )
     completed = datetime.now(UTC)
+    if completed > decision:
+        raise ValueError("capture completed after the decision timestamp")
     engine = create_database_engine(get_settings().require_database_url())
     try:
         verify_database_connection(engine)

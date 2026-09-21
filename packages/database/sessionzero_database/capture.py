@@ -6,7 +6,7 @@ import uuid
 from datetime import UTC, datetime
 
 from sessionzero_schemas import DecisionTimeSnapshot, ProspectiveRetrieval, canonical_digest
-from sqlalchemy import Engine, insert
+from sqlalchemy import Engine, func, insert, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 
 from .models import (
@@ -55,6 +55,27 @@ def persist_point_in_time_capture(
         for item in retrievals
     ]
     with engine.begin() as connection:
+        connection.execute(
+            select(func.pg_advisory_xact_lock(int(snapshot.decision_timestamp.timestamp())))
+        )
+        same_capture = connection.execute(
+            select(PointInTimeCaptureRun.capture_id).where(
+                PointInTimeCaptureRun.capture_version == snapshot.capture_version
+            )
+        ).scalar_one_or_none()
+        existing_snapshot = connection.scalar(
+            select(DecisionTimeSnapshotRow.snapshot_version).where(
+                DecisionTimeSnapshotRow.decision_timestamp == snapshot.decision_timestamp
+            )
+        )
+        if same_capture is not None:
+            return {
+                "capture_id": str(same_capture),
+                "snapshot_version": existing_snapshot or snapshot.snapshot_version,
+                "retrievals_written": 0,
+                "observation_versions_written": 0,
+                "snapshot_created": False,
+            }
         inserted = 0
         for row in version_rows:
             result = connection.execute(
@@ -96,16 +117,19 @@ def persist_point_in_time_capture(
                 for item in retrievals
             ],
         )
-        connection.execute(
-            insert(DecisionTimeSnapshotRow).values(
-                **snapshot.model_dump(mode="python"),
-                capture_id=capture_id,
-                created_at=datetime.now(UTC),
+        if existing_snapshot is None:
+            connection.execute(
+                insert(DecisionTimeSnapshotRow).values(
+                    **snapshot.model_dump(mode="python"),
+                    capture_id=capture_id,
+                    created_at=datetime.now(UTC),
+                )
             )
-        )
+        snapshot_version = existing_snapshot or snapshot.snapshot_version
     return {
         "capture_id": str(capture_id),
-        "snapshot_version": snapshot.snapshot_version,
+        "snapshot_version": snapshot_version,
         "retrievals_written": len(retrievals),
         "observation_versions_written": inserted,
+        "snapshot_created": existing_snapshot is None,
     }

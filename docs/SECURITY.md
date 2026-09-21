@@ -1,5 +1,15 @@
 # Security and Data Integrity
 
+## Remote worker security — deployment-ready
+
+The container uses an unprivileged user, copies only explicit source/metadata paths, and stores
+authoritative capture/outcome/run state in managed PostgreSQL. Deployment secrets
+(`DATABASE_URL`, `ALPACA_API_KEY`, `ALPACA_SECRET_KEY`) belong only in service environment secret
+storage. The public Bitget historical endpoint needs no private credential. Structured logs use a
+field allowlist and fixed error codes, with no raw response, URL, exception body, price or secret.
+The worker has no public URL, and no API route exposes raw Alpaca observations. Database backups,
+access control and retention must be configured when deploying; no remote service exists today.
+
 ## Phase 1 dataset retention and recovery
 
 The authorized full backfill stores private source archives under ignored `.local-data/phase1/`.

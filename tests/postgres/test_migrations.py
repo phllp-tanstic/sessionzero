@@ -26,6 +26,11 @@ def test_upgrade_downgrade_and_restore(alembic_config: Config) -> None:
             "point_in_time_observation_versions",
             "point_in_time_retrievals",
             "decision_time_snapshots",
+            "prospective_worker_runs",
+            "prospective_outcome_capture_runs",
+            "prospective_outcome_versions",
+            "prospective_outcome_retrievals",
+            "decision_outcome_links",
             "raw_native_equity_observations",
             "normalized_native_equity_candles",
             "ingestion_runs",
@@ -83,7 +88,7 @@ def test_upgrade_downgrade_and_restore(alembic_config: Config) -> None:
         } <= coverage_columns
         with engine.connect() as connection:
             assert connection.scalar(text("SELECT version_num FROM alembic_version")) == (
-                "20260920_10"
+                "20260921_11"
             )
         command.downgrade(alembic_config, "20260912_01")
         legacy_run_id = uuid.uuid4()

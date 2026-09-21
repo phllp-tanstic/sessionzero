@@ -1,5 +1,14 @@
 # Methodology
 
+## Remote prospective claim boundary
+
+An automatic worker run is `PROSPECTIVE OBSERVED` only when its full 21-member decision capture
+finishes within the accepted XNYS calendar-derived window and its snapshot contains only
+pre-decision features. The later native first-minute open is an append-only FUTURE_OUTCOME label,
+not a decision feature. Failed, partial, missed, or database-unavailable runs are operational
+evidence, not validated observations. Prospective accumulation alone does not grant a BACKTESTED
+performance claim. [Worker contract](DEPLOYMENT.md).
+
 ## Revision-integrity decision — current
 
 Official provider evidence and bounded refetches do not establish an as-known historical price

@@ -1,5 +1,12 @@
 # Baseline experiments and backtest status
 
+## Remote capture status
+
+The worker and outcome-link pipeline are locally implemented but not deployed. No legitimate
+prospective decision snapshot or outcome has yet been captured remotely. Existing retrospective
+baseline metrics remain ESTIMATED; no BACKTESTED claim or final-OOS strategy performance has been
+computed. A missed automatic capture remains missed rather than retroactively filled.
+
 Current phase: **PHASE 2 — RESEARCH BASELINES**. Final OOS remains untouched by performance
 evaluation. No trading strategy or economic backtest exists. The blueprint's 60-day strategy
 backtest and 30-day final-OOS performance requirements are not yet satisfied.

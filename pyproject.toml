@@ -28,6 +28,7 @@ dev = [
 [project.scripts]
 sessionzero-build-phase1-dataset = "sessionzero_database.dataset_cli:main"
 sessionzero-capture-decision = "sessionzero_database.capture_cli:main"
+sessionzero-prospective-worker = "sessionzero_worker.main:main"
 sessionzero-verify-native-equity = "sessionzero_database.native_cli:main"
 sessionzero-verify-bitget = "sessionzero_bitget.verify:main"
 sessionzero-export-bitget-history = "sessionzero_bitget.export:main"
@@ -39,7 +40,7 @@ sessionzero-audit-evidence-coverage = "sessionzero_database.evidence_coverage_cl
 sessionzero-collector = "sessionzero_collector.main:main"
 
 [tool.setuptools.packages.find]
-where = ["packages/bitget", "packages/schemas", "packages/config", "packages/database", "packages/market_data", "services/api", "services/collector"]
+where = ["packages/bitget", "packages/schemas", "packages/config", "packages/database", "packages/market_data", "services/api", "services/collector", "services/worker"]
 
 [tool.setuptools.package-data]
 sessionzero_market_data = ["data/*.json"]
