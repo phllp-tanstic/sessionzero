@@ -1,5 +1,14 @@
 # Frozen baseline protocol v1
 
+## Discovery State V1 pre-OOS extension
+
+[`discovery_state_protocol.v1`](../research/protocols/discovery-state-v1.json) inherits the accepted
+Fair Value V2 pre-OOS split and baseline identity without altering either frozen contract. It
+defines fit-only label resolution, four locked states, nested event-time features, pooled
+chronological inference, fit-only temperature selection, and fixed confidence buckets. The
+historical archive is RETROSPECTIVE ESTIMATED, not as-known; no final OOS entry point exists.
+The negative acceptance decision and limitations are in [Discovery State](DISCOVERY_STATE.md).
+
 ## Explicit Fair Value V2 protocol transition
 
 [`fair_value_protocol.v2`](../research/protocols/fair-value-v2.json) supersedes only the use of

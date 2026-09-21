@@ -1,5 +1,27 @@
 # Handover
 
+## Day 3 Discovery State V1 — 2026-09-21
+
+- Research-only decision: **DISCOVERY_STATE_V1_NOT_JUSTIFIED**. Freeze
+  `FAIR_VALUE_BASELINE_V0 = REALITY_MARK`; Fair Value V1/V2 remain non-promoted. No V3.
+- Four deterministic outcome-defined labels and a pooled four-class model use the unchanged
+  21-member archive and four pre-OOS chronological folds. The 504 scored labels are 222
+  DISCOVERY, 100 UNDERREACTION, 37 OVERSHOOT and 145 NOISE. Full-model macro F1 .423,
+  balanced accuracy .456, OVERSHOOT recall zero. Confidence tracks classification reliability
+  across fixed buckets but not monotonically Reality-mark error. All **RETROSPECTIVE ESTIMATED**.
+- Private append-only result/records under `.local-data/research/experiments/<experiment_id>/`;
+  reproduce offline with `.venv/bin/python -m research.discovery_state`. The state records
+  exclude outcomes. Exact ID and generated metrics are emitted by the command; source/commit
+  changes create a new ID. [Full method and limitations](DISCOVERY_STATE.md).
+- Verification: 238 non-live/non-PostgreSQL tests passed (36 deselected); Ruff check/format and
+  diff hygiene passed. PostgreSQL and live-provider tests were not run for this offline slice.
+- Final OOS remains untouched; model-eligible historical rows remain zero. No production State,
+  Confidence, Gap, Conviction, strategy, PnL, frontend or prospective worker change; no deploy/push.
+  Public derived-output rights and historical as-known availability remain unresolved.
+- Next task: accumulate legitimate prospective decision/outcome captures and verify the remote
+  backup restore point; freeze a new evaluation only after sufficient as-known evidence. Do not
+  retune state thresholds or open final OOS to rescue this negative result.
+
 ## Public web frontend — deployed and verified — 2026-09-21
 
 - FRONTEND = **AVAILABLE**. Production URL: `https://sessionzero-web.vercel.app/`. Hosting:

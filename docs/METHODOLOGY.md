@@ -1,5 +1,15 @@
 # Methodology
 
+## Discovery State V1 retrospective diagnostic
+
+The [Discovery State report](DISCOVERY_STATE.md) defines deterministic four-state outcome labels
+using Reality displacement, realized reopen displacement and fit-only resolution scales. Pooled
+multinomial inference uses four nested event-time feature groups, the Fair Value V2 chronological
+pre-OOS folds and fit-only temperature selection. Confidence is a calibrated-candidate maximum
+probability, tested against classification correctness, mark error and direction. The four-state
+model is **NOT JUSTIFIED**; historical prices remain UNKNOWN_AVAILABILITY and findings are
+RETROSPECTIVE ESTIMATED. Final OOS, prospective worker and production outputs are unchanged.
+
 ## Fair Value V2 research protocol
 
 The previously inspected V1 validation is now part of a combined 60-day pre-OOS research

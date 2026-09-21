@@ -1,0 +1,30 @@
+{
+  "protocol_version": "discovery_state_protocol.v1",
+  "dataset_version": "e6d06eae4813cacf24f0087e38025e31aff1013a7a9de03a5e1be0266dec7020",
+  "parent_protocol_version": "fair_value_protocol.v2",
+  "fair_value_reference_version": "FAIR_VALUE_BASELINE_V0",
+  "fair_value_reference_definition": "REALITY_MARK: latest completed eligible hourly Reality candle close strictly before scheduled native open minus 60 minutes; price proxy, not learned model or executable quote",
+  "state_label_version": "discovery_label_ratio.v1",
+  "feature_set_version": "discovery_event_time.v1",
+  "state_model_version": "pooled_multinomial_logit_l2.v1",
+  "confidence_version": "temperature_scaled_max_probability.v1",
+  "states": ["DISCOVERY", "UNDERREACTION", "OVERSHOOT", "NOISE"],
+  "groups": {
+    "A": ["reality_return", "absolute_displacement"],
+    "B": ["reality_return", "absolute_displacement", "momentum_3h", "range", "reversal", "path_efficiency", "sign_changes"],
+    "C": ["reality_return", "absolute_displacement", "momentum_3h", "range", "reversal", "path_efficiency", "sign_changes", "native_day", "prior_gap"],
+    "D": ["reality_return", "absolute_displacement", "momentum_3h", "range", "reversal", "path_efficiency", "sign_changes", "native_day", "prior_gap", "mark_age_hours", "missing_fraction", "observation_count", "prior_gap_missing"]
+  },
+  "label_policy": {
+    "noise_floor_fraction_of_training_median_absolute_reality_return": 0.25,
+    "agreement_ratio_lower": 0.6666666666666666,
+    "agreement_ratio_upper": 1.5,
+    "description": "NOISE for sub-floor R or O or opposing signs; otherwise O/R within bounds DISCOVERY, above upper UNDERREACTION, below lower OVERSHOOT. The 0.25 factor is an ex-ante resolution convention relative to the fit-only median, not a tuned cutoff. Equal bounds are DISCOVERY. Labels are retrospective and use next open solely as outcome."
+  },
+  "model_parameters": {"l2": 1.0, "steps": 600, "learning_rate": 0.05, "calibration_train_fraction": 0.7, "temperatures": [0.5, 1.0, 2.0, 4.0]},
+  "confidence_buckets": {"LOW": [0.0, 0.5], "MEDIUM": [0.5, 0.75], "HIGH": [0.75, 1.0]},
+  "folds": {"initial_train_dates": 15, "test_dates_per_fold": 6, "minimum_train_rows": 100},
+  "claim": "RETROSPECTIVE ESTIMATED",
+  "availability": "Historical archived price availability and revisions unknown; event-time proxies are not certified as-known features",
+  "final_oos_guard": "No final OOS entry point; bounds validated before private archive read"
+}

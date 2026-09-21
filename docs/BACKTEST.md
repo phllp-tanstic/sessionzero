@@ -1,5 +1,13 @@
 # Baseline experiments and backtest status
 
+## Discovery State V1 is not a strategy backtest
+
+The four outcome-defined research labels separate retrospective reopen behavior, but the
+chronological four-state classifier misses every OVERSHOOT observation. Confidence buckets
+separate classification reliability, not monotonically mark error. Decision:
+**DISCOVERY_STATE_V1_NOT_JUSTIFIED**. No PnL, trading rule, final OOS or BACKTESTED claim exists.
+See [Discovery State](DISCOVERY_STATE.md) for the generated private artifact and reproducibility.
+
 ## Fair Value V2 is not a strategy backtest
 
 Four pre-OOS expanding-window folds yield 504 matched retrospective predictions from

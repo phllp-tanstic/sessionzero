@@ -1,5 +1,19 @@
 # Architecture Decision Records
 
+## ADR-028 — Reality mark reference; do not promote Discovery State V1
+
+Date: 2026-09-21. Status: **DISCOVERY_STATE_V1_NOT_JUSTIFIED**.
+
+Freeze `FAIR_VALUE_BASELINE_V0 = REALITY_MARK` for current MVP research, without claiming a
+learned fair-value model. Fair Value V1/V2 remain non-promoted. A deterministic, versioned
+four-state outcome-label contract and pooled chronological diagnostic over the accepted
+pre-OOS region show descriptive behavioral separation, but the fitted model has zero OVERSHOOT
+recall. Maximum temperature-scaled probability correlates with classification correctness;
+reopening error does not decline monotonically. Do not promote State/Confidence or an
+abstention threshold. Archived features remain UNKNOWN_AVAILABILITY and results RETROSPECTIVE
+ESTIMATED. No final OOS, Gap, Conviction, strategy, frontend, worker, deployment or push.
+[Contract, method and findings](DISCOVERY_STATE.md).
+
 ## ADR-027 — Version the inspected validation transition; do not promote Fair Value V2
 
 Date: 2026-09-21. Status: **FAIR_VALUE_V2_NOT_JUSTIFIED**.
