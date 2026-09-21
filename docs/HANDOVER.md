@@ -1,35 +1,40 @@
 # Handover
 
-## Remote prospective capture worker — current 2026-09-21
+## Remote prospective capture worker — deployed 2026-09-21
 
 - Phase: **PHASE 2 — RESEARCH BASELINES**. Accepted integrity decision B remains in force.
-- Worker deployment: **NOT DEPLOYED**. `Dockerfile.worker` and
-  `sessionzero-prospective-worker tick` are locally implemented and remotely deployable on the
-  blueprint's Railway-compatible container target. No production service identifier or URL exists.
-- Remote DB: **NOT PROVISIONED**. Production requires private managed PostgreSQL with durable
-  storage, backup and environment-managed secrets. Local PostgreSQL verification is disposable.
-- Scheduler: **NOT CONFIGURED REMOTELY**. The documented UTC Railway wake cadence is
-  `*/5 12-14 * * 1-5`; `XnysTradingCalendar` selects actual XNYS sessions and exact
-  open-minus-60-minute decisions across DST. Holiday/weekend wakeups skip providers.
+- Worker deployment: Railway project `45af84eb-f48d-4b53-803c-b2b343994930`, production
+  environment `e999badc-41fb-4fdf-8989-608fb7861383`, worker service
+  `299dec01-5cc5-4c14-878a-aa43d4c8ad56`. `Dockerfile.worker` deployed from exact commit
+  `fce869725a58f612e40a159e86d32a7f28b9ebb4` (`fix(ops): make worker no-op states exit
+  cleanly`) as Railway deployment `7937abef-fb0d-44ab-8abb-e7e3a7304919`. No public domain.
+- Remote DB: private PostgreSQL service `d15004ba-6340-4d5c-a245-e531fe26c5e1` is online with
+  persistent volume `9a4bcdf0-1263-4c48-8ed0-09e2bb21af02`. A DAILY backup schedule update was
+  committed, but Railway's available read tools do not expose the active backup schedule or a
+  restore point; backup operation remains unverified. Credentials are service variables.
+- Scheduler: Railway cron `*/5 12-14 * * 1-5` UTC remains unchanged. The one-shot `tick` handles
+  decision and later outcome windows; `XnysTradingCalendar` selects exact XNYS events across DST.
 - Migration head: `20260921_11`. New append-only tables record worker states, outcome captures,
   outcome observation versions/retrievals and snapshot links. One decision snapshot per scheduled
   timestamp; duplicates and revisions preserve auditable evidence without mutating the snapshot.
-- Latest prospective snapshot: **NONE**. Latest outcome status: **NONE**. No historical fake capture
-  was run. Final OOS strategy performance remains untouched.
-- Runtime health: `sessionzero-prospective-worker status` reports migration head, latest run,
-  stale flag, provider state, decision, symbol count and outcome links from PostgreSQL. Logs are
-  structured and secret-redacted. Database outage can only be logged until connectivity returns.
+- Latest prospective snapshot: **NONE**. Latest outcome status: **NONE**. The 2026-09-21 decision
+  window had passed before deployment; its missing snapshot was not replayed or fabricated.
+- Runtime verification: the remote `alembic current` returned `20260921_11 (head)`; the accepted
+  21-member cohort and universe assertion passed. On deployment
+  `7937abef-fb0d-44ab-8abb-e7e3a7304919`, Railway recorded a cron execution at
+  `2026-09-21T13:31:15.806Z` with `lastExecutionStatus=succeeded`, `running=0`, `crashed=0`.
+  Structured logs retain `MISSED_DECISION_WINDOW`, `NO_SNAPSHOT_AT_DECISION`, zero captured
+  symbols, and no snapshot. The process started at 13:31:12.754Z and terminated within seconds.
+  Genuine provider, database and identity failures still produce nonzero process exits.
 - Required deployment environment: `DATABASE_URL`, `ALPACA_API_KEY`, `ALPACA_SECRET_KEY`,
   `SESSIONZERO_GIT_COMMIT`, `NATIVE_EQUITY_PROVIDER=alpaca`, `SESSIONZERO_ENV=production`.
   No secret values, provider raw prices or public worker URL belong in Git or public API.
-- Test counts: 204 secret-free non-live/non-PostgreSQL and 31 PostgreSQL tests pass; Ruff,
-  Alembic upgrade/current/check, web lint/typecheck/build and frozen-data diff checks pass.
-  Docker is unavailable locally, so the image was not built. Latest accepted commit before this
-  task: `f3c44f4`. Latest task commit: `feat(ops): add remote prospective capture worker`
-  (resolve its exact hash with `git log -1`). No push or deployment is authorized.
-- Next exact task: authorize remote provisioning/deployment, configure secrets/backups/cron,
-  verify migration and cohort identity remotely, then observe the first legitimate scheduled
-  capture and later outcome linkage. [Runbook](DEPLOYMENT.md).
+- Exit-semantics regression: 214 non-live/non-PostgreSQL tests and Ruff passed for the deployed
+  commit. The PostgreSQL integration test was skipped locally because no local test database was
+  running; remote structured logs verify the persisted missed-window run. No research logic or
+  capture semantics changed.
+- Next exact task: verify an actual Railway backup restore point and observe the first legitimate
+  scheduled decision capture and later outcome linkage. [Runbook](DEPLOYMENT.md).
 
 ## Current phase
 
