@@ -1,4 +1,6 @@
 import json
+import subprocess
+import sys
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 
@@ -14,6 +16,15 @@ from sessionzero_market_data import XnysTradingCalendar
 from sessionzero_market_data.native import NativeCandle, NativeHistory, NativeInstrument, NativePage
 from sessionzero_schemas import ProspectiveOutcomeRetrieval
 from sessionzero_worker.main import _safe_log, derive_schedule, run_tick
+
+CLI_PROCESS = (
+    "import importlib, json, sys; "
+    "worker = importlib.import_module('sessionzero_worker.main'); "
+    "result = json.loads(sys.argv[1]); "
+    "worker.run_tick = lambda: result; "
+    "sys.argv = ['sessionzero-prospective-worker', 'tick']; "
+    "worker.main()"
+)
 
 
 def utc(value: str) -> datetime:
@@ -40,6 +51,46 @@ def test_late_tick_never_derives_a_backfillable_decision_action():
     plan = derive_schedule(utc("2026-09-21T12:30:00.000001Z"), XnysTradingCalendar())
     assert plan.action == "WAIT_OUTCOME"
     assert plan.decision_timestamp == utc("2026-09-21T12:30:00Z")
+
+
+@pytest.mark.parametrize(
+    ("reason", "status"),
+    [
+        pytest.param("NO_XNYS_SESSION", "SKIPPED_NO_ACTION", id="holiday"),
+        pytest.param("NO_XNYS_SESSION", "SKIPPED_NO_ACTION", id="weekend"),
+        ("BEFORE_DECISION_WINDOW", "SKIPPED_NO_ACTION"),
+        ("OUTCOME_NOT_YET_AVAILABLE", "SKIPPED_NO_ACTION"),
+        ("NO_SNAPSHOT_AT_DECISION", "MISSED_DECISION_WINDOW"),
+    ],
+)
+def test_no_action_tick_process_exits_cleanly(reason, status):
+    result = {"status": status, "error_code": reason, "snapshot_version": None}
+    completed = subprocess.run(
+        [sys.executable, "-c", CLI_PROCESS, json.dumps(result)],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert json.loads(completed.stdout) == result
+
+
+@pytest.mark.parametrize(
+    "status",
+    ["FAILED", "PARTIAL", "PROVIDER_UNAVAILABLE", "DATABASE_FAILURE", "IDENTITY_MISMATCH"],
+)
+def test_failed_tick_process_retains_nonzero_exit(status):
+    result = {"status": status, "error_code": "TEST_FAILURE"}
+    completed = subprocess.run(
+        [sys.executable, "-c", CLI_PROCESS, json.dumps(result)],
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    assert completed.returncode == 1
+    assert json.loads(completed.stdout) == result
 
 
 def test_outcome_contract_requires_post_decision_event_and_request():

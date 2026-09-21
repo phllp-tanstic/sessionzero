@@ -471,7 +471,6 @@ def main() -> None:
     if result.get("status") in {
         WorkerRunStatus.FAILED.value,
         WorkerRunStatus.PARTIAL.value,
-        WorkerRunStatus.MISSED_DECISION_WINDOW.value,
         WorkerRunStatus.PROVIDER_UNAVAILABLE.value,
         WorkerRunStatus.DATABASE_FAILURE.value,
         WorkerRunStatus.IDENTITY_MISMATCH.value,

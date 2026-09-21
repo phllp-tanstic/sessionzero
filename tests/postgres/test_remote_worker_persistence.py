@@ -225,5 +225,10 @@ def test_late_worker_records_missed_without_calling_provider(database_engine):
         commit="a" * 40,
     )
     assert result["status"] == "MISSED_DECISION_WINDOW"
+    assert result["error_code"] == "NO_SNAPSHOT_AT_DECISION"
     with database_engine.connect() as connection:
         assert connection.scalar(select(func.count()).select_from(DecisionTimeSnapshotRow)) == 0
+        run = connection.execute(
+            select(ProspectiveWorkerRun.status, ProspectiveWorkerRun.error_code)
+        ).one()
+        assert run == ("MISSED_DECISION_WINDOW", "NO_SNAPSHOT_AT_DECISION")
