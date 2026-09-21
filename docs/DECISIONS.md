@@ -1,5 +1,21 @@
 # Architecture Decision Records
 
+## ADR-029 — Redesign research around trajectories and latent dimensions, without promoting a model
+
+Date: 2026-09-21. Status: **RESEARCH ARCHITECTURE PROPOSED; NO PRODUCTION MODEL**.
+
+The [root-cause audit](RESEARCH_REDESIGN.md) finds large, measurable within-session change in
+mark accuracy and retrospective labels; T−30 adds no completed hourly-bar information beyond
+T−60. The single snapshot is inadequate for state-process research, not evidence that the
+terminal Reality-mark baseline should be abandoned. Direct labels are sensitive to the
+agreement geometry, OVERSHOOT support is sparse/correlated, V1 confidence tracks classifier
+correctness more than mark reliability, no accepted independent aligned second continuous source
+supports leadership, and the deployed mark-only snapshots cannot replay trajectories. Future
+research should begin with prospectively captured multi-slot paths and separate continuous
+direction/transfer, path and evidence dimensions. Keep all V1/V2 negative outcomes, baseline,
+cohort, target and final OOS unchanged. No new model, provider, worker change, strategy, push or
+deployment is authorized by this ADR. Evidence remains RETROSPECTIVE ESTIMATED.
+
 ## ADR-028 — Reality mark reference; do not promote Discovery State V1
 
 Date: 2026-09-21. Status: **DISCOVERY_STATE_V1_NOT_JUSTIFIED**.

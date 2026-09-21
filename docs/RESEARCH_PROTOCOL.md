@@ -1,5 +1,15 @@
 # Frozen baseline protocol v1
 
+## Research-redesign v1 diagnostic (not a replacement baseline protocol)
+
+The [versioned pre-OOS trajectory protocol](../research/protocols/research-redesign-v1.json)
+inherits the accepted Fair Value V2 split/dataset and rejects OOS before archive access. Seven
+calendar-relative slots, strict completed-bar features, early-development-only label scales,
+two sensitivity alternatives and outcome-free trajectory records test formulation root causes.
+It does not revise baseline/Fair Value/Discovery State V1 contracts or promote a new model.
+[Generated findings and next architecture](RESEARCH_REDESIGN.md). Historical features remain
+UNKNOWN_AVAILABILITY and findings RETROSPECTIVE ESTIMATED.
+
 ## Discovery State V1 pre-OOS extension
 
 [`discovery_state_protocol.v1`](../research/protocols/discovery-state-v1.json) inherits the accepted

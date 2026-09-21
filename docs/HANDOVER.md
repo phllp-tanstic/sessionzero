@@ -1,5 +1,29 @@
 # Handover
 
+## Root-cause research redesign — 2026-09-21
+
+- Research-only trajectory diagnostic on the same accepted pre-OOS archive. Seven calendar-relative
+  slots yielded 5,817 outcome-free records across 861 eligible symbol-sessions / 41 dates; 819
+  have the complete slot grid. On the common panel, Reality-mark MAE declines 263.64 bps at
+  close+2h to 100.35 at open−1h; open−30m adds no hourly price information. Direct labels change
+  365/5,817 under narrower ratio bands and 1,041/5,817 under a development-residual band.
+- Decisions: single snapshot **INADEQUATE** for state-process research (but retain T−60 Reality
+  mark as terminal baseline); direct labels **NEED LATENT REFORMULATION**; OVERSHOOT support
+  **INSUFFICIENT**, prevalence time-dependent; Confidence V1 **NEEDS REDEFINITION**; source
+  leadership **NOT INSTRUMENTED**; prospective capture **REQUIRES ADDITIONAL FIELDS**. No new
+  model was promoted. All prior negative experiment decisions remain intact.
+- Reproduce offline: `.venv/bin/python -m research.research_redesign`; generated private
+  append-only report and outcome-free trajectories under `.local-data/research/experiments/`.
+  [Method, result and capture-gap specification](RESEARCH_REDESIGN.md). Archive prices remain
+  UNKNOWN_AVAILABILITY; all findings RETROSPECTIVE ESTIMATED. Final OOS untouched.
+- Verification: 246 non-live/non-PostgreSQL tests passed (36 deselected), Ruff check/format and
+  diff hygiene passed; identical offline rerun preserved the experiment result. No live-provider
+  or PostgreSQL test was run for this research-only slice.
+- Prospective worker, frontend, database, cohort, target and frozen research protocols unchanged;
+  no provider added, Gap, Conviction, strategy, PnL, push or deployment. Next task is to review
+  the proposed capture contract and rights/independence of a second continuous source before
+  authorizing any prospective worker change. Verify the remote backup restore point separately.
+
 ## Day 3 Discovery State V1 — 2026-09-21
 
 - Research-only decision: **DISCOVERY_STATE_V1_NOT_JUSTIFIED**. Freeze

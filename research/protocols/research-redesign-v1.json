@@ -1,0 +1,29 @@
+{
+  "protocol_version": "research_redesign.v1",
+  "parent_protocol_version": "fair_value_protocol.v2",
+  "dataset_version": "e6d06eae4813cacf24f0087e38025e31aff1013a7a9de03a5e1be0266dec7020",
+  "split": ["2026-06-15T20:00:00Z", "2026-08-14T20:00:00Z"],
+  "slots": [
+    {"name": "CLOSE_PLUS_2H", "reference": "PREVIOUS_CLOSE", "minutes": 120},
+    {"name": "CLOSE_PLUS_6H", "reference": "PREVIOUS_CLOSE", "minutes": 360},
+    {"name": "OPEN_MINUS_6H", "reference": "NEXT_OPEN", "minutes": -360},
+    {"name": "OPEN_MINUS_3H", "reference": "NEXT_OPEN", "minutes": -180},
+    {"name": "OPEN_MINUS_2H", "reference": "NEXT_OPEN", "minutes": -120},
+    {"name": "OPEN_MINUS_1H", "reference": "NEXT_OPEN", "minutes": -60},
+    {"name": "OPEN_MINUS_30M", "reference": "NEXT_OPEN", "minutes": -30}
+  ],
+  "slot_policy": "Calendar-relative, determined independently of outcomes. A completed 1H bar must end strictly before the timestamp. Overlapping/duplicate timestamps are rejected for a cash session. T-30 is retained to test hourly-information redundancy.",
+  "label_policy": {
+    "reference_ratio_lower": 0.6666666666666666,
+    "reference_ratio_upper": 1.5,
+    "alternative_ratio_lower": 0.75,
+    "alternative_ratio_upper": 1.3333333333333333,
+    "noise_floor_fraction": 0.25,
+    "resolution_fit_sessions": 15,
+    "residual_band_development_quantile": 0.5
+  },
+  "labels": "Retrospective only: next first-minute native open / previous close. Fixed slot-specific resolution scales and residual bands use the first 15 pre-OOS cash sessions only; no later outcome is used to select parameters.",
+  "confidence_targets": ["state_classification_correctness", "absolute_reality_mark_error_bps", "reopen_direction_agreement"],
+  "claim": "RETROSPECTIVE ESTIMATED",
+  "guard": "Reject any split ending beyond 2026-08-14T20:00:00Z before archive access; no final-OOS option"
+}

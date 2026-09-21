@@ -1,5 +1,15 @@
 # Methodology
 
+## Root-cause research redesign — trajectories, no new model
+
+The [pre-OOS trajectory audit](RESEARCH_REDESIGN.md) tests seven calendar-relative off-session
+times, continuous path/transfer/residual coordinates, label sensitivity, retrospective state
+transitions, confidence's separate state/price targets, source diversity, and prospective capture
+gaps. It finds a single T−60 snapshot inadequate for describing the process, while retaining
+that mark as the strongest tested terminal price reference. The direct four-class labels need
+latent reformulation and current prospective mark-only captures cannot reproduce trajectories.
+All figures are RETROSPECTIVE ESTIMATED; no new model, strategy or final-OOS evaluation exists.
+
 ## Discovery State V1 retrospective diagnostic
 
 The [Discovery State report](DISCOVERY_STATE.md) defines deterministic four-state outcome labels

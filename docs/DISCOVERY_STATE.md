@@ -1,5 +1,13 @@
 # Discovery State V1 — retrospective research diagnostic
 
+## Subsequent formulation audit (V1 decision unchanged)
+
+The [pre-OOS trajectory redesign](RESEARCH_REDESIGN.md) measures seven off-session times, direct
+label sensitivity, retrospective transitions and OVERSHOOT support. It recommends separating
+latent direction/transfer, path and evidence quality before any later mapping to the four locked
+product names. V1 remains **DISCOVERY_STATE_V1_NOT_JUSTIFIED**; no State or Confidence V2 model
+was built and no final OOS was inspected.
+
 Decision: **DISCOVERY_STATE_V1_NOT_JUSTIFIED**. All figures below are **RETROSPECTIVE ESTIMATED** from archived prices whose original as-known availability and revisions are unverified. No production State or Confidence output is authorized. The generated private result is authoritative; these rounded figures describe pre-commit run `fed2b74ff83adda8b248bfafd80c1974eb19ceb4b3a06569568d64f0eb10f843`. A source edit or commit changes the experiment ID.
 
 ## Identity and reference

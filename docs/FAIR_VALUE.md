@@ -1,5 +1,13 @@
 # Fair Value V1 research — RETROSPECTIVE ESTIMATED
 
+## Trajectory-conditionality audit (subsequent, non-promotional)
+
+The [root-cause redesign](RESEARCH_REDESIGN.md) finds that Reality-mark error falls materially
+as the cash reopen approaches. Pooled path-efficiency, volatility and reversal error cuts vary,
+but are confounded by time and repeated symbol-sessions and do not justify a conditional Fair
+Value model. `FAIR_VALUE_BASELINE_V0 = REALITY_MARK` remains the research reference. V1 and V2
+negative decisions below are unchanged; no Fair Value V3 was fitted.
+
 ## V2 pre-OOS walk-forward — RETROSPECTIVE ESTIMATED (2026-09-21)
 
 Decision: **FAIR_VALUE_V2_NOT_JUSTIFIED**. The former validation period was inspected in V1,
