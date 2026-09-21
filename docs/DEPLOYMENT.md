@@ -4,6 +4,34 @@ Status: **IMPLEMENTED LOCALLY; NOT DEPLOYED**. No Railway project, managed datab
 service URL or first prospective snapshot exists yet. Deployment and secret provisioning require
 separate authorization. Do not run old decision timestamps or insert a synthetic success.
 
+## Public web frontend — deployed (verified 2026-09-21)
+
+FRONTEND = **AVAILABLE**.
+
+- Production URL: `https://sessionzero-web.vercel.app/` — loads with HTTP 200 and refreshes
+  correctly. Hosting: **Vercel**. Production branch: **`main`**.
+- Current state: public landing page plus a static/interface-preview dashboard (`apps/web`,
+  Next.js). **Live API wiring is not yet integrated.** No live Fair Value, live Discovery State,
+  live Confidence, or trading/execution data is presented.
+- The deployment corresponds to the accepted responsive frontend state at `origin/main`
+  (`1fd479f` `fix(web): harden landing page responsiveness`): the deployed prerendered DOM is
+  byte-identical to a local production build of the same source after normalizing asset hashes
+  and build IDs, and no frontend changes exist beyond `origin/main`.
+- The page is explicitly labeled as non-live: hero badge `POST-CLOSE WINDOW · INTERFACE PREVIEW`
+  and dashboard monitor header `INTERFACE PREVIEW · STATIC DATA PREVIEW`. There is no Sign in or
+  other authentication UI.
+- Verified in headless Chromium against the production URL: 320 px, 400 px and 768 px have no
+  horizontal overflow (`scrollWidth == clientWidth`, zero out-of-viewport elements), the desktop
+  nav stays hidden below 1024 px with no header collisions, the 1280 px header is vertically
+  aligned, all main navigation anchors (`#platform`, `#methodology`, `#markets`, `#research`)
+  resolve and scroll, and the hero image loads. No broken images and no page/runtime errors.
+- No secrets are exposed client-side; the only external requests are Google Fonts.
+- Known minor issue: `/favicon.ico` returns 404, which produces one console resource error per
+  visit. Cosmetic only; fixing it is a separate small frontend task.
+- Limitation: Vercel project settings were not directly inspectable from this environment; the
+  production-branch statement rests on the deployment matching `origin/main`'s frontend state
+  and the repository's Vercel/GitHub wiring.
+
 ## Target and costs
 
 The blueprint suggests Railway or an equivalent persistent container service for Python workers

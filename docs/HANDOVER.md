@@ -1,5 +1,31 @@
 # Handover
 
+## Public web frontend — deployed and verified — 2026-09-21
+
+- FRONTEND = **AVAILABLE**. Production URL: `https://sessionzero-web.vercel.app/`. Hosting:
+  **Vercel**. Production branch: **`main`**. Current state: public landing page plus a
+  static/interface-preview dashboard. **Live API wiring is not yet integrated**: no live Fair
+  Value, live Discovery State, live Confidence, or trading/execution data is presented.
+- The deployment corresponds to the accepted responsive frontend state at `origin/main`
+  (`1fd479f` `fix(web): harden landing page responsiveness`): the deployed prerendered DOM is
+  byte-identical to a local production build of the same source after normalizing asset hashes
+  and build IDs. `origin/main` has since advanced to `2f03c23` (Fair Value V2 research), which
+  adds no frontend changes, so the deployment also matches `origin/main`'s current frontend
+  state.
+- Verified live in headless Chromium: HTTP 200; hero image loads; no Sign in/auth UI; hero
+  badge `POST-CLOSE WINDOW · INTERFACE PREVIEW` and dashboard monitor header
+  `INTERFACE PREVIEW · STATIC DATA PREVIEW` present; anchors `#platform`, `#methodology`,
+  `#markets`, `#research` resolve and scroll; refresh works; no broken images; no page/runtime
+  errors; no client-side secrets (only external requests are Google Fonts).
+- Responsive: 320 px, 400 px and 768 px show no horizontal overflow (`scrollWidth ==
+  clientWidth`, zero out-of-viewport elements); the desktop nav is hidden below 1024 px with no
+  header collisions; the 1280 px header is vertically aligned.
+- Known minor issue: `/favicon.ico` returns 404 (one console resource error per visit).
+  Cosmetic; no layout impact. Fixing it is a separate small frontend task, not done here.
+- Vercel project settings were not directly inspectable from this environment; the
+  production-branch statement rests on the deployment matching `origin/main`'s frontend state
+  and the repository's Vercel/GitHub wiring.
+
 ## Fair Value V2 pre-OOS walk-forward — 2026-09-21
 
 - Phase: **PHASE 3 — FAIR VALUE RESEARCH**. Decision **FAIR_VALUE_V2_NOT_JUSTIFIED**;
@@ -460,7 +486,11 @@ is preferred are superseded by this section and ADR-021.
 
 ## Deployment URLs
 
-`NOT DEPLOYED`
+- Public web frontend: `https://sessionzero-web.vercel.app/` — Vercel, production branch
+  `main`, verified 2026-09-21 (landing page + static/interface-preview dashboard, no live API
+  wiring; see the frontend section at the top of this file).
+- No public API or worker service URL is published. Railway worker/PostgreSQL deployment is
+  described in `DEPLOYMENT.md`.
 
 ## Phase 1 acceptance commit (unchanged)
 
