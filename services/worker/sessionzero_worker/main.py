@@ -31,6 +31,13 @@ DECISION_LEAD = timedelta(minutes=15)
 EXPECTED_SYMBOLS = 21
 
 
+def _utc_now() -> datetime:
+    return datetime.now(UTC)
+
+
+Clock = Callable[[], datetime]
+
+
 @dataclass(frozen=True)
 class SchedulePlan:
     action: str
@@ -109,8 +116,10 @@ def _record(
     outcome_links: int = 0,
     error_code: str | None = None,
     identity: tuple[str, str, str] | None = None,
+    clock: Clock | None = None,
 ) -> dict[str, object]:
-    completed = max(datetime.now(UTC), started)
+    clock = clock or _utc_now
+    completed = max(clock(), started)
     scheduled = plan.scheduled_event_timestamp
     lateness = (
         max(Decimal(0), Decimal(str((started - scheduled).total_seconds()))) if scheduled else None
@@ -175,8 +184,10 @@ def run_tick(
     decision_runner: Callable[..., dict] = capture_iteration,
     outcome_runner: Callable[..., dict] = capture_outcome_iteration,
     commit: str | None = None,
+    clock: Clock | None = None,
 ) -> dict[str, object]:
-    started = (now or datetime.now(UTC)).astimezone(UTC)
+    clock = clock or (lambda: now if now is not None else _utc_now())
+    started = (now or clock()).astimezone(UTC)
     owned_engine = engine is None
     try:
         engine = engine or create_database_engine(get_settings().require_database_url())
@@ -206,6 +217,7 @@ def run_tick(
                 operation="TICK",
                 plan=plan,
                 started=started,
+                clock=clock,
                 status=WorkerRunStatus.IDENTITY_MISMATCH,
                 commit=commit,
                 error_code="COHORT_IDENTITY_MISMATCH",
@@ -217,6 +229,7 @@ def run_tick(
                 operation="TICK",
                 plan=plan,
                 started=started,
+                clock=clock,
                 status=WorkerRunStatus.SKIPPED_NO_ACTION,
                 commit=commit,
                 error_code=plan.reason,
@@ -229,6 +242,7 @@ def run_tick(
                 operation="TICK",
                 plan=plan,
                 started=started,
+                clock=clock,
                 status=WorkerRunStatus.IDENTITY_MISMATCH,
                 commit=commit,
                 snapshot_version=snapshot,
@@ -250,7 +264,7 @@ def run_tick(
                     outcome_links=links,
                     identity=identity,
                 )
-            if datetime.now(UTC) > plan.decision_timestamp:
+            if clock() > plan.decision_timestamp:
                 return _record(
                     engine,
                     operation="DECISION",
@@ -302,6 +316,7 @@ def run_tick(
                 operation="DECISION",
                 plan=plan,
                 started=started,
+                clock=clock,
                 status=status,
                 commit=commit,
                 error_code=code,
@@ -314,6 +329,7 @@ def run_tick(
                 operation="DECISION",
                 plan=plan,
                 started=started,
+                clock=clock,
                 status=WorkerRunStatus.MISSED_DECISION_WINDOW,
                 commit=commit,
                 error_code="NO_SNAPSHOT_AT_DECISION",
@@ -325,6 +341,7 @@ def run_tick(
                 operation="TICK" if plan.action == "WAIT_OUTCOME" else "OUTCOME",
                 plan=plan,
                 started=started,
+                clock=clock,
                 status=WorkerRunStatus.SKIPPED_NO_ACTION
                 if plan.action == "WAIT_OUTCOME"
                 else WorkerRunStatus.SUCCEEDED,
@@ -343,6 +360,7 @@ def run_tick(
                 operation="OUTCOME",
                 plan=plan,
                 started=started,
+                clock=clock,
                 status=WorkerRunStatus.SUCCEEDED,
                 commit=commit,
                 symbols_captured=EXPECTED_SYMBOLS,
@@ -360,6 +378,7 @@ def run_tick(
                 operation="OUTCOME",
                 plan=plan,
                 started=started,
+                clock=clock,
                 status=status,
                 commit=commit,
                 symbols_captured=captured,
